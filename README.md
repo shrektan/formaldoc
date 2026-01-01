@@ -4,7 +4,7 @@
 
 **FormalDoc** converts AI-generated text (Markdown) into properly formatted Chinese government document (公文) Word files.
 
-Paste content from ChatGPT, 豆包, Kimi, or any AI tool, and generate a formal Word document in one click.
+Paste content from 豆包, 千问, DeepSeek, Kimi, ChatGPT, or any AI tool, and generate a formal Word document in one click.
 
 ## Demo
 
@@ -20,7 +20,7 @@ Try it now: [formaldoc.vercel.app](https://formaldoc.vercel.app)
 
 ## How It Works
 
-1. Copy text from AI (ChatGPT, 豆包, Kimi, etc.)
+1. Copy text from AI (豆包, 千问, DeepSeek, Kimi, ChatGPT, etc.)
 2. Paste into FormalDoc
 3. Click "生成公文文档"
 4. Download your formatted Word document

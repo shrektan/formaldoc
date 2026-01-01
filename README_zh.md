@@ -4,7 +4,7 @@
 
 **FormalDoc** 把AI生成的文字（Markdown格式）一键转换成公文格式的Word文档。
 
-从豆包、ChatGPT、Kimi等AI工具复制文字，粘贴即可生成规范的公文Word文档。
+从豆包、千问、DeepSeek、Kimi、ChatGPT等AI工具复制文字，粘贴即可生成规范的公文Word文档。
 
 ## 在线体验
 
@@ -20,7 +20,7 @@
 
 ## 使用方法
 
-1. 从AI工具（豆包、ChatGPT、Kimi等）复制生成的文字
+1. 从AI工具（豆包、千问、DeepSeek、Kimi、ChatGPT等）复制生成的文字
 2. 粘贴到FormalDoc
 3. 点击"生成公文文档"
 4. 下载Word文档

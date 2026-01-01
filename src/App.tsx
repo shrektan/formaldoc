@@ -21,7 +21,15 @@ const EXAMPLE_TEXT = `# 关于开展XX工作的通知
 
 建立健全工作机制，明确责任分工，确保工作有序推进。
 
-## 三、工作要求
+## 三、工作安排
+
+| 阶段 | 时间 | 工作内容 |
+|:-----|:----:|:---------|
+| 第一阶段 | 1-3月 | 制定方案，动员部署 |
+| 第二阶段 | 4-9月 | 全面实施，重点推进 |
+| 第三阶段 | 10-12月 | 总结评估，巩固提升 |
+
+## 四、工作要求
 
 请各单位认真贯彻落实，如有问题及时反馈。`;
 
@@ -44,7 +52,7 @@ function AppContent() {
       {/* Header */}
       <header className="header-simple">
         <h1>AI文字 → 公文Word</h1>
-        <p className="tagline">把豆包、ChatGPT生成的文字，一键转成公文格式Word文档</p>
+        <p className="tagline">把豆包、千问、DeepSeek、Kimi、ChatGPT生成的文字，一键转成公文格式Word文档</p>
         <p className="tip">支持 Markdown 格式 · 可让AI"用Markdown格式输出"效果更佳</p>
       </header>
 
@@ -63,7 +71,7 @@ function AppContent() {
             className="content-input"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="在这里粘贴从豆包、ChatGPT、Kimi等AI工具复制的文字...
+            placeholder="在这里粘贴从豆包、千问、DeepSeek、Kimi、ChatGPT等AI工具复制的文字...
 
 支持 Markdown 格式：
 # 标题
