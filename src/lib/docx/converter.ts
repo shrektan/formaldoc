@@ -287,26 +287,17 @@ function convertTableCell(
         ? AlignmentType.RIGHT
         : AlignmentType.CENTER;
 
-  // Convert cell content
-  const runs = convertPhrasingContent(cell.children as PhrasingContent[]);
-
-  // Apply bold to header cells
-  const styledRuns = isHeader
-    ? runs.map(
-        (run) =>
-          new TextRun({
-            text: (run as { text?: string }).text || '',
-            bold: true,
-          })
-      )
-    : runs;
+  // Convert cell content - apply bold style for headers
+  const runs = isHeader
+    ? convertStyledContent(cell.children as PhrasingContent[], { bold: true })
+    : convertPhrasingContent(cell.children as PhrasingContent[]);
 
   return new TableCell({
     children: [
       new Paragraph({
         style: isHeader ? 'TableCaption' : 'TableText',
         alignment: docxAlignment,
-        children: styledRuns,
+        children: runs,
       }),
     ],
   });
