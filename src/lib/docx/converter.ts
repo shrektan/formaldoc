@@ -1,4 +1,14 @@
-import { Paragraph, TextRun, IRunOptions } from 'docx';
+import {
+  Paragraph,
+  TextRun,
+  IRunOptions,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  BorderStyle,
+  AlignmentType,
+} from 'docx';
 import type {
   Root,
   Content,
@@ -7,7 +17,13 @@ import type {
   List,
   ListItem,
   PhrasingContent,
+  Table as MdTable,
+  TableRow as MdTableRow,
+  TableCell as MdTableCell,
 } from 'mdast';
+
+// Type for docx elements that can be in a section
+type DocxElement = Paragraph | Table;
 
 /**
  * Maps markdown heading depth to Word style IDs
@@ -26,23 +42,23 @@ const HEADING_STYLE_MAP: Record<number, string> = {
 };
 
 /**
- * Converts an mdast AST to an array of docx Paragraph elements
+ * Converts an mdast AST to an array of docx elements (Paragraphs and Tables)
  */
-export function convertMdastToDocx(mdast: Root): Paragraph[] {
-  const paragraphs: Paragraph[] = [];
+export function convertMdastToDocx(mdast: Root): DocxElement[] {
+  const elements: DocxElement[] = [];
 
   for (const node of mdast.children) {
     const converted = convertNode(node);
-    paragraphs.push(...converted);
+    elements.push(...converted);
   }
 
-  return paragraphs;
+  return elements;
 }
 
 /**
- * Converts a single mdast node to docx Paragraph(s)
+ * Converts a single mdast node to docx element(s)
  */
-function convertNode(node: Content): Paragraph[] {
+function convertNode(node: Content): DocxElement[] {
   switch (node.type) {
     case 'heading':
       return [convertHeading(node)];
@@ -50,6 +66,8 @@ function convertNode(node: Content): Paragraph[] {
       return [convertParagraph(node)];
     case 'list':
       return convertList(node);
+    case 'table':
+      return [convertTable(node as MdTable)];
     default:
       // For unsupported nodes, return empty (or could add fallback)
       return [];
@@ -197,4 +215,99 @@ function convertStyledContent(nodes: PhrasingContent[], style: Partial<IRunOptio
   }
 
   return runs;
+}
+
+/**
+ * Standard table border style
+ */
+const TABLE_BORDERS = {
+  top: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+  bottom: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+  left: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+  right: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+  insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+  insideVertical: { style: BorderStyle.SINGLE, size: 1, color: '000000' },
+};
+
+/**
+ * Converts a markdown table to a docx Table
+ */
+function convertTable(node: MdTable): Table {
+  const rows = node.children as MdTableRow[];
+  const alignments = node.align || [];
+
+  const tableRows = rows.map((row, rowIndex) => {
+    const isHeader = rowIndex === 0;
+    return convertTableRow(row, isHeader, alignments);
+  });
+
+  return new Table({
+    width: {
+      size: 100,
+      type: WidthType.PERCENTAGE,
+    },
+    borders: TABLE_BORDERS,
+    rows: tableRows,
+  });
+}
+
+/**
+ * Converts a markdown table row to a docx TableRow
+ */
+function convertTableRow(
+  row: MdTableRow,
+  isHeader: boolean,
+  alignments: (string | null)[]
+): TableRow {
+  const cells = row.children as MdTableCell[];
+
+  const tableCells = cells.map((cell, cellIndex) => {
+    return convertTableCell(cell, isHeader, alignments[cellIndex]);
+  });
+
+  return new TableRow({
+    tableHeader: isHeader,
+    children: tableCells,
+  });
+}
+
+/**
+ * Converts a markdown table cell to a docx TableCell
+ */
+function convertTableCell(
+  cell: MdTableCell,
+  isHeader: boolean,
+  alignment: string | null
+): TableCell {
+  // Get alignment for the cell
+  const docxAlignment =
+    alignment === 'left'
+      ? AlignmentType.LEFT
+      : alignment === 'right'
+        ? AlignmentType.RIGHT
+        : AlignmentType.CENTER;
+
+  // Convert cell content
+  const runs = convertPhrasingContent(cell.children as PhrasingContent[]);
+
+  // Apply bold to header cells
+  const styledRuns = isHeader
+    ? runs.map(
+        (run) =>
+          new TextRun({
+            text: (run as { text?: string }).text || '',
+            bold: true,
+          })
+      )
+    : runs;
+
+  return new TableCell({
+    children: [
+      new Paragraph({
+        style: isHeader ? 'TableCaption' : 'TableText',
+        alignment: docxAlignment,
+        children: styledRuns,
+      }),
+    ],
+  });
 }
