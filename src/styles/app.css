@@ -45,6 +45,21 @@ body {
 .header-simple {
   text-align: center;
   padding: 24px 0 16px;
+  position: relative;
+}
+
+.header-simple .github-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.header-simple .github-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 .header-title {
@@ -193,42 +208,12 @@ body {
   cursor: not-allowed;
 }
 
-/* Settings link */
-.settings-link {
-  display: block;
-  width: fit-content;
-  margin: 0 auto;
-  padding: 8px 16px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.settings-link:hover {
-  color: var(--primary);
-  text-decoration: underline;
-}
-
 /* Footer */
 .footer-simple {
   text-align: center;
   padding: 16px 0;
   font-size: 14px; /* 四号 */
   color: var(--text-secondary);
-}
-
-.github-link {
-  display: inline-block;
-  margin-top: 8px;
-  color: var(--text-secondary);
-  text-decoration: none;
-}
-
-.github-link:hover {
-  color: var(--primary);
-  text-decoration: underline;
 }
 
 /* ===== Drawer Overlay ===== */

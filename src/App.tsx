@@ -91,6 +91,14 @@ function AppContent() {
     <div className="app-simple">
       {/* Header */}
       <header className="header-simple">
+        <a
+          href="https://github.com/shrektan/formaldoc"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="github-link"
+        >
+          GitHub
+        </a>
         <div className="header-title">
           <img src="/logo.png" alt="FormalDoc Logo" className="logo" />
           <h1>AI文字 → 公文Word</h1>
@@ -115,6 +123,9 @@ function AppContent() {
                 disabled={!text.trim()}
               >
                 英文引号→中文
+              </button>
+              <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
+                调整字体样式
               </button>
               <button className="action-btn" onClick={handleLoadExample} type="button">
                 查看示例
@@ -150,24 +161,11 @@ function AppContent() {
         >
           {isGenerating ? '生成中...' : '下载Word文档'}
         </button>
-
-        {/* Settings link */}
-        <button className="settings-link" onClick={() => setIsSettingsOpen(true)} type="button">
-          调整字体样式
-        </button>
       </main>
 
       {/* Footer */}
       <footer className="footer-simple">
         <p>无需登录 · 无需安装 · 可离线使用 · 数据不上传</p>
-        <a
-          href="https://github.com/shrektan/formaldoc"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="github-link"
-        >
-          GitHub
-        </a>
       </footer>
 
       {/* Settings drawer */}
