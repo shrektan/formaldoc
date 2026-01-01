@@ -74,9 +74,9 @@ export const DEFAULT_STYLES: StyleSettings = {
     center: true,
   },
 
-  // 页脚: 仿宋 12pt
+  // 页脚: 仿宋 14pt (四号)
   pageFooter: {
     font: '仿宋',
-    size: 12,
+    size: 14,
   },
 };

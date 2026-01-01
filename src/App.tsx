@@ -68,8 +68,13 @@ function AppContent() {
   const handleConvertQuotes = () => {
     // Convert English double quotes to Chinese double quotes
     // "content" → "content" (U+201C and U+201D)
-    const converted = text.replace(/"([^"]*)"/g, '\u201C$1\u201D');
+    let count = 0;
+    const converted = text.replace(/"([^"]*)"/g, (_match, content) => {
+      count++;
+      return '\u201C' + content + '\u201D';
+    });
     setText(converted);
+    alert(count > 0 ? `已转换 ${count} 处引号` : '未找到需要转换的英文引号');
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {

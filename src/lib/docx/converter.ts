@@ -131,8 +131,6 @@ function convertListItem(
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const prefix = isOrdered ? `${number}. ` : '• ';
-  // Indent increases with nesting level
-  const indent = LIST_INDENT_BASE * (level + 1);
 
   // Process each child of the list item
   item.children.forEach((child, childIndex) => {
@@ -144,14 +142,14 @@ function convertListItem(
         runs.unshift(new TextRun({ text: prefix }));
       }
 
+      // Level 0: use style's firstLine indent (首行缩进 2字符)
+      // Level 1+: add additional firstLine indent for nesting
       paragraphs.push(
         new Paragraph({
           style: 'ListParagraph',
-          indent: {
-            left: indent,
-            hanging: LIST_INDENT_BASE, // Hanging indent for the prefix
-          },
           children: runs,
+          indent:
+            level > 0 ? { firstLine: LIST_INDENT_BASE + LIST_INDENT_BASE * level } : undefined,
         })
       );
     } else if (child.type === 'list') {
