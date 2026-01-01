@@ -45,34 +45,30 @@ body {
 .header-simple {
   text-align: center;
   padding: 24px 0 16px;
-  position: relative;
-}
-
-.header-simple .github-link {
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-  text-decoration: none;
-}
-
-.header-simple .github-link:hover {
-  color: var(--primary);
-  text-decoration: underline;
 }
 
 .header-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 8px;
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
+}
+
+.github-link {
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.github-link:hover {
+  color: var(--primary);
 }
 
 .header-simple h1 {
