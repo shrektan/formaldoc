@@ -60,5 +60,18 @@ export const STYLE_META: Record<StyleKey, StyleMeta> = {
 // Available fonts for dropdown
 export const AVAILABLE_FONTS: ChineseFont[] = ['宋体', '黑体', '楷体', '仿宋'];
 
-// Common font sizes
-export const AVAILABLE_SIZES: FontSize[] = [10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28];
+// Chinese font size convention (号) with point equivalents
+export const CHINESE_FONT_SIZES: { name: string; pt: number }[] = [
+  { name: '初号', pt: 42 },
+  { name: '小初', pt: 36 },
+  { name: '一号', pt: 26 },
+  { name: '小一', pt: 24 },
+  { name: '二号', pt: 22 },
+  { name: '小二', pt: 18 },
+  { name: '三号', pt: 16 },
+  { name: '小三', pt: 15 },
+  { name: '四号', pt: 14 },
+  { name: '小四', pt: 12 },
+  { name: '五号', pt: 10.5 },
+  { name: '小五', pt: 9 },
+];

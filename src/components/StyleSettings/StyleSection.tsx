@@ -1,6 +1,12 @@
 import { useState } from 'react';
-import type { TextStyle, StyleMeta, ChineseFont, FontSize } from '../../types/styles';
-import { AVAILABLE_FONTS, AVAILABLE_SIZES } from '../../types/styles';
+import type { TextStyle, StyleMeta, ChineseFont } from '../../types/styles';
+import { AVAILABLE_FONTS, CHINESE_FONT_SIZES } from '../../types/styles';
+
+// Helper to find Chinese name for a pt size
+function getSizeName(pt: number): string {
+  const found = CHINESE_FONT_SIZES.find((s) => s.pt === pt);
+  return found ? found.name : `${pt}pt`;
+}
 
 interface StyleSectionProps {
   label: string;
@@ -17,7 +23,7 @@ export function StyleSection({ label, style, meta, onChange }: StyleSectionProps
       <button className="style-section-header" onClick={() => setIsOpen(!isOpen)}>
         <span className="style-section-title">{label}</span>
         <span className="style-section-preview">
-          {style.font} {style.size}pt
+          {style.font} {getSizeName(style.size)}
         </span>
         <span className={`style-section-arrow ${isOpen ? 'open' : ''}`}>▶</span>
       </button>
@@ -43,11 +49,11 @@ export function StyleSection({ label, style, meta, onChange }: StyleSectionProps
               字号
               <select
                 value={style.size}
-                onChange={(e) => onChange({ size: Number(e.target.value) as FontSize })}
+                onChange={(e) => onChange({ size: Number(e.target.value) })}
               >
-                {AVAILABLE_SIZES.map((size) => (
-                  <option key={size} value={size}>
-                    {size}pt
+                {CHINESE_FONT_SIZES.map(({ name, pt }) => (
+                  <option key={pt} value={pt}>
+                    {name} ({pt}pt)
                   </option>
                 ))}
               </select>
