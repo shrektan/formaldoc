@@ -1,18 +1,28 @@
 import { Paragraph, TextRun, IRunOptions } from 'docx';
-import type { Root, Content, Heading, Paragraph as MdParagraph, List, ListItem, PhrasingContent } from 'mdast';
+import type {
+  Root,
+  Content,
+  Heading,
+  Paragraph as MdParagraph,
+  List,
+  ListItem,
+  PhrasingContent,
+} from 'mdast';
 
 /**
  * Maps markdown heading depth to Word style IDs
- * # H1 → Title (document title)
- * ## H2 → Heading1 (一、)
- * ### H3 → Heading2 (（一）)
- * #### H4 → Heading3 (1.)
+ * # H1 → Title (公文标题)
+ * ## H2 → Heading1 (一、二、三)
+ * ### H3 → Heading2 (（一）（二）（三）)
+ * #### H4 → Heading3 (1. 2. 3.)
+ * ##### H5 → Heading4 (（1）（2）（3）)
  */
 const HEADING_STYLE_MAP: Record<number, string> = {
   1: 'Title',
   2: 'Heading1',
   3: 'Heading2',
   4: 'Heading3',
+  5: 'Heading4',
 };
 
 /**
@@ -66,7 +76,7 @@ function convertParagraph(node: MdParagraph): Paragraph {
   const runs = convertPhrasingContent(node.children);
 
   return new Paragraph({
-    style: 'Normal',
+    style: 'BodyText',
     children: runs,
   });
 }
@@ -105,10 +115,12 @@ function convertListItem(item: ListItem, isOrdered: boolean, number: number): Pa
         runs.unshift(new TextRun({ text: prefix }));
       }
 
-      paragraphs.push(new Paragraph({
-        style: 'ListParagraph',
-        children: runs,
-      }));
+      paragraphs.push(
+        new Paragraph({
+          style: 'ListParagraph',
+          children: runs,
+        })
+      );
     } else if (child.type === 'list') {
       // Handle nested lists (convert with indentation)
       const nestedParagraphs = convertList(child);

@@ -3,7 +3,9 @@ import { saveAs } from 'file-saver';
 import { generateDocx } from '../lib/docx/generator';
 
 interface UseDocxGeneratorResult {
-  generate: (markdown: string) => Promise<void>;
+  preview: (markdown: string) => Promise<void>;
+  download: () => void;
+  previewBlob: Blob | null;
   isGenerating: boolean;
   error: string | null;
 }
@@ -11,8 +13,9 @@ interface UseDocxGeneratorResult {
 export function useDocxGenerator(): UseDocxGeneratorResult {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
 
-  const generate = useCallback(async (markdown: string) => {
+  const preview = useCallback(async (markdown: string) => {
     if (!markdown.trim()) {
       setError('Please enter some markdown content');
       return;
@@ -23,19 +26,23 @@ export function useDocxGenerator(): UseDocxGeneratorResult {
 
     try {
       const blob = await generateDocx(markdown);
-
-      // Generate filename with timestamp
-      const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `document-${timestamp}.docx`;
-
-      saveAs(blob, filename);
+      setPreviewBlob(blob);
     } catch (err) {
       console.error('Error generating document:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate document');
+      setPreviewBlob(null);
     } finally {
       setIsGenerating(false);
     }
   }, []);
 
-  return { generate, isGenerating, error };
+  const download = useCallback(() => {
+    if (!previewBlob) return;
+
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `document-${timestamp}.docx`;
+    saveAs(previewBlob, filename);
+  }, [previewBlob]);
+
+  return { preview, download, previewBlob, isGenerating, error };
 }
