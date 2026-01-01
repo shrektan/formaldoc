@@ -44,7 +44,8 @@ function AppContent() {
       {/* Header */}
       <header className="header-simple">
         <h1>AI文字 → 公文Word</h1>
-        <p className="tagline">把豆包、ChatGPT生成的文字，一键转成公文格式文档</p>
+        <p className="tagline">把豆包、ChatGPT生成的文字，一键转成公文格式Word文档</p>
+        <p className="tip">支持 Markdown 格式 · 可让AI"用Markdown格式输出"效果更佳</p>
       </header>
 
       {/* Main content */}

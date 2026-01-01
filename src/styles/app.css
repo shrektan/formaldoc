@@ -59,6 +59,13 @@ body {
   color: var(--text-secondary);
 }
 
+.tip {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
 /* Main content */
 .main-simple {
   flex: 1;
@@ -376,6 +383,10 @@ body {
 
   .tagline {
     font-size: 16px;
+  }
+
+  .tip {
+    font-size: 13px;
   }
 
   .input-section {
