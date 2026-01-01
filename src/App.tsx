@@ -91,6 +91,7 @@ function AppContent() {
     <div className="app-simple">
       {/* Header */}
       <header className="header-simple">
+        <img src="/logo.png" alt="FormalDoc Logo" className="logo" />
         <h1>AI文字 → 公文Word</h1>
         <p className="tagline">
           把豆包、千问、DeepSeek、Kimi、ChatGPT生成的文字，一键转成公文格式Word文档

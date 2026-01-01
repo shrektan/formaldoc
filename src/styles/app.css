@@ -47,6 +47,12 @@ body {
   padding: 24px 0 16px;
 }
 
+.logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 12px;
+}
+
 .header-simple h1 {
   font-size: 24px;
   font-weight: 700;
