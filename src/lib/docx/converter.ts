@@ -100,16 +100,19 @@ function convertParagraph(node: MdParagraph): Paragraph {
   });
 }
 
+// Base indent for lists: 2 chars = 640 twips
+const LIST_INDENT_BASE = 640;
+
 /**
  * Converts a list node to multiple docx Paragraphs
  */
-function convertList(node: List): Paragraph[] {
+function convertList(node: List, level: number = 0): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const isOrdered = node.ordered ?? false;
   const startNum = node.start ?? 1;
 
   node.children.forEach((item, index) => {
-    const itemParagraphs = convertListItem(item, isOrdered, startNum + index);
+    const itemParagraphs = convertListItem(item, isOrdered, startNum + index, level);
     paragraphs.push(...itemParagraphs);
   });
 
@@ -120,9 +123,16 @@ function convertList(node: List): Paragraph[] {
  * Converts a list item to docx Paragraph(s)
  * List items can contain multiple paragraphs or nested lists
  */
-function convertListItem(item: ListItem, isOrdered: boolean, number: number): Paragraph[] {
+function convertListItem(
+  item: ListItem,
+  isOrdered: boolean,
+  number: number,
+  level: number
+): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const prefix = isOrdered ? `${number}. ` : '• ';
+  // Indent increases with nesting level
+  const indent = LIST_INDENT_BASE * (level + 1);
 
   // Process each child of the list item
   item.children.forEach((child, childIndex) => {
@@ -137,12 +147,16 @@ function convertListItem(item: ListItem, isOrdered: boolean, number: number): Pa
       paragraphs.push(
         new Paragraph({
           style: 'ListParagraph',
+          indent: {
+            left: indent,
+            hanging: LIST_INDENT_BASE, // Hanging indent for the prefix
+          },
           children: runs,
         })
       );
     } else if (child.type === 'list') {
-      // Handle nested lists (convert with indentation)
-      const nestedParagraphs = convertList(child);
+      // Handle nested lists with increased indentation
+      const nestedParagraphs = convertList(child, level + 1);
       paragraphs.push(...nestedParagraphs);
     }
   });
@@ -274,20 +288,13 @@ function convertTableRow(
 
 /**
  * Converts a markdown table cell to a docx TableCell
+ * Always centers content both horizontally and vertically for 公文 style
  */
 function convertTableCell(
   cell: MdTableCell,
   isHeader: boolean,
-  alignment: string | null
+  _alignment: string | null
 ): TableCell {
-  // Get alignment for the cell
-  const docxAlignment =
-    alignment === 'left'
-      ? AlignmentType.LEFT
-      : alignment === 'right'
-        ? AlignmentType.RIGHT
-        : AlignmentType.CENTER;
-
   // Convert cell content - apply bold style for headers
   const runs = isHeader
     ? convertStyledContent(cell.children as PhrasingContent[], { bold: true })
@@ -298,7 +305,7 @@ function convertTableCell(
     children: [
       new Paragraph({
         style: isHeader ? 'TableCaption' : 'TableText',
-        alignment: docxAlignment,
+        alignment: AlignmentType.CENTER,
         children: runs,
       }),
     ],

@@ -266,8 +266,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         paragraph: {
           alignment: getAlignment(settings.tableHeader),
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: 240, // 单倍行距
+            lineRule: LineRuleType.AUTO,
           },
           indent: {
             firstLine: 0,
@@ -289,8 +289,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         paragraph: {
           alignment: getAlignment(settings.tableCell),
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: 240, // 单倍行距
+            lineRule: LineRuleType.AUTO,
           },
           indent: {
             firstLine: 0,

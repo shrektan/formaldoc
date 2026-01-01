@@ -203,7 +203,7 @@ body {
 .footer-simple {
   text-align: center;
   padding: 16px 0;
-  font-size: 12px;
+  font-size: 14px; /* 四号 */
   color: var(--text-secondary);
 }
 
