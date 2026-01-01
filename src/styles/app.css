@@ -192,10 +192,8 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
-  overflow-y: auto;
   font-family: inherit;
-  white-space: pre-wrap;
-  word-break: break-word;
+  resize: none;
 }
 
 .content-input:focus {
@@ -208,12 +206,6 @@ body {
   color: #999;
 }
 
-.content-input:empty::before {
-  content: attr(data-placeholder);
-  color: #999;
-  pointer-events: none;
-  white-space: pre-wrap;
-}
 
 /* Error message */
 .error-msg {

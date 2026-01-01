@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { StyleProvider } from './contexts/StyleContext';
@@ -71,14 +71,10 @@ const PLACEHOLDER_TEXT = `在这里粘贴从豆包、千问、DeepSeek、Kimi、
 - 列表
 **粗体**`;
 
-const RICH_HTML_SELECTOR =
-  'b,strong,em,i,u,s,del,ins,h1,h2,h3,h4,h5,h6,ul,ol,li,table,thead,tbody,tr,td,th,blockquote,pre,code,a,img,span[style],font';
 
 function AppContent() {
   const [text, setText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const editorRef = useRef<HTMLDivElement>(null);
-  const pasteFallbackRef = useRef<number | null>(null);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
   const { styles } = useStyles();
   const { generate, isGenerating, error } = useDocxGenerator();
@@ -97,6 +93,7 @@ function AppContent() {
 
   const handleLoadExample = () => {
     setText(EXAMPLE_TEXT);
+    setShowHeadingHint(false);
   };
 
   const handleConvertQuotes = () => {
@@ -108,29 +105,11 @@ function AppContent() {
       return '\u201C' + content + '\u201D';
     });
     setText(converted);
+    checkForHeadings(converted);
     alert(count > 0 ? `已转换 ${count} 处引号` : '未找到需要转换的英文引号');
   };
 
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (!editor) {
-      return;
-    }
-    if (editor.textContent !== text) {
-      editor.textContent = text;
-    }
-  }, [text]);
-
-  const handleInput = () => {
-    const editor = editorRef.current;
-    if (!editor) {
-      return;
-    }
-    const value = editor.innerText.replace(/\r\n/g, '\n');
-    setText(value);
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     setShowHeadingHint(false); // Reset hint on new paste
     const html = e.clipboardData.getData('text/html');
     if (html) {
@@ -138,41 +117,8 @@ function AppContent() {
       const markdown = htmlToMarkdown(html);
       setText(markdown);
       checkForHeadings(markdown);
-      const editor = editorRef.current;
-      if (editor && editor.textContent !== markdown) {
-        editor.textContent = markdown;
-      }
-      return;
     }
-
-    if (pasteFallbackRef.current) {
-      window.clearTimeout(pasteFallbackRef.current);
-    }
-
-    pasteFallbackRef.current = window.setTimeout(() => {
-      const editor = editorRef.current;
-      if (!editor) {
-        return;
-      }
-      const hasRichHtml = editor.querySelector(RICH_HTML_SELECTOR) !== null;
-      if (!hasRichHtml) {
-        // Plain text paste - check for headings
-        const plainText = editor.textContent || '';
-        checkForHeadings(plainText);
-        return;
-      }
-      const domHtml = editor.innerHTML.trim();
-      if (!domHtml) {
-        return;
-      }
-      const markdown = htmlToMarkdown(domHtml);
-      setText(markdown);
-      checkForHeadings(markdown);
-      if (editor.textContent !== markdown) {
-        editor.textContent = markdown;
-      }
-    }, 0);
-    // If no HTML on the clipboard, let the DOM render first and read from it.
+    // If no HTML, let default paste behavior handle plain text.
   };
 
   return (
@@ -205,9 +151,7 @@ function AppContent() {
         {/* Textarea */}
         <div className="input-section">
           <div className="input-header">
-            <label htmlFor="content" id="content-label" onClick={() => editorRef.current?.focus()}>
-              粘贴AI生成的文字
-            </label>
+            <label htmlFor="content">粘贴AI生成的文字</label>
             <div className="input-actions">
               <button
                 className="action-btn"
@@ -215,7 +159,7 @@ function AppContent() {
                 type="button"
                 disabled={!text.trim()}
               >
-                英文引号→中文
+                引号转换
               </button>
               <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
                 字体样式
@@ -225,19 +169,16 @@ function AppContent() {
               </button>
             </div>
           </div>
-          <div
+          <textarea
             id="content"
             className="content-input"
-            contentEditable
-            role="textbox"
-            aria-multiline="true"
-            aria-labelledby="content-label"
-            aria-placeholder={PLACEHOLDER_TEXT}
-            data-placeholder={PLACEHOLDER_TEXT}
-            onInput={handleInput}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              checkForHeadings(e.target.value);
+            }}
             onPaste={handlePaste}
-            ref={editorRef}
-            suppressContentEditableWarning
+            placeholder={PLACEHOLDER_TEXT}
           />
           {/* Heading hint for mobile users */}
           {showHeadingHint && (
