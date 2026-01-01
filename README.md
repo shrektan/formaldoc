@@ -8,7 +8,7 @@ Paste content from 豆包, 千问, DeepSeek, Kimi, ChatGPT, or any AI tool, and 
 
 ## Demo
 
-Try it now: [formaldoc.vercel.app](https://formaldoc.vercel.app)
+Try it now: [formaldoc.app](https://formaldoc.app)
 
 ![Screenshot](docs/screenshot.png)
 

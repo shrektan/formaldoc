@@ -8,7 +8,7 @@
 
 ## 在线体验
 
-立即使用：[formaldoc.vercel.app](https://formaldoc.vercel.app)
+立即使用：[formaldoc.app](https://formaldoc.app)
 
 ![截图](docs/screenshot.png)
 
