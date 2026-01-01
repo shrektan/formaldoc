@@ -1,13 +1,17 @@
 import { Document, Packer, Footer, Paragraph, TextRun, PageNumber, AlignmentType } from 'docx';
 import { parseMarkdown } from '../markdown/parser';
 import { convertMdastToDocx } from './converter';
-import { createDocumentStyles, GB_PAGE, FOOTER_FONT } from './styles';
+import { createDocumentStyles, createFooterFont, getFooterSize, GB_PAGE } from './styles';
+import type { StyleSettings } from '../../types/styles';
 
 /**
- * Creates the default footer with centered page number
+ * Creates footer with centered page number using custom styles
  * Format: "- 1 -", "- 2 -", etc.
  */
-function createDefaultFooter(): Footer {
+function createFooter(settings: StyleSettings): Footer {
+  const footerFont = createFooterFont(settings);
+  const footerSize = getFooterSize(settings);
+
   return new Footer({
     children: [
       new Paragraph({
@@ -15,18 +19,18 @@ function createDefaultFooter(): Footer {
         children: [
           new TextRun({
             text: '- ',
-            font: FOOTER_FONT,
-            size: 24, // 12pt
+            font: footerFont,
+            size: footerSize,
           }),
           new TextRun({
             children: [PageNumber.CURRENT],
-            font: FOOTER_FONT,
-            size: 24,
+            font: footerFont,
+            size: footerSize,
           }),
           new TextRun({
             text: ' -',
-            font: FOOTER_FONT,
-            size: 24,
+            font: footerFont,
+            size: footerSize,
           }),
         ],
       }),
@@ -37,21 +41,22 @@ function createDefaultFooter(): Footer {
 /**
  * Generates a Word document (.docx) from markdown text
  * @param markdown - The markdown text to convert
+ * @param settings - Style settings for the document
  * @returns A Blob containing the generated .docx file
  */
-export async function generateDocx(markdown: string): Promise<Blob> {
+export async function generateDocx(markdown: string, settings: StyleSettings): Promise<Blob> {
   // Step 1: Parse markdown to AST
   const mdast = parseMarkdown(markdown);
 
   // Step 2: Convert AST to docx paragraphs
   const paragraphs = convertMdastToDocx(mdast);
 
-  // Step 3: Create footer
-  const footer = createDefaultFooter();
+  // Step 3: Create footer with custom styles
+  const footer = createFooter(settings);
 
   // Step 4: Create document with styles and page settings
   const doc = new Document({
-    styles: createDocumentStyles(),
+    styles: createDocumentStyles(settings),
     sections: [
       {
         properties: {
