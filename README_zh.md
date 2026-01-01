@@ -1,6 +1,6 @@
 # FormalDoc - 公文排版
 
-[![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)](https://github.com/shrektan/formaldoc/releases)
+[![Version](https://img.shields.io/badge/version-1.1.2-blue.svg)](https://github.com/shrektan/formaldoc/releases)
 
 [English](./README.md)
 
