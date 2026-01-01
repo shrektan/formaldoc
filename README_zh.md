@@ -1,5 +1,7 @@
 # FormalDoc - 公文排版
 
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/shrektan/formaldoc/releases)
+
 [English](./README.md)
 
 **FormalDoc** 把AI生成的文字一键转换成公文格式的Word文档。

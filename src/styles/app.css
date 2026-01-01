@@ -221,6 +221,12 @@ body {
   color: var(--text-secondary);
 }
 
+.footer-simple .version {
+  font-size: 12px;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
 /* ===== Drawer Overlay ===== */
 .drawer-overlay {
   position: fixed;

@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "git add, git commit, git logs, git diff"
+      "WebFetch"
     ]
   }
 }

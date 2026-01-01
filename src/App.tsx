@@ -243,6 +243,7 @@ function AppContent() {
       {/* Footer */}
       <footer className="footer-simple">
         <p>无需登录 · 无需安装 · 可离线使用 · 数据不上传</p>
+        <p className="version">v{__APP_VERSION__}</p>
       </footer>
 
       {/* Settings drawer */}

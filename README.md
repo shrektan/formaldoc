@@ -1,5 +1,7 @@
 # FormalDoc
 
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/shrektan/formaldoc/releases)
+
 [中文文档](./README_zh.md)
 
 **FormalDoc** converts AI-generated text into properly formatted Chinese government document (公文) Word files.
