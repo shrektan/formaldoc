@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { StyleProvider } from './contexts/StyleContext';
@@ -62,9 +62,23 @@ XX主管部门：
 XX单位（盖章）
 202X年X月X日`;
 
+const PLACEHOLDER_TEXT = `在这里粘贴从豆包、千问、DeepSeek、Kimi、ChatGPT等AI工具复制的文字...
+
+支持 Markdown 格式：
+# 标题
+## 一级标题
+### 二级标题
+- 列表
+**粗体**`;
+
+const RICH_HTML_SELECTOR =
+  'b,strong,em,i,u,s,del,ins,h1,h2,h3,h4,h5,h6,ul,ol,li,table,thead,tbody,tr,td,th,blockquote,pre,code,a,img,span[style],font';
+
 function AppContent() {
   const [text, setText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const pasteFallbackRef = useRef<number | null>(null);
   const { styles } = useStyles();
   const { generate, isGenerating, error } = useDocxGenerator();
 
@@ -88,14 +102,62 @@ function AppContent() {
     alert(count > 0 ? `已转换 ${count} 处引号` : '未找到需要转换的英文引号');
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) {
+      return;
+    }
+    if (editor.textContent !== text) {
+      editor.textContent = text;
+    }
+  }, [text]);
+
+  const handleInput = () => {
+    const editor = editorRef.current;
+    if (!editor) {
+      return;
+    }
+    const value = editor.innerText.replace(/\r\n/g, '\n');
+    setText(value);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     const html = e.clipboardData.getData('text/html');
     if (html) {
       e.preventDefault();
       const markdown = htmlToMarkdown(html);
       setText(markdown);
+      const editor = editorRef.current;
+      if (editor && editor.textContent !== markdown) {
+        editor.textContent = markdown;
+      }
+      return;
     }
-    // If no HTML, let default paste behavior handle plain text
+
+    if (pasteFallbackRef.current) {
+      window.clearTimeout(pasteFallbackRef.current);
+    }
+
+    pasteFallbackRef.current = window.setTimeout(() => {
+      const editor = editorRef.current;
+      if (!editor) {
+        return;
+      }
+      const hasRichHtml = editor.querySelector(RICH_HTML_SELECTOR) !== null;
+      if (!hasRichHtml) {
+        return;
+      }
+      const domHtml = editor.innerHTML.trim();
+      if (!domHtml) {
+        return;
+      }
+      const markdown = htmlToMarkdown(domHtml);
+      setText(markdown);
+      if (editor.textContent !== markdown) {
+        editor.textContent = markdown;
+      }
+    }, 0);
+    // If no HTML on the clipboard, let the DOM render first and read from it.
   };
 
   return (
@@ -128,7 +190,9 @@ function AppContent() {
         {/* Textarea */}
         <div className="input-section">
           <div className="input-header">
-            <label htmlFor="content">粘贴AI生成的文字</label>
+            <label htmlFor="content" id="content-label" onClick={() => editorRef.current?.focus()}>
+              粘贴AI生成的文字
+            </label>
             <div className="input-actions">
               <button
                 className="action-btn"
@@ -146,20 +210,19 @@ function AppContent() {
               </button>
             </div>
           </div>
-          <textarea
+          <div
             id="content"
             className="content-input"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+            contentEditable
+            role="textbox"
+            aria-multiline="true"
+            aria-labelledby="content-label"
+            aria-placeholder={PLACEHOLDER_TEXT}
+            data-placeholder={PLACEHOLDER_TEXT}
+            onInput={handleInput}
             onPaste={handlePaste}
-            placeholder="在这里粘贴从豆包、千问、DeepSeek、Kimi、ChatGPT等AI工具复制的文字...
-
-支持 Markdown 格式：
-# 标题
-## 一级标题
-### 二级标题
-- 列表
-**粗体**"
+            ref={editorRef}
+            suppressContentEditableWarning
           />
         </div>
 
