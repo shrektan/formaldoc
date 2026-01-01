@@ -8,6 +8,7 @@ import {
   WidthType,
   BorderStyle,
   AlignmentType,
+  VerticalAlign,
 } from 'docx';
 import type {
   Root,
@@ -293,6 +294,7 @@ function convertTableCell(
     : convertPhrasingContent(cell.children as PhrasingContent[]);
 
   return new TableCell({
+    verticalAlign: VerticalAlign.CENTER,
     children: [
       new Paragraph({
         style: isHeader ? 'TableCaption' : 'TableText',

@@ -53,7 +53,7 @@ export const STYLE_META: Record<StyleKey, StyleMeta> = {
   bodyText: { label: '正文', allowIndent: true },
   listItem: { label: '列表项', allowIndent: true },
   tableHeader: { label: '表头', allowBold: true, allowCenter: true },
-  tableCell: { label: '表格内容' },
+  tableCell: { label: '表格内容', allowCenter: true },
   pageFooter: { label: '页脚' },
 };
 

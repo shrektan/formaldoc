@@ -287,10 +287,10 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
           size: ptToHalfPoints(settings.tableCell.size),
         },
         paragraph: {
-          alignment: AlignmentType.CENTER,
+          alignment: getAlignment(settings.tableCell),
           spacing: {
-            line: 240,
-            lineRule: LineRuleType.AUTO,
+            line: LINE_SPACING_EXACT,
+            lineRule: LineRuleType.EXACT,
           },
           indent: {
             firstLine: 0,

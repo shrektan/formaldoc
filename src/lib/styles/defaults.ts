@@ -59,18 +59,19 @@ export const DEFAULT_STYLES: StyleSettings = {
     indent: true,
   },
 
-  // 表头: 仿宋 14pt, bold, centered
+  // 表头: 仿宋 16pt (三号), bold, centered
   tableHeader: {
     font: '仿宋',
-    size: 14,
+    size: 16,
     bold: true,
     center: true,
   },
 
-  // 表格内容: 仿宋 12pt
+  // 表格内容: 仿宋 16pt (三号), centered
   tableCell: {
     font: '仿宋',
-    size: 12,
+    size: 16,
+    center: true,
   },
 
   // 页脚: 仿宋 12pt
