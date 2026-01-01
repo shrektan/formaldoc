@@ -10,6 +10,8 @@
 
 立即使用：[formaldoc.vercel.app](https://formaldoc.vercel.app)
 
+![截图](docs/screenshot.png)
+
 ## 为什么选择 FormalDoc？
 
 ### 简单易用

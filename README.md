@@ -10,6 +10,8 @@ Paste content from 豆包, 千问, DeepSeek, Kimi, ChatGPT, or any AI tool, and 
 
 Try it now: [formaldoc.vercel.app](https://formaldoc.vercel.app)
 
+![Screenshot](docs/screenshot.png)
+
 ## Why FormalDoc?
 
 ### Simple
