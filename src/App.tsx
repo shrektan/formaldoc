@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { DocxPreview } from './components/Preview/DocxPreview';
 import { StyleDrawer } from './components/StyleSettings';
-import { StyleProvider, useStyles } from './contexts/StyleContext';
+import { StyleProvider } from './contexts/StyleContext';
+import { useStyles } from './contexts/useStyles';
 import { useDocxGenerator } from './hooks/useDocxGenerator';
+import { htmlToMarkdown } from './lib/html-to-markdown';
 import './styles/app.css';
 
 const EXAMPLE_TEXT = `# 关于开展XX工作的通知
@@ -63,12 +66,31 @@ function AppContent() {
     setText(EXAMPLE_TEXT);
   };
 
+  const handleConvertQuotes = () => {
+    // Convert English double quotes to Chinese double quotes
+    // "content" → "content" (U+201C and U+201D)
+    const converted = text.replace(/"([^"]*)"/g, '\u201C$1\u201D');
+    setText(converted);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const html = e.clipboardData.getData('text/html');
+    if (html) {
+      e.preventDefault();
+      const markdown = htmlToMarkdown(html);
+      setText(markdown);
+    }
+    // If no HTML, let default paste behavior handle plain text
+  };
+
   return (
     <div className="app-simple">
       {/* Header */}
       <header className="header-simple">
-        <h1>AI文字 → 公文Word</h1>
-        <p className="tagline">把豆包、千问、DeepSeek、Kimi、ChatGPT生成的文字，一键转成公文格式Word文档</p>
+        <h1>AI文字 → 公文文档</h1>
+        <p className="tagline">
+          把豆包、千问、DeepSeek、Kimi、ChatGPT生成的文字，一键转成公文格式Word文档
+        </p>
         <p className="tip">提示：让AI"用Markdown格式回复"，可正确识别标题层级</p>
       </header>
 
@@ -78,15 +100,26 @@ function AppContent() {
         <div className="input-section">
           <div className="input-header">
             <label htmlFor="content">粘贴AI生成的文字</label>
-            <button className="example-btn" onClick={handleLoadExample} type="button">
-              查看示例
-            </button>
+            <div className="input-actions">
+              <button
+                className="action-btn"
+                onClick={handleConvertQuotes}
+                type="button"
+                disabled={!text.trim()}
+              >
+                英文引号→中文
+              </button>
+              <button className="action-btn" onClick={handleLoadExample} type="button">
+                查看示例
+              </button>
+            </div>
           </div>
           <textarea
             id="content"
             className="content-input"
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onPaste={handlePaste}
             placeholder="在这里粘贴从豆包、千问、DeepSeek、Kimi、ChatGPT等AI工具复制的文字...
 
 支持 Markdown 格式：
@@ -106,9 +139,16 @@ function AppContent() {
           className="generate-btn"
           onClick={handleGenerate}
           disabled={!text.trim() || isGenerating}
+          type="button"
         >
           {isGenerating ? '生成中...' : '生成公文文档'}
         </button>
+
+        {/* Preview */}
+        <section className="preview-section">
+          <h2 className="preview-title">公文预览</h2>
+          <DocxPreview markdown={text} styles={styles} />
+        </section>
 
         {/* Settings link */}
         <button className="settings-link" onClick={() => setIsSettingsOpen(true)} type="button">
@@ -118,7 +158,7 @@ function AppContent() {
 
       {/* Footer */}
       <footer className="footer-simple">
-        <p>无需登录 · 无需安装 · 数据不上传</p>
+        <p>无需登录 · 无需安装 · 可离线使用 · 数据不上传</p>
       </footer>
 
       {/* Settings drawer */}

@@ -1,4 +1,4 @@
-import { useStyles } from '../../contexts/StyleContext';
+import { useStyles } from '../../contexts/useStyles';
 import { STYLE_META, type StyleKey } from '../../types/styles';
 import { StyleSection } from './StyleSection';
 

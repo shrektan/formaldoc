@@ -95,6 +95,35 @@ body {
   color: var(--text);
 }
 
+.input-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  font-size: 13px;
+  color: var(--primary);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 4px 10px;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.action-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: rgba(26, 115, 232, 0.05);
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .example-btn {
   font-size: 13px;
   color: var(--primary);
@@ -153,7 +182,10 @@ body {
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
 }
 
 .generate-btn:hover:not(:disabled) {
@@ -163,6 +195,65 @@ body {
 .generate-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Preview */
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preview-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.docx-preview {
+  background: #eef1f5;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.docx-preview-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 25.4mm;
+  background: #ffffff;
+  color: #000000;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.docx-preview-empty {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 24px 0;
+}
+
+.docx-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.docx-table td {
+  border: 1px solid #000000;
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+
+@media (max-width: 720px) {
+  .docx-preview-page {
+    width: 100%;
+    min-height: auto;
+    padding: 16px;
+  }
 }
 
 /* Settings link */

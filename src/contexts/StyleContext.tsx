@@ -1,15 +1,8 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import type { StyleSettings, StyleKey, TextStyle } from '../types/styles';
+import { useState, useCallback, useEffect, type ReactNode } from 'react';
+import type { StyleKey, StyleSettings, TextStyle } from '../types/styles';
 import { DEFAULT_STYLES } from '../lib/styles/defaults';
 import { loadStyles, saveStyles, resetStyles as resetStoredStyles } from '../lib/styles/storage';
-
-interface StyleContextValue {
-  styles: StyleSettings;
-  updateStyle: (key: StyleKey, style: Partial<TextStyle>) => void;
-  resetStyles: () => void;
-}
-
-const StyleContext = createContext<StyleContextValue | null>(null);
+import { StyleContext } from './style-context';
 
 interface StyleProviderProps {
   children: ReactNode;
@@ -40,12 +33,4 @@ export function StyleProvider({ children }: StyleProviderProps) {
       {children}
     </StyleContext.Provider>
   );
-}
-
-export function useStyles(): StyleContextValue {
-  const context = useContext(StyleContext);
-  if (!context) {
-    throw new Error('useStyles must be used within a StyleProvider');
-  }
-  return context;
 }
