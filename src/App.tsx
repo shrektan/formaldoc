@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { DocxPreview } from './components/Preview/DocxPreview';
 import { StyleDrawer } from './components/StyleSettings';
 import { StyleProvider } from './contexts/StyleContext';
 import { useStyles } from './contexts/useStyles';
@@ -87,7 +86,7 @@ function AppContent() {
     <div className="app-simple">
       {/* Header */}
       <header className="header-simple">
-        <h1>AI文字 → 公文文档</h1>
+        <h1>AI文字 → 公文Word</h1>
         <p className="tagline">
           把豆包、千问、DeepSeek、Kimi、ChatGPT生成的文字，一键转成公文格式Word文档
         </p>
@@ -141,14 +140,8 @@ function AppContent() {
           disabled={!text.trim() || isGenerating}
           type="button"
         >
-          {isGenerating ? '生成中...' : '生成公文文档'}
+          {isGenerating ? '生成中...' : '下载Word文档'}
         </button>
-
-        {/* Preview */}
-        <section className="preview-section">
-          <h2 className="preview-title">公文预览</h2>
-          <DocxPreview markdown={text} styles={styles} />
-        </section>
 
         {/* Settings link */}
         <button className="settings-link" onClick={() => setIsSettingsOpen(true)} type="button">
@@ -159,6 +152,14 @@ function AppContent() {
       {/* Footer */}
       <footer className="footer-simple">
         <p>无需登录 · 无需安装 · 可离线使用 · 数据不上传</p>
+        <a
+          href="https://github.com/shrektan/formaldoc"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="github-link"
+        >
+          GitHub
+        </a>
       </footer>
 
       {/* Settings drawer */}

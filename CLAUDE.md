@@ -36,8 +36,9 @@ FormalDoc is a browser-based markdown-to-Word converter that follows Chinese gov
 
 - Converts markdown to properly styled .docx files
 - Uses Word styles (样式) for easy editing in Word
-- In-browser preview before download
-- All processing happens client-side (no server)
+- Smart paste: auto-converts HTML to markdown when pasting from AI chatbots (using Turndown)
+- Quote conversion: converts English quotes to Chinese quotes ("..." → "...")
+- All processing happens client-side (no server, works offline)
 
 ## Style Mapping
 
