@@ -79,8 +79,17 @@ function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const pasteFallbackRef = useRef<number | null>(null);
+  const [showHeadingHint, setShowHeadingHint] = useState(false);
   const { styles } = useStyles();
   const { generate, isGenerating, error } = useDocxGenerator();
+
+  // Check if text has markdown headings
+  const checkForHeadings = (content: string) => {
+    const hasHeadings = /^#{1,2}\s+.+$/m.test(content);
+    if (!hasHeadings && content.trim().length > 50) {
+      setShowHeadingHint(true);
+    }
+  };
 
   const handleGenerate = () => {
     generate(text, styles);
@@ -122,11 +131,13 @@ function AppContent() {
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    setShowHeadingHint(false); // Reset hint on new paste
     const html = e.clipboardData.getData('text/html');
     if (html) {
       e.preventDefault();
       const markdown = htmlToMarkdown(html);
       setText(markdown);
+      checkForHeadings(markdown);
       const editor = editorRef.current;
       if (editor && editor.textContent !== markdown) {
         editor.textContent = markdown;
@@ -145,6 +156,9 @@ function AppContent() {
       }
       const hasRichHtml = editor.querySelector(RICH_HTML_SELECTOR) !== null;
       if (!hasRichHtml) {
+        // Plain text paste - check for headings
+        const plainText = editor.textContent || '';
+        checkForHeadings(plainText);
         return;
       }
       const domHtml = editor.innerHTML.trim();
@@ -153,6 +167,7 @@ function AppContent() {
       }
       const markdown = htmlToMarkdown(domHtml);
       setText(markdown);
+      checkForHeadings(markdown);
       if (editor.textContent !== markdown) {
         editor.textContent = markdown;
       }
@@ -200,13 +215,13 @@ function AppContent() {
                 type="button"
                 disabled={!text.trim()}
               >
-                英文引号→中文
+                引号转换
               </button>
               <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
-                调整字体样式
+                字体样式
               </button>
               <button className="action-btn" onClick={handleLoadExample} type="button">
-                查看示例
+                示例
               </button>
             </div>
           </div>
@@ -224,6 +239,20 @@ function AppContent() {
             ref={editorRef}
             suppressContentEditableWarning
           />
+          {/* Heading hint for mobile users */}
+          {showHeadingHint && (
+            <div className="heading-hint">
+              <span>未检测到标题格式。可让AI"把内容放在markdown代码块中"再复制。</span>
+              <button
+                type="button"
+                className="hint-close"
+                onClick={() => setShowHeadingHint(false)}
+                aria-label="关闭提示"
+              >
+                ×
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Error message */}
