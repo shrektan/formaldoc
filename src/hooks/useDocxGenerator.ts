@@ -9,6 +9,20 @@ interface UseDocxGeneratorResult {
   error: string | null;
 }
 
+function extractTitle(markdown: string): string | null {
+  // Match first # heading (title)
+  const match = markdown.match(/^#\s+(.+)$/m);
+  if (match) {
+    // Clean up the title: remove markdown formatting and trim
+    return match[1]
+      .replace(/\*\*(.+?)\*\*/g, '$1') // Remove bold
+      .replace(/\*(.+?)\*/g, '$1') // Remove italic
+      .replace(/`(.+?)`/g, '$1') // Remove inline code
+      .trim();
+  }
+  return null;
+}
+
 export function useDocxGenerator(): UseDocxGeneratorResult {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +39,11 @@ export function useDocxGenerator(): UseDocxGeneratorResult {
     try {
       const blob = await generateDocx(markdown, styles);
 
-      // Generate filename with timestamp
-      const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `document-${timestamp}.docx`;
+      // Generate filename from title or fallback to timestamp
+      const title = extractTitle(markdown);
+      const filename = title
+        ? `${title}.docx`
+        : `document-${new Date().toISOString().slice(0, 10)}.docx`;
 
       saveAs(blob, filename);
     } catch (err) {
