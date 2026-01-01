@@ -37,6 +37,13 @@ const FONTS = {
   },
 };
 
+// Footer font: 仿宋 12pt (exported for use in generator)
+export const FOOTER_FONT = {
+  ascii: '仿宋',
+  eastAsia: '仿宋',
+  hAnsi: '仿宋',
+};
+
 // Font sizes in half-points (Word uses half-points)
 const FONT_SIZES = {
   TITLE: 44, // 22pt for title

@@ -1,7 +1,38 @@
-import { Document, Packer } from 'docx';
+import { Document, Packer, Footer, Paragraph, TextRun, PageNumber, AlignmentType } from 'docx';
 import { parseMarkdown } from '../markdown/parser';
 import { convertMdastToDocx } from './converter';
-import { createDocumentStyles, GB_PAGE } from './styles';
+import { createDocumentStyles, GB_PAGE, FOOTER_FONT } from './styles';
+
+/**
+ * Creates the default footer with centered page number
+ * Format: "- 1 -", "- 2 -", etc.
+ */
+function createDefaultFooter(): Footer {
+  return new Footer({
+    children: [
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({
+            text: '- ',
+            font: FOOTER_FONT,
+            size: 24, // 12pt
+          }),
+          new TextRun({
+            children: [PageNumber.CURRENT],
+            font: FOOTER_FONT,
+            size: 24,
+          }),
+          new TextRun({
+            text: ' -',
+            font: FOOTER_FONT,
+            size: 24,
+          }),
+        ],
+      }),
+    ],
+  });
+}
 
 /**
  * Generates a Word document (.docx) from markdown text
@@ -15,7 +46,10 @@ export async function generateDocx(markdown: string): Promise<Blob> {
   // Step 2: Convert AST to docx paragraphs
   const paragraphs = convertMdastToDocx(mdast);
 
-  // Step 3: Create document with styles and page settings
+  // Step 3: Create footer
+  const footer = createDefaultFooter();
+
+  // Step 4: Create document with styles and page settings
   const doc = new Document({
     styles: createDocumentStyles(),
     sections: [
@@ -34,12 +68,15 @@ export async function generateDocx(markdown: string): Promise<Blob> {
             },
           },
         },
+        footers: {
+          default: footer,
+        },
         children: paragraphs,
       },
     ],
   });
 
-  // Step 4: Generate and return blob
+  // Step 5: Generate and return blob
   const blob = await Packer.toBlob(doc);
   return blob;
 }
