@@ -105,7 +105,7 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         },
       },
 
-      // Heading 1 - always keepNext: true
+      // Heading 1 - 大纲级别: 一级
       {
         id: 'Heading1',
         name: 'Heading 1',
@@ -118,6 +118,7 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
           bold: settings.heading1.bold,
         },
         paragraph: {
+          outlineLevel: 0, // 一级
           spacing: {
             line: LINE_SPACING_EXACT,
             lineRule: LineRuleType.EXACT,
@@ -130,7 +131,7 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         },
       },
 
-      // Heading 2 - always keepNext: true
+      // Heading 2 - 大纲级别: 二级
       {
         id: 'Heading2',
         name: 'Heading 2',
@@ -143,6 +144,7 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
           bold: settings.heading2.bold,
         },
         paragraph: {
+          outlineLevel: 1, // 二级
           spacing: {
             line: LINE_SPACING_EXACT,
             lineRule: LineRuleType.EXACT,
@@ -155,7 +157,7 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         },
       },
 
-      // Heading 3 - always keepNext: true
+      // Heading 3 - 大纲级别: 三级
       {
         id: 'Heading3',
         name: 'Heading 3',
@@ -168,6 +170,7 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
           bold: settings.heading3.bold,
         },
         paragraph: {
+          outlineLevel: 2, // 三级
           spacing: {
             line: LINE_SPACING_EXACT,
             lineRule: LineRuleType.EXACT,
@@ -180,7 +183,7 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         },
       },
 
-      // Heading 4 - always keepNext: true
+      // Heading 4 - 大纲级别: 四级
       {
         id: 'Heading4',
         name: 'Heading 4',
@@ -193,6 +196,7 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
           bold: settings.heading4.bold,
         },
         paragraph: {
+          outlineLevel: 3, // 四级
           spacing: {
             line: LINE_SPACING_EXACT,
             lineRule: LineRuleType.EXACT,
