@@ -65,6 +65,8 @@ export async function generateDocx(markdown: string): Promise<Blob> {
               bottom: GB_PAGE.MARGIN_BOTTOM,
               left: GB_PAGE.MARGIN_LEFT,
               right: GB_PAGE.MARGIN_RIGHT,
+              header: GB_PAGE.HEADER,
+              footer: GB_PAGE.FOOTER,
             },
           },
         },

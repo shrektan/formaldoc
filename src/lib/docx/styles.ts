@@ -1,4 +1,4 @@
-import { convertMillimetersToTwip, IStylesOptions, LineRuleType, AlignmentType } from 'docx';
+import { IStylesOptions, LineRuleType, AlignmentType } from 'docx';
 
 /**
  * GB/T 9704-2012 Chinese Government Document Format Specifications
@@ -58,14 +58,19 @@ const LINE_SPACING_EXACT = 560;
 // Two character indent: 2 chars × 16pt = 32pt = 640 twips
 const TWO_CHAR_INDENT = 640;
 
-// A4 page dimensions and margins per GB/T 9704-2012
+// A4 page dimensions and margins (all margins 2.54cm / 1 inch)
 export const GB_PAGE = {
-  WIDTH: convertMillimetersToTwip(210),
-  HEIGHT: convertMillimetersToTwip(297),
-  MARGIN_TOP: convertMillimetersToTwip(37),
-  MARGIN_LEFT: convertMillimetersToTwip(28),
-  MARGIN_BOTTOM: convertMillimetersToTwip(35),
-  MARGIN_RIGHT: convertMillimetersToTwip(26),
+  // A4 size in twips
+  WIDTH: 11906,
+  HEIGHT: 16838,
+  // All margins: 1440 twips = 2.54cm = 1 inch
+  MARGIN_TOP: 1440,
+  MARGIN_BOTTOM: 1440,
+  MARGIN_LEFT: 1440,
+  MARGIN_RIGHT: 1440,
+  // Header/footer margins
+  HEADER: 851, // 1.5cm
+  FOOTER: 992, // 1.75cm
 };
 
 /**
