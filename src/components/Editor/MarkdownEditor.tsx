@@ -51,7 +51,13 @@ const DEFAULT_CONTENT = `# 关于XX工作的通知
 - ##### 四级标题（（1）（2））
 - 正文段落
 - **粗体** 和 *斜体*
-- 列表`;
+- 列表
+- 表格
+
+| 项目 | 数量 | 备注 |
+|:-----|:----:|-----:|
+| 示例A | 10 | 左对齐 |
+| 示例B | 20 | 右对齐 |`;
 
 export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
   const handleChange = (val: string | undefined) => {

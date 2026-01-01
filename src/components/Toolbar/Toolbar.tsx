@@ -9,8 +9,8 @@ export function Toolbar({ onGenerate, onOpenSettings, isGenerating, disabled }: 
   return (
     <div className="toolbar">
       <div className="toolbar-left">
-        <h1 className="app-title">FormalDoc</h1>
-        <span className="app-subtitle">Markdown to Word</span>
+        <h1 className="app-title">公文排版</h1>
+        <span className="app-subtitle">Markdown 转 Word</span>
       </div>
       <div className="toolbar-right">
         <button className="settings-button" onClick={onOpenSettings} aria-label="样式设置">
