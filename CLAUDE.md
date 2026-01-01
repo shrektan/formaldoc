@@ -36,8 +36,8 @@ FormalDoc is a browser-based markdown-to-Word converter that follows Chinese gov
 
 - Converts markdown to properly styled .docx files
 - Uses Word styles (样式) for easy editing in Word
-- Smart paste: auto-converts HTML to markdown when pasting from AI chatbots (using Turndown)
-- Quote conversion: converts English quotes to Chinese quotes ("..." → "...")
+- Smart paste: auto-converts HTML to markdown when pasting from AI chatbots (using Turndown + GFM plugin for tables)
+- Quote conversion: converts English quotes to Chinese quotes ("..." → "...") with count display
 - All processing happens client-side (no server, works offline)
 
 ## Style Mapping
@@ -50,3 +50,6 @@ FormalDoc is a browser-based markdown-to-Word converter that follows Chinese gov
 | `#### H4` | Heading 3 | 仿宋 16pt bold |
 | `##### H5` | Heading 4 | 仿宋 16pt bold |
 | Paragraph | Body Text | 仿宋 16pt |
+| List | ListParagraph | 仿宋 16pt (nested lists supported with 2-char indent per level) |
+| Table | TableText/TableCaption | 仿宋 16pt, centered, 单倍行距 |
+| Page Footer | - | 仿宋 14pt (四号) |
