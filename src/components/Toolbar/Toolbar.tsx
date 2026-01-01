@@ -1,18 +1,10 @@
 interface ToolbarProps {
-  onPreview: () => void;
-  onDownload: () => void;
+  onGenerate: () => void;
   isGenerating: boolean;
-  hasPreview: boolean;
   disabled?: boolean;
 }
 
-export function Toolbar({
-  onPreview,
-  onDownload,
-  isGenerating,
-  hasPreview,
-  disabled,
-}: ToolbarProps) {
+export function Toolbar({ onGenerate, isGenerating, disabled }: ToolbarProps) {
   return (
     <div className="toolbar">
       <div className="toolbar-left">
@@ -20,11 +12,12 @@ export function Toolbar({
         <span className="app-subtitle">Markdown to Word</span>
       </div>
       <div className="toolbar-right">
-        <button className="preview-button" onClick={onPreview} disabled={disabled || isGenerating}>
-          {isGenerating ? 'Generating...' : 'Preview'}
-        </button>
-        <button className="download-button" onClick={onDownload} disabled={disabled || !hasPreview}>
-          Download DOCX
+        <button
+          className="generate-button"
+          onClick={onGenerate}
+          disabled={disabled || isGenerating}
+        >
+          {isGenerating ? 'Generating...' : 'Generate DOCX'}
         </button>
       </div>
     </div>
