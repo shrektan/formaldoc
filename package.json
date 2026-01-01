@@ -19,6 +19,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@uiw/react-md-editor": "^4.0.11",
+    "@vercel/analytics": "^1.6.1",
     "docx": "^9.5.1",
     "file-saver": "^2.0.5",
     "react": "^19.2.3",

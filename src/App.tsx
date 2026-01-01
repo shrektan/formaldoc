@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { StyleProvider, useStyles } from './contexts/StyleContext';
 import { useDocxGenerator } from './hooks/useDocxGenerator';
@@ -105,6 +106,7 @@ function App() {
   return (
     <StyleProvider>
       <AppContent />
+      <Analytics />
     </StyleProvider>
   );
 }
