@@ -21,6 +21,7 @@ import type {
   Table as MdTable,
   TableRow as MdTableRow,
   TableCell as MdTableCell,
+  Html,
 } from 'mdast';
 
 // Type for docx elements that can be in a section
@@ -69,6 +70,8 @@ function convertNode(node: Content): DocxElement[] {
       return convertList(node);
     case 'table':
       return [convertTable(node as MdTable)];
+    case 'html':
+      return convertHtmlBlock(node as Html);
     default:
       // For unsupported nodes, return empty (or could add fallback)
       return [];
@@ -97,6 +100,16 @@ function convertParagraph(node: MdParagraph): Paragraph {
   return new Paragraph({
     style: 'BodyText',
     children: runs,
+  });
+}
+
+function convertHtmlBlock(node: Html): Paragraph[] {
+  const lines = node.value.replace(/\r\n/g, '\n').split('\n');
+  return lines.map((line) => {
+    return new Paragraph({
+      style: 'BodyText',
+      children: [new TextRun({ text: line })],
+    });
   });
 }
 
