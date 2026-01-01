@@ -215,7 +215,7 @@ function AppContent() {
                 type="button"
                 disabled={!text.trim()}
               >
-                引号转换
+                英文引号→中文
               </button>
               <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
                 字体样式
