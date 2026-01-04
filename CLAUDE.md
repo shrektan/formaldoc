@@ -7,9 +7,9 @@ This file contains instructions for Claude Code when working on this project.
 After making any code changes, **always** run the following commands in order:
 
 ```bash
-npm run format      # Format all source files with Prettier
-npm run lint:fix    # Fix linting errors with ESLint
-npm run build       # Verify the build passes
+bun run format      # Format all source files with Prettier
+bun run lint:fix    # Fix linting errors with ESLint
+bun run build       # Verify the build passes
 ```
 
 Fix any remaining errors before committing. Do not commit code that fails linting or build.
@@ -17,18 +17,21 @@ Fix any remaining errors before committing. Do not commit code that fails lintin
 ## Project Stack
 
 - **Framework**: React 19 + TypeScript + Vite
+- **Package Manager**: Bun
 - **Formatter**: Prettier (config in `.prettierrc`)
 - **Linter**: ESLint (config in `eslint.config.js`)
 
-## Key npm Scripts
+## Key Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run format` | Format code with Prettier |
-| `npm run lint` | Check for linting errors |
-| `npm run lint:fix` | Auto-fix linting errors |
+| `bun run dev` | Start development server |
+| `bun run build` | Build for production |
+| `bun run format` | Format code with Prettier |
+| `bun run lint` | Check for linting errors |
+| `bun run lint:fix` | Auto-fix linting errors |
+| `bun run test` | Run tests |
+| `bun run test:watch` | Run tests in watch mode |
 
 ## Project Purpose
 

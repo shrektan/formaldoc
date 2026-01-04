@@ -57,6 +57,20 @@ XX主管部门：
 2. 加强库存精细化管理，合理控制库存数量，避免积压；
 3. 持续强化绿色办公理念，开展节约办公宣传教育，进一步压缩行政成本。
 
+## 四、附录：成本计算公式
+
+本报告采用以下公式计算采购成本降幅：
+
+$$
+\\text{降幅} = \\frac{C_{\\text{上年}} - C_{\\text{本年}}}{C_{\\text{上年}}} \\times 100\\%
+$$
+
+其中 $C_{\\text{上年}} = 24800$ 元，$C_{\\text{本年}} = 21580$ 元，代入公式得：
+
+$$
+\\text{降幅} = \\frac{24800 - 21580}{24800} \\times 100\\% = 12.9\\%
+$$
+
 特此报告。
 
 XX单位（盖章）
@@ -69,13 +83,17 @@ const PLACEHOLDER_TEXT = `在这里粘贴从豆包、千问、DeepSeek、Kimi、
 ## 一级标题
 ### 二级标题
 - 列表
-**粗体**`;
+**粗体**
 
+支持 LaTeX 公式（导出为图片）：
+$E = mc^2$（行内公式）
+$$\\frac{a}{b}$$（独立公式）`;
 
 function AppContent() {
   const [text, setText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
+  const [autoRecognizeLatex, setAutoRecognizeLatex] = useState(true);
   const { styles } = useStyles();
   const { generate, isGenerating, error } = useDocxGenerator();
 
@@ -88,7 +106,7 @@ function AppContent() {
   };
 
   const handleGenerate = () => {
-    generate(text, styles);
+    generate(text, styles, { autoRecognizeLatex });
   };
 
   const handleLoadExample = () => {
@@ -153,6 +171,14 @@ function AppContent() {
           <div className="input-header">
             <label htmlFor="content">粘贴AI生成的文字</label>
             <div className="input-actions">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={autoRecognizeLatex}
+                  onChange={(e) => setAutoRecognizeLatex(e.target.checked)}
+                />
+                自动识别公式
+              </label>
               <button
                 className="action-btn"
                 onClick={handleConvertQuotes}

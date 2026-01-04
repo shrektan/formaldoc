@@ -9,7 +9,9 @@ import {
   BorderStyle,
   AlignmentType,
   VerticalAlign,
+  ImageRun,
 } from 'docx';
+import { renderMathToPng } from '../math/renderer';
 import type {
   Root,
   Content,
@@ -46,11 +48,11 @@ const HEADING_STYLE_MAP: Record<number, string> = {
 /**
  * Converts an mdast AST to an array of docx elements (Paragraphs and Tables)
  */
-export function convertMdastToDocx(mdast: Root): DocxElement[] {
+export async function convertMdastToDocx(mdast: Root): Promise<DocxElement[]> {
   const elements: DocxElement[] = [];
 
   for (const node of mdast.children) {
-    const converted = convertNode(node);
+    const converted = await convertNode(node);
     elements.push(...converted);
   }
 
@@ -58,9 +60,18 @@ export function convertMdastToDocx(mdast: Root): DocxElement[] {
 }
 
 /**
+ * Math node type from remark-math
+ */
+interface MathNode {
+  type: 'math';
+  value: string;
+  meta?: string | null;
+}
+
+/**
  * Converts a single mdast node to docx element(s)
  */
-function convertNode(node: Content): DocxElement[] {
+async function convertNode(node: Content): Promise<DocxElement[]> {
   switch (node.type) {
     case 'heading':
       return [convertHeading(node)];
@@ -72,6 +83,8 @@ function convertNode(node: Content): DocxElement[] {
       return [convertTable(node as MdTable)];
     case 'html':
       return convertHtmlBlock(node as Html);
+    case 'math':
+      return [await convertMath(node as unknown as MathNode)];
     default:
       // For unsupported nodes, return empty (or could add fallback)
       return [];
@@ -111,6 +124,50 @@ function convertHtmlBlock(node: Html): Paragraph[] {
       children: [new TextRun({ text: line })],
     });
   });
+}
+
+/**
+ * Converts a math node to a centered image paragraph
+ * Uses KaTeX + html2canvas to render LaTeX to PNG (avoids canvas security issues)
+ * Falls back to plain text if rendering fails
+ */
+async function convertMath(node: MathNode): Promise<Paragraph> {
+  try {
+    const result = await renderMathToPng(node.value);
+
+    // Convert pixels to EMUs (914400 EMUs = 1 inch, 96 pixels = 1 inch at standard DPI)
+    const emuPerPixel = 914400 / 96;
+    const widthEmu = Math.round(result.width * emuPerPixel);
+    const heightEmu = Math.round(result.height * emuPerPixel);
+
+    return new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 200, after: 200 },
+      children: [
+        new ImageRun({
+          type: 'png',
+          data: result.data,
+          transformation: {
+            width: widthEmu,
+            height: heightEmu,
+          },
+        }),
+      ],
+    });
+  } catch (error) {
+    // Fallback: render formula as plain text if image rendering fails
+    console.warn('Formula rendering failed, using text fallback:', error);
+    return new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 200, after: 200 },
+      children: [
+        new TextRun({
+          text: `[公式: ${node.value}]`,
+          italics: true,
+        }),
+      ],
+    });
+  }
 }
 
 // Base indent for lists: 2 chars = 640 twips
@@ -189,6 +246,14 @@ function convertPhrasingContent(nodes: PhrasingContent[]): TextRun[] {
 }
 
 /**
+ * Inline math node type from remark-math
+ */
+interface InlineMathNode {
+  type: 'inlineMath';
+  value: string;
+}
+
+/**
  * Converts a single phrasing content node to TextRun(s)
  */
 function convertPhrasingNode(node: PhrasingContent): TextRun[] {
@@ -205,6 +270,11 @@ function convertPhrasingNode(node: PhrasingContent): TextRun[] {
     case 'inlineCode':
       // Render inline code as monospace (could customize font)
       return [new TextRun({ text: node.value })];
+
+    case 'inlineMath':
+      // Render inline math as italic text (LaTeX source)
+      // Full image rendering for inline math is complex; this is a readable fallback
+      return [new TextRun({ text: (node as unknown as InlineMathNode).value, italics: true })];
 
     default:
       // For other inline elements, try to extract text

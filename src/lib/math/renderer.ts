@@ -1,0 +1,89 @@
+import katex from 'katex';
+import html2canvas from 'html2canvas';
+
+export interface MathRenderResult {
+  data: Uint8Array;
+  width: number;
+  height: number;
+}
+
+/**
+ * Renders LaTeX math to PNG image data
+ * Uses html2canvas to safely render KaTeX HTML to canvas without security issues
+ * @param latex - The LaTeX string (without $$ delimiters)
+ * @returns PNG image data and dimensions
+ * @throws Error if rendering fails or formula is empty
+ */
+export async function renderMathToPng(latex: string): Promise<MathRenderResult> {
+  // Check for empty/whitespace formula
+  const trimmedLatex = latex.trim();
+  if (!trimmedLatex) {
+    throw new Error('Empty formula');
+  }
+
+  // 1. Render LaTeX to HTML using KaTeX
+  const html = katex.renderToString(trimmedLatex, {
+    displayMode: true,
+    throwOnError: false,
+    output: 'html',
+  });
+
+  // 2. Create temporary container for rendering
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  container.style.cssText = `
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    font-size: 16pt;
+    line-height: 1.2;
+    padding: 10px;
+    background: white;
+  `;
+  document.body.appendChild(container);
+
+  try {
+    // Wait for fonts to load
+    await document.fonts.ready;
+
+    // 3. Use html2canvas to render to canvas
+    // html2canvas handles the rendering internally without foreignObject
+    // This avoids the "The operation is insecure" error
+    const canvas = await html2canvas(container, {
+      backgroundColor: '#ffffff',
+      scale: 2, // Retina-quality rendering
+      logging: false,
+      useCORS: true,
+    });
+
+    // 4. Get dimensions
+    const scale = 2;
+    const width = canvas.width / scale;
+    const height = canvas.height / scale;
+
+    // Check for zero-dimension canvas (rendering failed)
+    if (width <= 0 || height <= 0) {
+      throw new Error('Formula rendering produced empty result');
+    }
+
+    // 5. Export as PNG
+    const dataUrl = canvas.toDataURL('image/png');
+    const base64 = dataUrl.split(',')[1];
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    return {
+      data: bytes,
+      width,
+      height,
+    };
+  } finally {
+    // Always clean up the container, even if an error occurred
+    if (container.parentNode) {
+      document.body.removeChild(container);
+    }
+  }
+}
