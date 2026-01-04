@@ -7,7 +7,16 @@ declare module 'mdast' {
     meta?: string | null;
   }
 
+  interface InlineMath {
+    type: 'inlineMath';
+    value: string;
+  }
+
   interface RootContentMap {
     math: Math;
+  }
+
+  interface PhrasingContentMap {
+    inlineMath: InlineMath;
   }
 }

@@ -143,13 +143,33 @@ function isLikelyLatexFormula(line: string): boolean {
 export function preprocessLatex(markdown: string): string {
   const lines = markdown.split('\n');
   const result: string[] = [];
+  let insideMathBlock = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    // Skip lines already wrapped in $$ or $
-    if (trimmed.startsWith('$$') || (trimmed.startsWith('$') && trimmed.endsWith('$'))) {
+    // Track $$ block boundaries (toggle on each $$ line)
+    if (trimmed === '$$') {
+      insideMathBlock = !insideMathBlock;
+      result.push(line);
+      continue;
+    }
+
+    // Skip processing if we're inside a $$ block
+    if (insideMathBlock) {
+      result.push(line);
+      continue;
+    }
+
+    // Skip lines already wrapped in $$ on same line (e.g., $$E=mc^2$$)
+    if (trimmed.startsWith('$$') && trimmed.endsWith('$$') && trimmed.length > 4) {
+      result.push(line);
+      continue;
+    }
+
+    // Skip inline math ($...$)
+    if (trimmed.startsWith('$') && trimmed.endsWith('$') && !trimmed.startsWith('$$')) {
       result.push(line);
       continue;
     }
