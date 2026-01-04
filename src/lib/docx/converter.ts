@@ -128,7 +128,7 @@ function convertHtmlBlock(node: Html): Paragraph[] {
 
 /**
  * Converts a math node to a centered image paragraph
- * Uses KaTeX to render LaTeX to PNG
+ * Uses KaTeX + html2canvas to render LaTeX to PNG (avoids canvas security issues)
  */
 async function convertMath(node: MathNode): Promise<Paragraph> {
   const result = await renderMathToPng(node.value);

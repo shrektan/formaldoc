@@ -24,6 +24,7 @@
     "@vercel/analytics": "^1.6.1",
     "docx": "^9.5.1",
     "file-saver": "^2.0.5",
+    "html2canvas": "^1.4.1",
     "katex": "^0.16.27",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
