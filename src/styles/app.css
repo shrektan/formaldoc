@@ -416,16 +416,30 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  color: var(--text);
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .checkbox-label input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+/* Checkbox in style sections (larger) */
+.style-row .checkbox-label {
+  font-size: 15px;
+  color: var(--text);
+  gap: 8px;
+}
+
+.style-row .checkbox-label input[type='checkbox'] {
   width: 20px;
   height: 20px;
-  cursor: pointer;
 }
 
 /* ===== Desktop adjustments ===== */

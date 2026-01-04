@@ -1,8 +1,11 @@
 import { Document, Packer, Footer, Paragraph, TextRun, PageNumber, AlignmentType } from 'docx';
-import { parseMarkdown } from '../markdown/parser';
+import { parseMarkdown, type ParseOptions } from '../markdown/parser';
 import { convertMdastToDocx } from './converter';
 import { createDocumentStyles, createFooterFont, getFooterSize, GB_PAGE } from './styles';
 import type { StyleSettings } from '../../types/styles';
+
+/** Options for document generation */
+export type GenerateOptions = ParseOptions;
 
 /**
  * Creates footer with centered page number using custom styles
@@ -42,11 +45,16 @@ function createFooter(settings: StyleSettings): Footer {
  * Generates a Word document (.docx) from markdown text
  * @param markdown - The markdown text to convert
  * @param settings - Style settings for the document
+ * @param options - Generation options (e.g., autoRecognizeLatex)
  * @returns A Blob containing the generated .docx file
  */
-export async function generateDocx(markdown: string, settings: StyleSettings): Promise<Blob> {
+export async function generateDocx(
+  markdown: string,
+  settings: StyleSettings,
+  options: GenerateOptions = {}
+): Promise<Blob> {
   // Step 1: Parse markdown to AST
-  const mdast = parseMarkdown(markdown);
+  const mdast = parseMarkdown(markdown, options);
 
   // Step 2: Convert AST to docx paragraphs (async for math rendering)
   const paragraphs = await convertMdastToDocx(mdast);
