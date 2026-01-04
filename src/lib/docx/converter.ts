@@ -9,9 +9,9 @@ import {
   BorderStyle,
   AlignmentType,
   VerticalAlign,
-  ImageRun,
+  type ParagraphChild,
 } from 'docx';
-import { renderMathToPng } from '../math/renderer';
+import { latexToDocxMath } from '../math/latex-to-docx';
 import type {
   Root,
   Content,
@@ -48,11 +48,11 @@ const HEADING_STYLE_MAP: Record<number, string> = {
 /**
  * Converts an mdast AST to an array of docx elements (Paragraphs and Tables)
  */
-export async function convertMdastToDocx(mdast: Root): Promise<DocxElement[]> {
+export function convertMdastToDocx(mdast: Root): DocxElement[] {
   const elements: DocxElement[] = [];
 
   for (const node of mdast.children) {
-    const converted = await convertNode(node);
+    const converted = convertNode(node);
     elements.push(...converted);
   }
 
@@ -71,7 +71,7 @@ interface MathNode {
 /**
  * Converts a single mdast node to docx element(s)
  */
-async function convertNode(node: Content): Promise<DocxElement[]> {
+function convertNode(node: Content): DocxElement[] {
   switch (node.type) {
     case 'heading':
       return [convertHeading(node)];
@@ -84,7 +84,7 @@ async function convertNode(node: Content): Promise<DocxElement[]> {
     case 'html':
       return convertHtmlBlock(node as Html);
     case 'math':
-      return [await convertMath(node as unknown as MathNode)];
+      return [convertMath(node as unknown as MathNode)];
     default:
       // For unsupported nodes, return empty (or could add fallback)
       return [];
@@ -127,35 +127,22 @@ function convertHtmlBlock(node: Html): Paragraph[] {
 }
 
 /**
- * Converts a math node to a centered image paragraph
- * Uses KaTeX + html2canvas to render LaTeX to PNG (avoids canvas security issues)
- * Falls back to plain text if rendering fails
+ * Converts a math node to a centered paragraph with native Word equation
+ * Uses LaTeX → MathML → OMML → docx Math pipeline
  */
-async function convertMath(node: MathNode): Promise<Paragraph> {
+function convertMath(node: MathNode): Paragraph {
   try {
-    const result = await renderMathToPng(node.value);
+    const mathObj = latexToDocxMath(node.value, true);
 
-    // Pass pixel dimensions directly - docx library handles EMU conversion internally
     return new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 200, after: 200 },
-      children: [
-        new ImageRun({
-          type: 'png',
-          data: result.data,
-          transformation: {
-            width: result.width,
-            height: result.height,
-          },
-        }),
-      ],
+      style: 'Formula',
+      children: [mathObj],
     });
   } catch (error) {
-    // Fallback: render formula as plain text if image rendering fails
-    console.warn('Formula rendering failed, using text fallback:', error);
+    // Fallback: render formula as plain text if conversion fails
+    console.warn('Formula conversion failed, using text fallback:', error);
     return new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 200, after: 200 },
+      style: 'Formula',
       children: [
         new TextRun({
           text: `[公式: ${node.value}]`,
@@ -229,10 +216,11 @@ function convertListItem(
 }
 
 /**
- * Converts an array of phrasing content (inline elements) to TextRun array
+ * Converts an array of phrasing content (inline elements) to ParagraphChild array
+ * Returns TextRun for text, Math for inline formulas
  */
-function convertPhrasingContent(nodes: PhrasingContent[]): TextRun[] {
-  const runs: TextRun[] = [];
+function convertPhrasingContent(nodes: PhrasingContent[]): ParagraphChild[] {
+  const runs: ParagraphChild[] = [];
 
   for (const node of nodes) {
     runs.push(...convertPhrasingNode(node));
@@ -250,9 +238,10 @@ interface InlineMathNode {
 }
 
 /**
- * Converts a single phrasing content node to TextRun(s)
+ * Converts a single phrasing content node to ParagraphChild(s)
+ * Returns TextRun for text, Math for inline formulas
  */
-function convertPhrasingNode(node: PhrasingContent): TextRun[] {
+function convertPhrasingNode(node: PhrasingContent): ParagraphChild[] {
   switch (node.type) {
     case 'text':
       return [new TextRun({ text: node.value })];
@@ -267,10 +256,16 @@ function convertPhrasingNode(node: PhrasingContent): TextRun[] {
       // Render inline code as monospace (could customize font)
       return [new TextRun({ text: node.value })];
 
-    case 'inlineMath':
-      // Render inline math as italic text (LaTeX source)
-      // Full image rendering for inline math is complex; this is a readable fallback
-      return [new TextRun({ text: (node as unknown as InlineMathNode).value, italics: true })];
+    case 'inlineMath': {
+      // Render inline math as native Word equation
+      try {
+        const mathObj = latexToDocxMath((node as unknown as InlineMathNode).value, false);
+        return [mathObj];
+      } catch {
+        // Fallback to italic text if conversion fails
+        return [new TextRun({ text: (node as unknown as InlineMathNode).value, italics: true })];
+      }
+    }
 
     default:
       // For other inline elements, try to extract text

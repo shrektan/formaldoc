@@ -55,4 +55,19 @@ FormalDoc is a browser-based markdown-to-Word converter that follows Chinese gov
 | Paragraph | Body Text | 仿宋 16pt |
 | List | ListParagraph | 仿宋 16pt (nested lists supported with 2-char indent per level) |
 | Table | TableText/TableCaption | 仿宋 16pt, centered, 单倍行距 |
+| Formula | Formula | Cambria Math, centered, 单倍行距 |
 | Page Footer | - | 仿宋 14pt (四号) |
+
+## LaTeX Formula Support
+
+Formulas are converted to **native Word equations** (OMML format), which are editable in Word.
+
+**Pipeline**: LaTeX → KaTeX (MathML) → mathml2omml (OMML) → docx Math objects
+
+**Syntax**:
+- Block formula: `$$...$$ ` (centered, on its own line)
+- Inline formula: `$...$` (within text)
+
+**Key files**:
+- `src/lib/math/latex-to-docx.ts` - LaTeX → docx Math conversion
+- `src/lib/markdown/latex-preprocessor.ts` - Auto-detects bare LaTeX from ChatGPT

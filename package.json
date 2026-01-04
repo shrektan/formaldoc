@@ -1,7 +1,7 @@
 {
   "name": "formaldoc",
   "private": true,
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -28,6 +28,7 @@
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
     "katex": "^0.16.27",
+    "mathml2omml": "^0.5.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "remark-gfm": "^4.0.1",

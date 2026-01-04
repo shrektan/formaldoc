@@ -1,6 +1,6 @@
 # FormalDoc
 
-[![Version](https://img.shields.io/badge/version-1.1.2-blue.svg)](https://github.com/shrektan/formaldoc/releases)
+[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](https://github.com/shrektan/formaldoc/releases)
 
 [中文文档](./README_zh.md)
 
@@ -46,6 +46,7 @@ Generated DOCX files use **proper Word styles (样式)**, not hard-coded formatt
 ## Features
 
 - **Smart Paste**: Auto-converts HTML to Markdown when pasting from AI chatbots
+- **LaTeX Formulas**: Converts LaTeX math to native, editable Word equations (OMML)
 - **Quote Conversion**: One-click convert English quotes to Chinese quotes ("..." → "...")
 - **Customizable Styles**: Adjust fonts, sizes for title, headings, body text, etc.
 - **Mobile Friendly**: Works on phones and tablets
@@ -60,6 +61,8 @@ Generated DOCX files use **proper Word styles (样式)**, not hard-coded formatt
 | `#### Heading` | 三级标题 (16pt 仿宋, bold) |
 | `##### Heading` | 四级标题 (16pt 仿宋, bold) |
 | Paragraphs | 正文 (16pt 仿宋, 2-char indent) |
+| `$...$` (block) | 公式 (centered, native Word equation) |
+| `$...$` (inline) | Inline equation (editable in Word) |
 | Lists | 列表项 (with proper nesting) |
 | Tables | 表格 (centered content) |
 | `**bold**` | 粗体 |
@@ -69,8 +72,9 @@ Generated DOCX files use **proper Word styles (样式)**, not hard-coded formatt
 
 - React 19 + TypeScript + Vite
 - [docx](https://docx.js.org/) for Word document generation
-- [remark](https://github.com/remarkjs/remark) + [remark-gfm](https://github.com/remarkjs/remark-gfm) for Markdown parsing
+- [remark](https://github.com/remarkjs/remark) + [remark-gfm](https://github.com/remarkjs/remark-gfm) + [remark-math](https://github.com/remarkjs/remark-math) for Markdown parsing
 - [Turndown](https://github.com/mixmark-io/turndown) for HTML to Markdown conversion
+- [KaTeX](https://katex.org/) + [mathml2omml](https://www.npmjs.com/package/mathml2omml) for LaTeX to Word equation conversion
 
 ## Development
 

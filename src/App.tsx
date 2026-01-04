@@ -85,7 +85,7 @@ const PLACEHOLDER_TEXT = `在这里粘贴从豆包、千问、DeepSeek、Kimi、
 - 列表
 **粗体**
 
-支持 LaTeX 公式（导出为图片）：
+支持 LaTeX 公式（导出为原生Word公式，可编辑）：
 $E = mc^2$（行内公式）
 $$\\frac{a}{b}$$（独立公式）`;
 

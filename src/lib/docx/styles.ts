@@ -297,6 +297,35 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
           },
         },
       },
+
+      // Formula style for math equations
+      {
+        id: 'Formula',
+        name: 'Formula',
+        basedOn: 'Normal',
+        quickFormat: true,
+        run: {
+          font: {
+            ascii: 'Cambria Math',
+            eastAsia: '宋体',
+            hAnsi: 'Cambria Math',
+            cs: 'Cambria Math',
+          },
+          size: ptToHalfPoints(settings.bodyText.size),
+        },
+        paragraph: {
+          alignment: AlignmentType.CENTER,
+          spacing: {
+            line: 240, // 单倍行距 (single line spacing)
+            lineRule: LineRuleType.AUTO,
+            before: 120,
+            after: 120,
+          },
+          indent: {
+            firstLine: 0,
+          },
+        },
+      },
     ],
   };
 }

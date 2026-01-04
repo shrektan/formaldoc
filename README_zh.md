@@ -1,6 +1,6 @@
 # FormalDoc - 公文排版
 
-[![Version](https://img.shields.io/badge/version-1.1.2-blue.svg)](https://github.com/shrektan/formaldoc/releases)
+[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](https://github.com/shrektan/formaldoc/releases)
 
 [English](./README.md)
 
@@ -46,6 +46,7 @@
 ## 功能特点
 
 - **智能粘贴**：从AI复制时自动保留标题层级（HTML自动转Markdown）
+- **LaTeX公式**：LaTeX公式转换为原生Word公式（OMML格式），可在Word中编辑
 - **引号转换**：一键将英文引号转换为中文引号（"..." → "..."）
 - **自定义样式**：可调整标题、正文、表格等的字体和字号
 - **手机适配**：支持手机和平板访问
@@ -60,6 +61,8 @@
 | `#### 三级标题` | 三级标题（三号 仿宋 加粗）|
 | `##### 四级标题` | 四级标题（三号 仿宋 加粗）|
 | 段落文字 | 正文（三号 仿宋 首行缩进两字符）|
+| `$$...$$`（独立公式）| 公式（居中，原生Word公式）|
+| `$...$`（行内公式）| 行内公式（可在Word中编辑）|
 | 列表 | 列表项（支持嵌套）|
 | 表格 | 表格（内容居中）|
 | `**粗体**` | 粗体 |
@@ -69,8 +72,9 @@
 
 - React 19 + TypeScript + Vite
 - [docx](https://docx.js.org/) - Word文档生成
-- [remark](https://github.com/remarkjs/remark) + [remark-gfm](https://github.com/remarkjs/remark-gfm) - Markdown解析
+- [remark](https://github.com/remarkjs/remark) + [remark-gfm](https://github.com/remarkjs/remark-gfm) + [remark-math](https://github.com/remarkjs/remark-math) - Markdown解析
 - [Turndown](https://github.com/mixmark-io/turndown) - HTML转Markdown
+- [KaTeX](https://katex.org/) + [mathml2omml](https://www.npmjs.com/package/mathml2omml) - LaTeX转Word公式
 
 ## 本地开发
 
