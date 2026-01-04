@@ -135,11 +135,7 @@ async function convertMath(node: MathNode): Promise<Paragraph> {
   try {
     const result = await renderMathToPng(node.value);
 
-    // Convert pixels to EMUs (914400 EMUs = 1 inch, 96 pixels = 1 inch at standard DPI)
-    const emuPerPixel = 914400 / 96;
-    const widthEmu = Math.round(result.width * emuPerPixel);
-    const heightEmu = Math.round(result.height * emuPerPixel);
-
+    // Pass pixel dimensions directly - docx library handles EMU conversion internally
     return new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { before: 200, after: 200 },
@@ -148,8 +144,8 @@ async function convertMath(node: MathNode): Promise<Paragraph> {
           type: 'png',
           data: result.data,
           transformation: {
-            width: widthEmu,
-            height: heightEmu,
+            width: result.width,
+            height: result.height,
           },
         }),
       ],
