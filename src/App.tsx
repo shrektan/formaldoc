@@ -93,7 +93,6 @@ function AppContent() {
   const [text, setText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
-  const [autoRecognizeLatex, setAutoRecognizeLatex] = useState(true);
   const { styles } = useStyles();
   const { generate, isGenerating, error } = useDocxGenerator();
 
@@ -106,7 +105,7 @@ function AppContent() {
   };
 
   const handleGenerate = () => {
-    generate(text, styles, { autoRecognizeLatex });
+    generate(text, styles);
   };
 
   const handleLoadExample = () => {
@@ -171,14 +170,6 @@ function AppContent() {
           <div className="input-header">
             <label htmlFor="content">粘贴AI生成的文字</label>
             <div className="input-actions">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={autoRecognizeLatex}
-                  onChange={(e) => setAutoRecognizeLatex(e.target.checked)}
-                />
-                自动识别公式
-              </label>
               <button
                 className="action-btn"
                 onClick={handleConvertQuotes}

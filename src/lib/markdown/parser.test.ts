@@ -2,45 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from './parser';
 
 describe('parseMarkdown', () => {
-  describe('autoRecognizeLatex option', () => {
-    it('should auto-recognize LaTeX by default', () => {
-      const input = '\\frac{a}{b} = c';
-      const result = parseMarkdown(input);
-
-      // Should have a math node from the auto-wrapped formula
-      const hasMath = result.children.some((node) => node.type === 'math');
-      expect(hasMath).toBe(true);
-    });
-
-    it('should auto-recognize LaTeX when option is true', () => {
-      const input = '\\frac{a}{b} = c';
-      const result = parseMarkdown(input, { autoRecognizeLatex: true });
-
-      const hasMath = result.children.some((node) => node.type === 'math');
-      expect(hasMath).toBe(true);
-    });
-
-    it('should not auto-recognize LaTeX when option is false', () => {
-      const input = '\\frac{a}{b} = c';
-      const result = parseMarkdown(input, { autoRecognizeLatex: false });
-
-      // Should be a paragraph, not a math node
-      const hasMath = result.children.some((node) => node.type === 'math');
-      expect(hasMath).toBe(false);
-      expect(result.children[0].type).toBe('paragraph');
-    });
-
-    it('should parse explicit $$ blocks regardless of option', () => {
-      const input = '$$\nE = mc^2\n$$';
-
-      const resultOn = parseMarkdown(input, { autoRecognizeLatex: true });
-      const resultOff = parseMarkdown(input, { autoRecognizeLatex: false });
-
-      expect(resultOn.children.some((node) => node.type === 'math')).toBe(true);
-      expect(resultOff.children.some((node) => node.type === 'math')).toBe(true);
-    });
-  });
-
   describe('math parsing', () => {
     it('should parse block math ($$...$$)', () => {
       const input = '$$\nE = mc^2\n$$';
@@ -53,7 +14,7 @@ describe('parseMarkdown', () => {
 
     it('should parse inline math ($...$)', () => {
       const input = 'The formula $E = mc^2$ is famous.';
-      const result = parseMarkdown(input, { autoRecognizeLatex: false });
+      const result = parseMarkdown(input);
 
       const paragraph = result.children[0];
       expect(paragraph.type).toBe('paragraph');
@@ -71,7 +32,7 @@ describe('parseMarkdown', () => {
       const input = `| A | B |
 |---|---|
 | 1 | 2 |`;
-      const result = parseMarkdown(input, { autoRecognizeLatex: false });
+      const result = parseMarkdown(input);
 
       expect(result.children.some((node) => node.type === 'table')).toBe(true);
     });
