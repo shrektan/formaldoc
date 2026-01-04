@@ -9,7 +9,9 @@ import {
   BorderStyle,
   AlignmentType,
   VerticalAlign,
+  ImageRun,
 } from 'docx';
+import { renderMathToPng } from '../math/renderer';
 import type {
   Root,
   Content,
@@ -46,11 +48,11 @@ const HEADING_STYLE_MAP: Record<number, string> = {
 /**
  * Converts an mdast AST to an array of docx elements (Paragraphs and Tables)
  */
-export function convertMdastToDocx(mdast: Root): DocxElement[] {
+export async function convertMdastToDocx(mdast: Root): Promise<DocxElement[]> {
   const elements: DocxElement[] = [];
 
   for (const node of mdast.children) {
-    const converted = convertNode(node);
+    const converted = await convertNode(node);
     elements.push(...converted);
   }
 
@@ -58,9 +60,18 @@ export function convertMdastToDocx(mdast: Root): DocxElement[] {
 }
 
 /**
+ * Math node type from remark-math
+ */
+interface MathNode {
+  type: 'math';
+  value: string;
+  meta?: string | null;
+}
+
+/**
  * Converts a single mdast node to docx element(s)
  */
-function convertNode(node: Content): DocxElement[] {
+async function convertNode(node: Content): Promise<DocxElement[]> {
   switch (node.type) {
     case 'heading':
       return [convertHeading(node)];
@@ -72,6 +83,8 @@ function convertNode(node: Content): DocxElement[] {
       return [convertTable(node as MdTable)];
     case 'html':
       return convertHtmlBlock(node as Html);
+    case 'math':
+      return [await convertMath(node as unknown as MathNode)];
     default:
       // For unsupported nodes, return empty (or could add fallback)
       return [];
@@ -110,6 +123,34 @@ function convertHtmlBlock(node: Html): Paragraph[] {
       style: 'BodyText',
       children: [new TextRun({ text: line })],
     });
+  });
+}
+
+/**
+ * Converts a math node to a centered image paragraph
+ * Uses KaTeX to render LaTeX to PNG
+ */
+async function convertMath(node: MathNode): Promise<Paragraph> {
+  const result = await renderMathToPng(node.value);
+
+  // Convert pixels to EMUs (914400 EMUs = 1 inch, 96 pixels = 1 inch at standard DPI)
+  const emuPerPixel = 914400 / 96;
+  const widthEmu = Math.round(result.width * emuPerPixel);
+  const heightEmu = Math.round(result.height * emuPerPixel);
+
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 200, after: 200 },
+    children: [
+      new ImageRun({
+        type: 'png',
+        data: result.data,
+        transformation: {
+          width: widthEmu,
+          height: heightEmu,
+        },
+      }),
+    ],
   });
 }
 

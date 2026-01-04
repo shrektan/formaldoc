@@ -71,7 +71,6 @@ const PLACEHOLDER_TEXT = `在这里粘贴从豆包、千问、DeepSeek、Kimi、
 - 列表
 **粗体**`;
 
-
 function AppContent() {
   const [text, setText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

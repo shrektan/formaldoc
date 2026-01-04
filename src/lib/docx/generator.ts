@@ -48,8 +48,8 @@ export async function generateDocx(markdown: string, settings: StyleSettings): P
   // Step 1: Parse markdown to AST
   const mdast = parseMarkdown(markdown);
 
-  // Step 2: Convert AST to docx paragraphs
-  const paragraphs = convertMdastToDocx(mdast);
+  // Step 2: Convert AST to docx paragraphs (async for math rendering)
+  const paragraphs = await convertMdastToDocx(mdast);
 
   // Step 3: Create footer with custom styles
   const footer = createFooter(settings);
