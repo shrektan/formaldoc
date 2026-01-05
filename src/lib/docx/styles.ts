@@ -1,5 +1,6 @@
 import { IStylesOptions, LineRuleType, AlignmentType } from 'docx';
-import type { StyleSettings, TextStyle, ChineseFont } from '../../types/styles';
+import type { StyleSettings, TextStyle, DocumentFont, ChineseFont } from '../../types/styles';
+import { CHINESE_FONTS } from '../../types/styles';
 
 /**
  * GB/T 9704-2012 Chinese Government Document Format Specifications
@@ -24,15 +25,34 @@ export const GB_PAGE = {
 };
 
 /**
- * Creates a font object from a Chinese font name
+ * Check if a font is a Chinese font
  */
-function createFont(fontName: ChineseFont) {
-  return {
-    ascii: fontName,
-    eastAsia: fontName,
-    hAnsi: fontName,
-    cs: '宋体',
-  };
+function isChineseFont(font: string): font is ChineseFont {
+  return CHINESE_FONTS.includes(font as ChineseFont);
+}
+
+/**
+ * Creates a font object from a font name
+ * For Chinese fonts: uses the font for all properties
+ * For English fonts: uses the font for ascii/hAnsi, falls back to 宋体 for eastAsia
+ */
+function createFont(fontName: DocumentFont) {
+  if (isChineseFont(fontName)) {
+    return {
+      ascii: fontName,
+      eastAsia: fontName,
+      hAnsi: fontName,
+      cs: '宋体',
+    };
+  } else {
+    // English font - use for ascii/hAnsi, fallback to 宋体 for eastAsia (Chinese characters)
+    return {
+      ascii: fontName,
+      eastAsia: '宋体',
+      hAnsi: fontName,
+      cs: fontName,
+    };
+  }
 }
 
 /**

@@ -1,22 +1,26 @@
 import { useState } from 'react';
-import type { TextStyle, StyleMeta, ChineseFont } from '../../types/styles';
-import { AVAILABLE_FONTS, CHINESE_FONT_SIZES } from '../../types/styles';
-
-// Helper to find Chinese name for a pt size
-function getSizeName(pt: number): string {
-  const found = CHINESE_FONT_SIZES.find((s) => s.pt === pt);
-  return found ? found.name : `${pt}pt`;
-}
+import type { TextStyle, StyleMeta, DocumentFont, Template } from '../../types/styles';
 
 interface StyleSectionProps {
   label: string;
   style: TextStyle;
   meta: StyleMeta;
+  template: Template;
   onChange: (updates: Partial<TextStyle>) => void;
 }
 
-export function StyleSection({ label, style, meta, onChange }: StyleSectionProps) {
+export function StyleSection({ label, style, meta, template, onChange }: StyleSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Use template-specific fonts and sizes
+  const availableFonts = template.availableFonts;
+  const fontSizes = template.fontSizes;
+
+  // Helper to find size name for a pt size
+  const getSizeName = (pt: number): string => {
+    const found = fontSizes.find((s) => s.pt === pt);
+    return found ? found.name : `${pt}pt`;
+  };
 
   return (
     <div className="style-section">
@@ -32,12 +36,12 @@ export function StyleSection({ label, style, meta, onChange }: StyleSectionProps
         <div className="style-section-content">
           <div className="style-row">
             <label>
-              字体
+              Font
               <select
                 value={style.font}
-                onChange={(e) => onChange({ font: e.target.value as ChineseFont })}
+                onChange={(e) => onChange({ font: e.target.value as DocumentFont })}
               >
-                {AVAILABLE_FONTS.map((font) => (
+                {availableFonts.map((font) => (
                   <option key={font} value={font}>
                     {font}
                   </option>
@@ -46,12 +50,12 @@ export function StyleSection({ label, style, meta, onChange }: StyleSectionProps
             </label>
 
             <label>
-              字号
+              Size
               <select
                 value={style.size}
                 onChange={(e) => onChange({ size: Number(e.target.value) })}
               >
-                {CHINESE_FONT_SIZES.map(({ name, pt }) => (
+                {fontSizes.map(({ name, pt }) => (
                   <option key={pt} value={pt}>
                     {name} ({pt}pt)
                   </option>
@@ -68,7 +72,7 @@ export function StyleSection({ label, style, meta, onChange }: StyleSectionProps
                   checked={style.bold ?? false}
                   onChange={(e) => onChange({ bold: e.target.checked })}
                 />
-                加粗
+                Bold
               </label>
             )}
 
@@ -79,7 +83,7 @@ export function StyleSection({ label, style, meta, onChange }: StyleSectionProps
                   checked={style.italic ?? false}
                   onChange={(e) => onChange({ italic: e.target.checked })}
                 />
-                斜体
+                Italic
               </label>
             )}
 
@@ -90,7 +94,7 @@ export function StyleSection({ label, style, meta, onChange }: StyleSectionProps
                   checked={style.center ?? false}
                   onChange={(e) => onChange({ center: e.target.checked })}
                 />
-                居中
+                Center
               </label>
             )}
 
@@ -101,7 +105,7 @@ export function StyleSection({ label, style, meta, onChange }: StyleSectionProps
                   checked={style.indent ?? false}
                   onChange={(e) => onChange({ indent: e.target.checked })}
                 />
-                首行缩进
+                Indent
               </label>
             )}
           </div>

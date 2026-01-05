@@ -332,6 +332,43 @@ body {
   background: var(--error-bg);
 }
 
+/* ===== Template Selector ===== */
+.template-selector {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.template-selector label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.template-selector select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.template-selector select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.template-desc {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 /* ===== Style Section (Accordion) ===== */
 .style-section {
   border-bottom: 1px solid var(--border);

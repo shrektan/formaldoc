@@ -1,9 +1,10 @@
-/**
- * @vitest-environment jsdom
- */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
+import { initDomPolyfill } from '../../../cli/dom-polyfill';
 import { latexToDocxMath } from './latex-to-docx';
 import { Math as DocxMath } from 'docx';
+
+// Initialize DOM polyfill for DOMParser support in tests
+initDomPolyfill();
 
 describe('latexToDocxMath', () => {
   describe('basic conversion', () => {

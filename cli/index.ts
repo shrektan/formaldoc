@@ -9,6 +9,7 @@
  *
  * Options:
  *   -o, --output <file>     Output file path (default: input with .docx extension)
+ *   -t, --template <name>   Template to use: cn-gov, en-standard (default: cn-gov)
  *   -s, --styles <file>     Custom styles JSON file
  *   -h, --help              Show help message
  *   -v, --version           Show version number
@@ -24,7 +25,11 @@ initDomPolyfill();
 
 // Import conversion modules after DOM polyfill is initialized
 import { generateDocxBuffer } from '../src/lib/docx/generator';
-import { DEFAULT_STYLES } from '../src/lib/styles/defaults';
+import {
+  getTemplateStyles,
+  isValidTemplateName,
+  DEFAULT_TEMPLATE,
+} from '../src/lib/styles/templates';
 import type { StyleSettings } from '../src/types/styles';
 
 const VERSION = '1.2.2';
@@ -32,6 +37,7 @@ const VERSION = '1.2.2';
 interface CliOptions {
   input?: string;
   output?: string;
+  template?: string;
   styles?: string;
   help: boolean;
   version: boolean;
@@ -41,7 +47,7 @@ interface CliOptions {
 function printHelp(): void {
   console.log(`
 FormalDoc CLI v${VERSION}
-Convert Markdown to formal Word documents (GB/T 9704-2012 format)
+Convert Markdown to formal Word documents
 
 USAGE:
   formaldoc <input.md> [options]
@@ -52,25 +58,31 @@ ARGUMENTS:
 
 OPTIONS:
   -o, --output <file>     Output file path (default: input with .docx extension)
-  -s, --styles <file>     Custom styles JSON file
+  -t, --template <name>   Template to use (default: cn-gov)
+  -s, --styles <file>     Custom styles JSON (applied on top of template)
   -h, --help              Show this help message
   -v, --version           Show version number
   --stdin                 Read markdown from stdin (requires -o)
 
+TEMPLATES:
+  cn-gov       Chinese Government format (GB/T 9704-2012)
+               Fonts: 宋体, 黑体, 楷体, 仿宋
+  en-standard  English Standard format
+               Fonts: Times New Roman (body), Arial (headings)
+
 EXAMPLES:
-  formaldoc document.md                    # Output: document.docx
-  formaldoc document.md -o report.docx     # Output: report.docx
-  formaldoc document.md -s custom.json     # Use custom styles
+  formaldoc document.md                       # CN gov format (default)
+  formaldoc document.md -t en-standard        # English format
+  formaldoc document.md -t cn-gov -s custom.json  # CN gov + custom overrides
   cat doc.md | formaldoc --stdin -o out.docx
 
 STYLE SETTINGS:
   Create a JSON file with style overrides. Example:
   {
-    "title": { "font": "宋体", "size": 22, "bold": true, "center": true },
-    "bodyText": { "font": "仿宋", "size": 16, "indent": true }
+    "title": { "font": "Arial", "size": 24, "bold": true, "center": true },
+    "bodyText": { "font": "Times New Roman", "size": 12 }
   }
 
-  Available fonts: 宋体, 黑体, 楷体, 仿宋
   Style keys: title, heading1-4, bodyText, listItem, tableHeader, tableCell, pageFooter
 `);
 }
@@ -95,6 +107,9 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === '-o' || arg === '--output') {
       i++;
       options.output = args[i];
+    } else if (arg === '-t' || arg === '--template') {
+      i++;
+      options.template = args[i];
     } else if (arg === '-s' || arg === '--styles') {
       i++;
       options.styles = args[i];
@@ -108,26 +123,44 @@ function parseArgs(args: string[]): CliOptions {
   return options;
 }
 
-function loadStyles(stylesPath: string | undefined): StyleSettings {
-  if (!stylesPath) {
-    return DEFAULT_STYLES;
+function loadStyles(
+  templateName: string | undefined,
+  stylesPath: string | undefined
+): StyleSettings {
+  // Get base styles from template
+  let template = DEFAULT_TEMPLATE;
+  if (templateName) {
+    if (isValidTemplateName(templateName)) {
+      template = templateName;
+    } else {
+      console.warn(
+        `Warning: Unknown template "${templateName}", using default (${DEFAULT_TEMPLATE})`
+      );
+    }
   }
 
-  const fullPath = resolve(stylesPath);
-  if (!existsSync(fullPath)) {
-    console.error(`Error: Styles file not found: ${fullPath}`);
-    process.exit(1);
+  let styles = getTemplateStyles(template);
+
+  // Apply custom styles on top if provided
+  if (stylesPath) {
+    const fullPath = resolve(stylesPath);
+    if (!existsSync(fullPath)) {
+      console.error(`Error: Styles file not found: ${fullPath}`);
+      process.exit(1);
+    }
+
+    try {
+      const content = readFileSync(fullPath, 'utf-8');
+      const customStyles = JSON.parse(content);
+      // Merge custom styles on top of template defaults
+      styles = { ...styles, ...customStyles };
+    } catch (error) {
+      console.error(`Error: Failed to parse styles file: ${error}`);
+      process.exit(1);
+    }
   }
 
-  try {
-    const content = readFileSync(fullPath, 'utf-8');
-    const customStyles = JSON.parse(content);
-    // Merge with defaults
-    return { ...DEFAULT_STYLES, ...customStyles };
-  } catch (error) {
-    console.error(`Error: Failed to parse styles file: ${error}`);
-    process.exit(1);
-  }
+  return styles;
 }
 
 async function readStdin(): Promise<string> {
@@ -180,10 +213,11 @@ async function main(): Promise<void> {
   }
 
   const outputPath = options.output ? resolve(options.output) : defaultOutput;
-  const styles = loadStyles(options.styles);
+  const styles = loadStyles(options.template, options.styles);
 
   try {
-    console.log(`Converting markdown to docx...`);
+    const templateLabel = options.template || DEFAULT_TEMPLATE;
+    console.log(`Converting markdown to docx (template: ${templateLabel})...`);
     const buffer = await generateDocxBuffer(markdown, styles);
     writeFileSync(outputPath, buffer);
     console.log(`Successfully created: ${outputPath}`);

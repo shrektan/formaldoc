@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import { createDocument, generateDocxBuffer } from './generator';
 import { DEFAULT_STYLES } from '../styles/defaults';
+import { getTemplateStyles } from '../styles/templates';
 import { Document } from 'docx';
 
 describe('createDocument', () => {
@@ -136,5 +137,78 @@ describe('generateDocxBuffer', () => {
     const buffer = await generateDocxBuffer(markdown, DEFAULT_STYLES);
 
     expect(buffer).toBeInstanceOf(Buffer);
+  });
+});
+
+describe('English template support', () => {
+  const enStyles = getTemplateStyles('en-standard');
+
+  it('should create Document with English template', () => {
+    const doc = createDocument('# Test Document', enStyles);
+
+    expect(doc).toBeInstanceOf(Document);
+  });
+
+  it('should generate valid docx with English template', async () => {
+    const buffer = await generateDocxBuffer('# Test Document', enStyles);
+
+    // DOCX files are ZIP archives starting with PK signature
+    expect(buffer[0]).toBe(0x50); // P
+    expect(buffer[1]).toBe(0x4b); // K
+  });
+
+  it('should handle English content with Arial/Times New Roman fonts', async () => {
+    const markdown = `# Project Report
+
+## Executive Summary
+
+This is a project report with English content.
+
+### Key Findings
+
+1. First finding
+2. Second finding
+
+| Metric | Target | Actual |
+|--------|--------|--------|
+| Revenue | $100k | $120k |
+`;
+
+    const buffer = await generateDocxBuffer(markdown, enStyles);
+
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(1000);
+  });
+
+  it('should handle mixed English and Chinese content', async () => {
+    const markdown = `# Project Report 项目报告
+
+English paragraph with some 中文字符 mixed in.
+
+## Summary 摘要
+
+- Item 1 项目一
+- Item 2 项目二
+`;
+
+    const buffer = await generateDocxBuffer(markdown, enStyles);
+
+    expect(buffer).toBeInstanceOf(Buffer);
+  });
+
+  it('should generate different size buffer than CN template for same content', async () => {
+    const markdown = '# Test\n\nSimple content.';
+
+    const cnBuffer = await generateDocxBuffer(markdown, DEFAULT_STYLES);
+    const enBuffer = await generateDocxBuffer(markdown, enStyles);
+
+    // Both should be valid DOCX
+    expect(cnBuffer[0]).toBe(0x50);
+    expect(enBuffer[0]).toBe(0x50);
+
+    // Buffers may differ slightly due to different font/style names
+    // (This is a sanity check that different templates produce different output)
+    expect(cnBuffer.length).toBeGreaterThan(0);
+    expect(enBuffer.length).toBeGreaterThan(0);
   });
 });

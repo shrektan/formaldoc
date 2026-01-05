@@ -5,12 +5,18 @@
 // Available Chinese fonts
 export type ChineseFont = '宋体' | '黑体' | '楷体' | '仿宋';
 
+// Available English fonts
+export type EnglishFont = 'Times New Roman' | 'Arial' | 'Calibri' | 'Georgia';
+
+// Union of all document fonts
+export type DocumentFont = ChineseFont | EnglishFont;
+
 // Font size in points
 export type FontSize = number;
 
 // Individual style configuration
 export interface TextStyle {
-  font: ChineseFont;
+  font: DocumentFont;
   size: FontSize;
   bold?: boolean;
   italic?: boolean;
@@ -57,8 +63,12 @@ export const STYLE_META: Record<StyleKey, StyleMeta> = {
   pageFooter: { label: '页脚' },
 };
 
-// Available fonts for dropdown
-export const AVAILABLE_FONTS: ChineseFont[] = ['宋体', '黑体', '楷体', '仿宋'];
+// Font arrays for dropdowns
+export const CHINESE_FONTS: ChineseFont[] = ['宋体', '黑体', '楷体', '仿宋'];
+export const ENGLISH_FONTS: EnglishFont[] = ['Times New Roman', 'Arial', 'Calibri', 'Georgia'];
+
+// All available fonts (for backward compatibility)
+export const AVAILABLE_FONTS: DocumentFont[] = [...CHINESE_FONTS, ...ENGLISH_FONTS];
 
 // Chinese font size convention (号) with point equivalents
 export const CHINESE_FONT_SIZES: { name: string; pt: number }[] = [
@@ -75,3 +85,29 @@ export const CHINESE_FONT_SIZES: { name: string; pt: number }[] = [
   { name: '五号', pt: 10.5 },
   { name: '小五', pt: 9 },
 ];
+
+// English font sizes (standard Western sizes)
+export const ENGLISH_FONT_SIZES: { name: string; pt: number }[] = [
+  { name: '8pt', pt: 8 },
+  { name: '9pt', pt: 9 },
+  { name: '10pt', pt: 10 },
+  { name: '11pt', pt: 11 },
+  { name: '12pt', pt: 12 },
+  { name: '14pt', pt: 14 },
+  { name: '16pt', pt: 16 },
+  { name: '18pt', pt: 18 },
+  { name: '24pt', pt: 24 },
+  { name: '36pt', pt: 36 },
+];
+
+// Template types
+export type TemplateName = 'cn-gov' | 'en-standard';
+
+export interface Template {
+  id: TemplateName;
+  name: string;
+  description: string;
+  styles: StyleSettings;
+  fontSizes: { name: string; pt: number }[];
+  availableFonts: DocumentFont[];
+}

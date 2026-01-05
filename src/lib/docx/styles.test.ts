@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import { createDocumentStyles, createFooterFont, getFooterSize, GB_PAGE } from './styles';
 import { DEFAULT_STYLES } from '../styles/defaults';
+import { getTemplateStyles } from '../styles/templates';
 
 describe('GB_PAGE constants', () => {
   it('should have correct A4 dimensions in twips', () => {
@@ -166,5 +167,76 @@ describe('getFooterSize', () => {
 
     const size = getFooterSize(customStyles);
     expect(size).toBe(24); // 12pt * 2
+  });
+});
+
+describe('English font support', () => {
+  const enStyles = getTemplateStyles('en-standard');
+
+  it('should create styles with English template settings', () => {
+    const styles = createDocumentStyles(enStyles);
+
+    expect(styles).toBeDefined();
+    expect(styles.paragraphStyles).toBeDefined();
+  });
+
+  it('should set Title font to Arial for English template', () => {
+    const styles = createDocumentStyles(enStyles);
+    const titleStyle = styles.paragraphStyles!.find((s) => s.id === 'Title');
+
+    const font = titleStyle!.run?.font as { ascii?: string; eastAsia?: string };
+    expect(font?.ascii).toBe('Arial');
+    // eastAsia should fall back to 宋体 for Chinese character support
+    expect(font?.eastAsia).toBe('宋体');
+    expect(titleStyle!.run?.size).toBe(48); // 24pt * 2 = 48 half-points
+    expect(titleStyle!.run?.bold).toBe(true);
+  });
+
+  it('should set BodyText font to Times New Roman for English template', () => {
+    const styles = createDocumentStyles(enStyles);
+    const bodyStyle = styles.paragraphStyles!.find((s) => s.id === 'BodyText');
+
+    const font = bodyStyle!.run?.font as { ascii?: string; eastAsia?: string };
+    expect(font?.ascii).toBe('Times New Roman');
+    expect(font?.eastAsia).toBe('宋体');
+    expect(bodyStyle!.run?.size).toBe(24); // 12pt * 2
+  });
+
+  it('should set Heading1 font to Arial for English template', () => {
+    const styles = createDocumentStyles(enStyles);
+    const h1Style = styles.paragraphStyles!.find((s) => s.id === 'Heading1');
+
+    const font = h1Style!.run?.font as { ascii?: string; eastAsia?: string };
+    expect(font?.ascii).toBe('Arial');
+    expect(font?.eastAsia).toBe('宋体');
+    expect(h1Style!.run?.size).toBe(32); // 16pt * 2
+    expect(h1Style!.run?.bold).toBe(true);
+  });
+
+  it('should not have first line indent for English body text', () => {
+    const styles = createDocumentStyles(enStyles);
+    const bodyStyle = styles.paragraphStyles!.find((s) => s.id === 'BodyText');
+
+    expect(bodyStyle!.paragraph?.indent?.firstLine).toBe(0);
+  });
+
+  it('should handle mixed Chinese font in custom styles', () => {
+    const mixedStyles = {
+      ...enStyles,
+      title: {
+        font: '宋体' as const,
+        size: 22,
+        bold: true,
+        center: true,
+      },
+    };
+
+    const styles = createDocumentStyles(mixedStyles);
+    const titleStyle = styles.paragraphStyles!.find((s) => s.id === 'Title');
+
+    const font = titleStyle!.run?.font as { ascii?: string; eastAsia?: string };
+    // Chinese font should use same font for both ascii and eastAsia
+    expect(font?.ascii).toBe('宋体');
+    expect(font?.eastAsia).toBe('宋体');
   });
 });

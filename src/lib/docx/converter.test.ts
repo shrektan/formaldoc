@@ -1,7 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
+import { initDomPolyfill } from '../../../cli/dom-polyfill';
 import { convertMdastToDocx } from './converter';
 import { parseMarkdown } from '../markdown/parser';
 import { Paragraph, Table } from 'docx';
+
+// Initialize DOM polyfill for DOMParser support in math conversion tests
+initDomPolyfill();
 
 describe('convertMdastToDocx', () => {
   describe('headings', () => {

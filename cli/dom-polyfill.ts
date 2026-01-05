@@ -12,7 +12,6 @@ import { JSDOM } from 'jsdom';
 export function initDomPolyfill(): void {
   if (typeof globalThis.DOMParser === 'undefined') {
     const dom = new JSDOM('');
-    // @ts-expect-error - Setting global DOMParser for Node.js compatibility
     globalThis.DOMParser = dom.window.DOMParser;
   }
 }

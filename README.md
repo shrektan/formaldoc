@@ -48,8 +48,27 @@ Generated DOCX files use **proper Word styles (样式)**, not hard-coded formatt
 - **Smart Paste**: Auto-converts HTML to Markdown when pasting from AI chatbots
 - **LaTeX Formulas**: Converts LaTeX math to native, editable Word equations (OMML)
 - **Quote Conversion**: One-click convert English quotes to Chinese quotes ("..." → "...")
+- **Multiple Templates**: Choose between Chinese government format (公文) or English standard format
 - **Customizable Styles**: Adjust fonts, sizes for title, headings, body text, etc.
 - **Mobile Friendly**: Works on phones and tablets
+
+## Templates
+
+FormalDoc supports multiple document templates:
+
+| Template | Description | Fonts |
+|----------|-------------|-------|
+| **cn-gov** (default) | Chinese government format (GB/T 9704-2012) | 宋体, 黑体, 楷体, 仿宋 |
+| **en-standard** | English standard format | Times New Roman (body), Arial (headings) |
+
+### Switching Templates
+
+**In the Web UI**: Click "调整字体样式" button and select a template from the dropdown.
+
+**In the CLI**: Use the `-t` or `--template` flag:
+```bash
+formaldoc input.md -o output.docx -t en-standard
+```
 
 ## Supported Markdown
 
