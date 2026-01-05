@@ -1,0 +1,169 @@
+/**
+ * @vitest-environment node
+ */
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { execSync } from 'node:child_process';
+import { writeFileSync, readFileSync, unlinkSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+
+const CLI_PATH = join(__dirname, 'index.ts');
+
+function runCli(args: string): string {
+  try {
+    return execSync(`bun run ${CLI_PATH} ${args}`, {
+      encoding: 'utf-8',
+      cwd: join(__dirname, '..'),
+    });
+  } catch (error) {
+    const execError = error as { stdout?: string; stderr?: string };
+    return execError.stdout || execError.stderr || '';
+  }
+}
+
+describe('CLI', () => {
+  describe('help and version', () => {
+    it('should show help with --help', () => {
+      const output = runCli('--help');
+
+      expect(output).toContain('FormalDoc CLI');
+      expect(output).toContain('USAGE:');
+      expect(output).toContain('OPTIONS:');
+    });
+
+    it('should show help with -h', () => {
+      const output = runCli('-h');
+
+      expect(output).toContain('FormalDoc CLI');
+    });
+
+    it('should show version with --version', () => {
+      const output = runCli('--version');
+
+      expect(output).toContain('formaldoc v');
+    });
+
+    it('should show version with -v', () => {
+      const output = runCli('-v');
+
+      expect(output).toContain('formaldoc v');
+    });
+  });
+
+  describe('file conversion', () => {
+    const testDir = tmpdir();
+    const inputFile = join(testDir, 'test-input.md');
+    const outputFile = join(testDir, 'test-output.docx');
+
+    beforeEach(() => {
+      // Create test input file
+      writeFileSync(inputFile, '# Test Document\n\nThis is a test.');
+    });
+
+    afterEach(() => {
+      // Clean up test files
+      if (existsSync(inputFile)) unlinkSync(inputFile);
+      if (existsSync(outputFile)) unlinkSync(outputFile);
+    });
+
+    it('should convert markdown file to docx', () => {
+      const output = runCli(`${inputFile} -o ${outputFile}`);
+
+      expect(output).toContain('Successfully created');
+      expect(existsSync(outputFile)).toBe(true);
+    });
+
+    it('should create valid docx file', () => {
+      runCli(`${inputFile} -o ${outputFile}`);
+
+      const buffer = readFileSync(outputFile);
+      // DOCX files are ZIP archives starting with PK signature
+      expect(buffer[0]).toBe(0x50); // P
+      expect(buffer[1]).toBe(0x4b); // K
+    });
+
+    it('should handle Chinese content', () => {
+      writeFileSync(inputFile, '# 中文标题\n\n这是中文内容。');
+      const output = runCli(`${inputFile} -o ${outputFile}`);
+
+      expect(output).toContain('Successfully created');
+      expect(existsSync(outputFile)).toBe(true);
+    });
+
+    it('should handle markdown with formulas', () => {
+      writeFileSync(inputFile, '# Math Test\n\n$$E = mc^2$$');
+      const output = runCli(`${inputFile} -o ${outputFile}`);
+
+      expect(output).toContain('Successfully created');
+    });
+
+    it('should handle complex markdown', () => {
+      const markdown = `# 工作报告
+
+## 一、背景
+
+这是正文。
+
+- 要点一
+- 要点二
+
+| 列A | 列B |
+|-----|-----|
+| 1 | 2 |
+`;
+      writeFileSync(inputFile, markdown);
+      const output = runCli(`${inputFile} -o ${outputFile}`);
+
+      expect(output).toContain('Successfully created');
+    });
+  });
+
+  describe('custom styles', () => {
+    const testDir = tmpdir();
+    const inputFile = join(testDir, 'test-styles-input.md');
+    const outputFile = join(testDir, 'test-styles-output.docx');
+    const stylesFile = join(testDir, 'custom-styles.json');
+
+    beforeEach(() => {
+      writeFileSync(inputFile, '# Custom Style Test');
+    });
+
+    afterEach(() => {
+      if (existsSync(inputFile)) unlinkSync(inputFile);
+      if (existsSync(outputFile)) unlinkSync(outputFile);
+      if (existsSync(stylesFile)) unlinkSync(stylesFile);
+    });
+
+    it('should accept custom styles file', () => {
+      const customStyles = {
+        title: { font: '黑体', size: 24, bold: true, center: true },
+      };
+      writeFileSync(stylesFile, JSON.stringify(customStyles));
+
+      const output = runCli(`${inputFile} -o ${outputFile} -s ${stylesFile}`);
+
+      expect(output).toContain('Successfully created');
+    });
+  });
+
+  describe('error handling', () => {
+    it('should error on missing input file', () => {
+      const output = runCli('/nonexistent/file.md -o /tmp/out.docx');
+
+      expect(output).toContain('Error');
+    });
+
+    it('should error when --stdin used without -o', () => {
+      const output = runCli('--stdin');
+
+      expect(output).toContain('Error');
+      expect(output).toContain('--stdin requires -o');
+    });
+
+    it('should show error for no input', () => {
+      const output = runCli('');
+
+      expect(output).toContain('Error');
+    });
+  });
+});
