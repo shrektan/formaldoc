@@ -3,16 +3,21 @@
   "private": true,
   "version": "1.2.2",
   "type": "module",
+  "bin": {
+    "formaldoc": "./cli/index.ts"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
+    "lint": "eslint src cli",
+    "lint:fix": "eslint src cli --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "cli": "bun run cli/index.ts",
+    "cli:link": "bun link"
   },
   "repository": {
     "type": "git",
@@ -22,6 +27,7 @@
   "dependencies": {
     "@types/katex": "^0.16.7",
     "@types/turndown": "^5.0.6",
+    "jsdom": "^26.1.0",
     "@uiw/react-md-editor": "^4.0.11",
     "@vercel/analytics": "^1.6.1",
     "docx": "^9.5.1",
