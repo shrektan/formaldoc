@@ -98,10 +98,10 @@ const CN_GOV_STYLES: StyleSettings = {
  * Times New Roman body, Arial headings
  */
 const EN_STANDARD_STYLES: StyleSettings = {
-  // Title: Arial 24pt, bold, centered
+  // Title: Arial 20pt, bold, centered
   title: {
     font: 'Arial',
-    size: 24,
+    size: 20,
     bold: true,
     center: true,
   },
@@ -190,6 +190,7 @@ const CN_GOV_DOCUMENT_SETTINGS: DocumentSettings = {
     header: 851,
     footer: 992,
   },
+  spacingAfter: 0, // No extra space (uses 28pt exact line spacing)
 };
 
 /**
@@ -207,6 +208,7 @@ const EN_STANDARD_DOCUMENT_SETTINGS: DocumentSettings = {
     header: 720,
     footer: 720,
   },
+  spacingAfter: 200, // 10pt after paragraphs
 };
 
 /**

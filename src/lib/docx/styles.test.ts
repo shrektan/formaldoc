@@ -188,7 +188,7 @@ describe('English font support', () => {
     expect(font?.ascii).toBe('Arial');
     // eastAsia should fall back to 宋体 for Chinese character support
     expect(font?.eastAsia).toBe('宋体');
-    expect(titleStyle!.run?.size).toBe(48); // 24pt * 2 = 48 half-points
+    expect(titleStyle!.run?.size).toBe(40); // 20pt * 2 = 40 half-points
     expect(titleStyle!.run?.bold).toBe(true);
   });
 

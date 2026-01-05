@@ -115,6 +115,7 @@ export function createDocumentStyles(
   // Use document settings or default to CN Government standard
   const lineSpacingConfig = documentSettings?.lineSpacing ?? DEFAULT_LINE_SPACING;
   const spacing = getLineSpacing(lineSpacingConfig);
+  const spacingAfter = documentSettings?.spacingAfter ?? 0;
 
   return {
     paragraphStyles: [
@@ -128,6 +129,7 @@ export function createDocumentStyles(
         },
         paragraph: {
           spacing: {
+            after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,
           },
@@ -172,6 +174,7 @@ export function createDocumentStyles(
         paragraph: {
           outlineLevel: 0, // 一级
           spacing: {
+            after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,
           },
@@ -198,6 +201,7 @@ export function createDocumentStyles(
         paragraph: {
           outlineLevel: 1, // 二级
           spacing: {
+            after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,
           },
@@ -224,6 +228,7 @@ export function createDocumentStyles(
         paragraph: {
           outlineLevel: 2, // 三级
           spacing: {
+            after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,
           },
@@ -250,6 +255,7 @@ export function createDocumentStyles(
         paragraph: {
           outlineLevel: 3, // 四级
           spacing: {
+            after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,
           },
@@ -274,6 +280,7 @@ export function createDocumentStyles(
         paragraph: {
           alignment: AlignmentType.BOTH,
           spacing: {
+            after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,
           },
@@ -295,6 +302,7 @@ export function createDocumentStyles(
         },
         paragraph: {
           spacing: {
+            after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,
           },

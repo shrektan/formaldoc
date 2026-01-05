@@ -25,11 +25,7 @@ initDomPolyfill();
 
 // Import conversion modules after DOM polyfill is initialized
 import { generateDocxBuffer } from '../src/lib/docx/generator';
-import {
-  getTemplate,
-  isValidTemplateName,
-  DEFAULT_TEMPLATE,
-} from '../src/lib/styles/templates';
+import { getTemplate, isValidTemplateName, DEFAULT_TEMPLATE } from '../src/lib/styles/templates';
 import type { StyleSettings, DocumentSettings } from '../src/types/styles';
 
 const VERSION = '1.2.2';

@@ -50,7 +50,8 @@ export interface StyleMeta {
   allowIndent?: boolean;
 }
 
-export const STYLE_META: Record<StyleKey, StyleMeta> = {
+// Chinese style labels (for cn-gov template)
+export const STYLE_META_CN: Record<StyleKey, StyleMeta> = {
   title: { label: '标题', allowBold: true, allowCenter: true },
   heading1: { label: '一级标题', allowBold: true, allowIndent: true },
   heading2: { label: '二级标题', allowBold: true, allowIndent: true },
@@ -62,6 +63,28 @@ export const STYLE_META: Record<StyleKey, StyleMeta> = {
   tableCell: { label: '表格内容', allowCenter: true },
   pageFooter: { label: '页脚' },
 };
+
+// English style labels (for en-standard template)
+export const STYLE_META_EN: Record<StyleKey, StyleMeta> = {
+  title: { label: 'Title', allowBold: true, allowCenter: true },
+  heading1: { label: 'Heading 1', allowBold: true, allowIndent: true },
+  heading2: { label: 'Heading 2', allowBold: true, allowIndent: true },
+  heading3: { label: 'Heading 3', allowBold: true, allowIndent: true },
+  heading4: { label: 'Heading 4', allowBold: true, allowIndent: true },
+  bodyText: { label: 'Body Text', allowIndent: true },
+  listItem: { label: 'List Item', allowIndent: true },
+  tableHeader: { label: 'Table Header', allowBold: true, allowCenter: true },
+  tableCell: { label: 'Table Cell', allowCenter: true },
+  pageFooter: { label: 'Page Footer' },
+};
+
+// Backward compatibility alias
+export const STYLE_META = STYLE_META_CN;
+
+// Get style meta based on template
+export function getStyleMeta(template: TemplateName): Record<StyleKey, StyleMeta> {
+  return template === 'en-standard' ? STYLE_META_EN : STYLE_META_CN;
+}
 
 // Font arrays for dropdowns
 export const CHINESE_FONTS: ChineseFont[] = ['宋体', '黑体', '楷体', '仿宋'];
@@ -126,6 +149,7 @@ export interface DocumentSettings {
   lineSpacing: LineSpacingConfig;
   pageNumberFormat: PageNumberFormat;
   margins: PageMargins;
+  spacingAfter: number; // twips: 200 = 10pt for EN, 0 for CN
 }
 
 export interface Template {

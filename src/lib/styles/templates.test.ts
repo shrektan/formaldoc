@@ -146,7 +146,7 @@ describe('Template Registry', () => {
     it('should have correct title style with Arial', () => {
       const styles = getTemplateStyles('en-standard');
       expect(styles.title.font).toBe('Arial');
-      expect(styles.title.size).toBe(24);
+      expect(styles.title.size).toBe(20);
       expect(styles.title.bold).toBe(true);
       expect(styles.title.center).toBe(true);
     });
