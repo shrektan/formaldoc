@@ -39,12 +39,13 @@ function createFooter(settings: StyleSettings): Footer {
 }
 
 /**
- * Generates a Word document (.docx) from markdown text
+ * Creates a Word Document object from markdown text
+ * This is the core function that can be used by both browser and Node.js
  * @param markdown - The markdown text to convert
  * @param settings - Style settings for the document
- * @returns A Blob containing the generated .docx file
+ * @returns A docx Document object
  */
-export async function generateDocx(markdown: string, settings: StyleSettings): Promise<Blob> {
+export function createDocument(markdown: string, settings: StyleSettings): Document {
   // Step 1: Parse markdown to AST
   const mdast = parseMarkdown(markdown);
 
@@ -83,7 +84,32 @@ export async function generateDocx(markdown: string, settings: StyleSettings): P
     ],
   });
 
-  // Step 5: Generate and return blob
+  return doc;
+}
+
+/**
+ * Generates a Word document (.docx) from markdown text (Browser version)
+ * @param markdown - The markdown text to convert
+ * @param settings - Style settings for the document
+ * @returns A Blob containing the generated .docx file
+ */
+export async function generateDocx(markdown: string, settings: StyleSettings): Promise<Blob> {
+  const doc = createDocument(markdown, settings);
   const blob = await Packer.toBlob(doc);
   return blob;
+}
+
+/**
+ * Generates a Word document (.docx) from markdown text (Node.js version)
+ * @param markdown - The markdown text to convert
+ * @param settings - Style settings for the document
+ * @returns A Buffer containing the generated .docx file
+ */
+export async function generateDocxBuffer(
+  markdown: string,
+  settings: StyleSettings
+): Promise<Buffer> {
+  const doc = createDocument(markdown, settings);
+  const buffer = await Packer.toBuffer(doc);
+  return buffer;
 }
