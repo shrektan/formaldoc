@@ -1,15 +1,19 @@
 import { useState } from 'react';
-import type { TextStyle, StyleMeta, DocumentFont, Template } from '../../types/styles';
+import { useTranslation } from '../../hooks/useTranslation';
+import type { TextStyle, DocumentFont, Template, StyleKey } from '../../types/styles';
+import { STYLE_META } from '../../types/styles';
 
 interface StyleSectionProps {
+  styleKey: StyleKey;
   label: string;
   style: TextStyle;
-  meta: StyleMeta;
   template: Template;
   onChange: (updates: Partial<TextStyle>) => void;
 }
 
-export function StyleSection({ label, style, meta, template, onChange }: StyleSectionProps) {
+export function StyleSection({ styleKey, label, style, template, onChange }: StyleSectionProps) {
+  const t = useTranslation();
+  const meta = STYLE_META[styleKey];
   const [isOpen, setIsOpen] = useState(false);
 
   // Use template-specific fonts and sizes
@@ -36,7 +40,7 @@ export function StyleSection({ label, style, meta, template, onChange }: StyleSe
         <div className="style-section-content">
           <div className="style-row">
             <label>
-              Font
+              {t.styleLabels.font}
               <select
                 value={style.font}
                 onChange={(e) => onChange({ font: e.target.value as DocumentFont })}
@@ -50,7 +54,7 @@ export function StyleSection({ label, style, meta, template, onChange }: StyleSe
             </label>
 
             <label>
-              Size
+              {t.styleLabels.size}
               <select
                 value={style.size}
                 onChange={(e) => onChange({ size: Number(e.target.value) })}
@@ -72,7 +76,7 @@ export function StyleSection({ label, style, meta, template, onChange }: StyleSe
                   checked={style.bold ?? false}
                   onChange={(e) => onChange({ bold: e.target.checked })}
                 />
-                Bold
+                {t.styleLabels.bold}
               </label>
             )}
 
@@ -83,7 +87,7 @@ export function StyleSection({ label, style, meta, template, onChange }: StyleSe
                   checked={style.italic ?? false}
                   onChange={(e) => onChange({ italic: e.target.checked })}
                 />
-                Italic
+                {t.styleLabels.italic}
               </label>
             )}
 
@@ -94,7 +98,7 @@ export function StyleSection({ label, style, meta, template, onChange }: StyleSe
                   checked={style.center ?? false}
                   onChange={(e) => onChange({ center: e.target.checked })}
                 />
-                Center
+                {t.styleLabels.center}
               </label>
             )}
 
@@ -105,7 +109,7 @@ export function StyleSection({ label, style, meta, template, onChange }: StyleSe
                   checked={style.indent ?? false}
                   onChange={(e) => onChange({ indent: e.target.checked })}
                 />
-                Indent
+                {t.styleLabels.indent}
               </label>
             )}
           </div>

@@ -71,6 +71,42 @@ body {
   color: var(--primary);
 }
 
+/* Language Switch */
+.language-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.lang-btn:hover {
+  color: var(--primary);
+  background: rgba(26, 115, 232, 0.08);
+}
+
+.lang-btn.active {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.lang-divider {
+  color: var(--border);
+  font-size: 12px;
+}
+
 .header-simple h1 {
   font-size: 24px;
   font-weight: 700;

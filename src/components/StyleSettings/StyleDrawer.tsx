@@ -1,5 +1,6 @@
 import { useStyles } from '../../contexts/useStyles';
-import { STYLE_META, type StyleKey, type TemplateName } from '../../types/styles';
+import { useTranslation } from '../../hooks/useTranslation';
+import type { StyleKey, TemplateName } from '../../types/styles';
 import { TEMPLATES } from '../../lib/styles/templates';
 import { StyleSection } from './StyleSection';
 
@@ -24,24 +25,26 @@ const STYLE_ORDER: StyleKey[] = [
 
 export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
   const { styles, template, currentTemplate, updateStyle, setTemplate, resetStyles } = useStyles();
+  const t = useTranslation();
 
   if (!isOpen) return null;
 
   const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTemplate = e.target.value as TemplateName;
-    if (
-      confirm(
-        'Changing template will reset all style settings. Continue?\n切换模板将重置所有样式设置，确定继续吗？'
-      )
-    ) {
+    if (confirm(t.styleDrawer.confirmTemplateChange)) {
       setTemplate(newTemplate);
     }
   };
 
   const handleReset = () => {
-    if (confirm('Reset to default styles?\n确定要恢复默认样式吗？')) {
+    if (confirm(t.styleDrawer.confirmReset)) {
       resetStyles();
     }
+  };
+
+  // Get style name from translations
+  const getStyleLabel = (key: StyleKey): string => {
+    return t.styleNames[key];
   };
 
   return (
@@ -49,7 +52,7 @@ export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
       <div className="drawer-overlay" onClick={onClose} />
       <div className="style-drawer">
         <div className="drawer-header">
-          <h2>Document Styles</h2>
+          <h2>{t.styleDrawer.title}</h2>
           <button className="drawer-close" onClick={onClose} aria-label="Close">
             ×
           </button>
@@ -58,11 +61,11 @@ export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
         <div className="drawer-content">
           {/* Template Selector */}
           <div className="template-selector">
-            <label>Template / 模板</label>
+            <label>{t.styleDrawer.template}</label>
             <select value={template} onChange={handleTemplateChange}>
-              {Object.values(TEMPLATES).map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
+              {Object.values(TEMPLATES).map((tmpl) => (
+                <option key={tmpl.id} value={tmpl.id}>
+                  {tmpl.name}
                 </option>
               ))}
             </select>
@@ -73,9 +76,9 @@ export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
           {STYLE_ORDER.map((key) => (
             <StyleSection
               key={key}
-              label={STYLE_META[key].label}
+              styleKey={key}
+              label={getStyleLabel(key)}
               style={styles[key]}
-              meta={STYLE_META[key]}
               template={currentTemplate}
               onChange={(updates) => updateStyle(key, updates)}
             />
@@ -84,7 +87,7 @@ export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
 
         <div className="drawer-footer">
           <button className="reset-button" onClick={handleReset}>
-            Reset / 恢复默认
+            {t.styleDrawer.reset}
           </button>
         </div>
       </div>
