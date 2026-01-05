@@ -26,11 +26,11 @@ initDomPolyfill();
 // Import conversion modules after DOM polyfill is initialized
 import { generateDocxBuffer } from '../src/lib/docx/generator';
 import {
-  getTemplateStyles,
+  getTemplate,
   isValidTemplateName,
   DEFAULT_TEMPLATE,
 } from '../src/lib/styles/templates';
-import type { StyleSettings } from '../src/types/styles';
+import type { StyleSettings, DocumentSettings } from '../src/types/styles';
 
 const VERSION = '1.2.2';
 
@@ -123,10 +123,15 @@ function parseArgs(args: string[]): CliOptions {
   return options;
 }
 
+interface LoadedSettings {
+  styles: StyleSettings;
+  documentSettings: DocumentSettings;
+}
+
 function loadStyles(
   templateName: string | undefined,
   stylesPath: string | undefined
-): StyleSettings {
+): LoadedSettings {
   // Get base styles from template
   let template = DEFAULT_TEMPLATE;
   if (templateName) {
@@ -139,7 +144,9 @@ function loadStyles(
     }
   }
 
-  let styles = getTemplateStyles(template);
+  const templateObj = getTemplate(template);
+  let styles = templateObj.styles;
+  const documentSettings = templateObj.documentSettings;
 
   // Apply custom styles on top if provided
   if (stylesPath) {
@@ -160,7 +167,7 @@ function loadStyles(
     }
   }
 
-  return styles;
+  return { styles, documentSettings };
 }
 
 async function readStdin(): Promise<string> {
@@ -213,12 +220,12 @@ async function main(): Promise<void> {
   }
 
   const outputPath = options.output ? resolve(options.output) : defaultOutput;
-  const styles = loadStyles(options.template, options.styles);
+  const { styles, documentSettings } = loadStyles(options.template, options.styles);
 
   try {
     const templateLabel = options.template || DEFAULT_TEMPLATE;
     console.log(`Converting markdown to docx (template: ${templateLabel})...`);
-    const buffer = await generateDocxBuffer(markdown, styles);
+    const buffer = await generateDocxBuffer(markdown, styles, documentSettings);
     writeFileSync(outputPath, buffer);
     console.log(`Successfully created: ${outputPath}`);
   } catch (error) {

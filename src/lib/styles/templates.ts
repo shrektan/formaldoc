@@ -1,4 +1,10 @@
-import type { Template, TemplateName, StyleSettings, DocumentFont } from '../../types/styles';
+import type {
+  Template,
+  TemplateName,
+  StyleSettings,
+  DocumentFont,
+  DocumentSettings,
+} from '../../types/styles';
 import {
   CHINESE_FONTS,
   ENGLISH_FONTS,
@@ -170,6 +176,40 @@ const EN_STANDARD_STYLES: StyleSettings = {
 };
 
 /**
+ * Document settings for CN Government template
+ * GB/T 9704-2012 specifications
+ */
+const CN_GOV_DOCUMENT_SETTINGS: DocumentSettings = {
+  lineSpacing: { type: 'exact', value: 560 }, // 28pt exact
+  pageNumberFormat: 'dash', // "- 1 -"
+  margins: {
+    top: 1440, // 1 inch
+    bottom: 1440,
+    left: 1440,
+    right: 1440,
+    header: 851,
+    footer: 992,
+  },
+};
+
+/**
+ * Document settings for English Standard template
+ * Standard English document conventions
+ */
+const EN_STANDARD_DOCUMENT_SETTINGS: DocumentSettings = {
+  lineSpacing: { type: 'auto', value: 360 }, // 1.5 line spacing
+  pageNumberFormat: 'plain', // Just "1"
+  margins: {
+    top: 1440, // 1 inch
+    bottom: 1440,
+    left: 1440,
+    right: 1440,
+    header: 720,
+    footer: 720,
+  },
+};
+
+/**
  * Template registry with all built-in templates
  */
 export const TEMPLATES: Record<TemplateName, Template> = {
@@ -180,6 +220,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     styles: CN_GOV_STYLES,
     fontSizes: CHINESE_FONT_SIZES,
     availableFonts: [...CHINESE_FONTS] as DocumentFont[],
+    documentSettings: CN_GOV_DOCUMENT_SETTINGS,
   },
   'en-standard': {
     id: 'en-standard',
@@ -188,6 +229,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     styles: EN_STANDARD_STYLES,
     fontSizes: ENGLISH_FONT_SIZES,
     availableFonts: [...ENGLISH_FONTS] as DocumentFont[],
+    documentSettings: EN_STANDARD_DOCUMENT_SETTINGS,
   },
 };
 

@@ -39,7 +39,7 @@ function AppContent() {
   const [text, setText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
-  const { styles } = useStyles();
+  const { styles, currentTemplate } = useStyles();
   const { language, t } = useLanguage();
   const { generate, isGenerating, error } = useDocxGenerator();
 
@@ -52,7 +52,7 @@ function AppContent() {
   };
 
   const handleGenerate = () => {
-    generate(text, styles);
+    generate(text, styles, currentTemplate.documentSettings);
   };
 
   const handleLoadExample = () => {

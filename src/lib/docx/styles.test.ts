@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 import { createDocumentStyles, createFooterFont, getFooterSize, GB_PAGE } from './styles';
 import { DEFAULT_STYLES } from '../styles/defaults';
-import { getTemplateStyles } from '../styles/templates';
+import { getTemplateStyles, getTemplate } from '../styles/templates';
 
 describe('GB_PAGE constants', () => {
   it('should have correct A4 dimensions in twips', () => {
@@ -238,5 +238,45 @@ describe('English font support', () => {
     // Chinese font should use same font for both ascii and eastAsia
     expect(font?.ascii).toBe('宋体');
     expect(font?.eastAsia).toBe('宋体');
+  });
+});
+
+describe('Line spacing with documentSettings', () => {
+  it('should use exact 28pt spacing for cn-gov template', () => {
+    const cnTemplate = getTemplate('cn-gov');
+    const styles = createDocumentStyles(cnTemplate.styles, cnTemplate.documentSettings);
+
+    const bodyStyle = styles.paragraphStyles!.find((s) => s.id === 'BodyText');
+    expect(bodyStyle!.paragraph?.spacing?.line).toBe(560);
+    expect(bodyStyle!.paragraph?.spacing?.lineRule).toBe('exact');
+  });
+
+  it('should use 1.5 auto spacing for en-standard template', () => {
+    const enTemplate = getTemplate('en-standard');
+    const styles = createDocumentStyles(enTemplate.styles, enTemplate.documentSettings);
+
+    const bodyStyle = styles.paragraphStyles!.find((s) => s.id === 'BodyText');
+    expect(bodyStyle!.paragraph?.spacing?.line).toBe(360);
+    expect(bodyStyle!.paragraph?.spacing?.lineRule).toBe('auto');
+  });
+
+  it('should apply line spacing to all paragraph styles', () => {
+    const enTemplate = getTemplate('en-standard');
+    const styles = createDocumentStyles(enTemplate.styles, enTemplate.documentSettings);
+
+    const stylesToCheck = ['Normal', 'Title', 'Heading1', 'Heading2', 'BodyText', 'ListParagraph'];
+    for (const styleId of stylesToCheck) {
+      const style = styles.paragraphStyles!.find((s) => s.id === styleId);
+      expect(style!.paragraph?.spacing?.line).toBe(360);
+      expect(style!.paragraph?.spacing?.lineRule).toBe('auto');
+    }
+  });
+
+  it('should default to cn-gov spacing when documentSettings is not provided', () => {
+    const styles = createDocumentStyles(DEFAULT_STYLES);
+
+    const bodyStyle = styles.paragraphStyles!.find((s) => s.id === 'BodyText');
+    expect(bodyStyle!.paragraph?.spacing?.line).toBe(560);
+    expect(bodyStyle!.paragraph?.spacing?.lineRule).toBe('exact');
   });
 });

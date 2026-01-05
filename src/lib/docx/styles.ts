@@ -1,5 +1,12 @@
 import { IStylesOptions, LineRuleType, AlignmentType } from 'docx';
-import type { StyleSettings, TextStyle, DocumentFont, ChineseFont } from '../../types/styles';
+import type {
+  StyleSettings,
+  TextStyle,
+  DocumentFont,
+  ChineseFont,
+  DocumentSettings,
+  LineSpacingConfig,
+} from '../../types/styles';
 import { CHINESE_FONTS } from '../../types/styles';
 
 /**
@@ -77,12 +84,37 @@ function ptToHalfPoints(pt: number): number {
 }
 
 /**
+ * Default line spacing config (CN Government standard: 28pt exact)
+ */
+const DEFAULT_LINE_SPACING: LineSpacingConfig = {
+  type: 'exact',
+  value: LINE_SPACING_EXACT,
+};
+
+/**
+ * Converts LineSpacingConfig to docx format
+ */
+function getLineSpacing(config: LineSpacingConfig) {
+  return {
+    line: config.value,
+    lineRule: config.type === 'exact' ? LineRuleType.EXACT : LineRuleType.AUTO,
+  };
+}
+
+/**
  * Creates Word document styles from user settings
  */
-export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
+export function createDocumentStyles(
+  settings: StyleSettings,
+  documentSettings?: DocumentSettings
+): IStylesOptions {
   const getIndent = (style: TextStyle) => (style.indent ? TWO_CHAR_INDENT : 0);
   const getAlignment = (style: TextStyle) =>
     style.center ? AlignmentType.CENTER : AlignmentType.BOTH;
+
+  // Use document settings or default to CN Government standard
+  const lineSpacingConfig = documentSettings?.lineSpacing ?? DEFAULT_LINE_SPACING;
+  const spacing = getLineSpacing(lineSpacingConfig);
 
   return {
     paragraphStyles: [
@@ -96,8 +128,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         },
         paragraph: {
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
           },
         },
       },
@@ -119,8 +151,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
           spacing: {
             before: 560,
             after: 560,
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
           },
         },
       },
@@ -140,8 +172,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         paragraph: {
           outlineLevel: 0, // 一级
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
           },
           indent: {
             firstLine: getIndent(settings.heading1),
@@ -166,8 +198,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         paragraph: {
           outlineLevel: 1, // 二级
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
           },
           indent: {
             firstLine: getIndent(settings.heading2),
@@ -192,8 +224,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         paragraph: {
           outlineLevel: 2, // 三级
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
           },
           indent: {
             firstLine: getIndent(settings.heading3),
@@ -218,8 +250,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         paragraph: {
           outlineLevel: 3, // 四级
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
           },
           indent: {
             firstLine: getIndent(settings.heading4),
@@ -242,8 +274,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         paragraph: {
           alignment: AlignmentType.BOTH,
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
           },
           indent: {
             firstLine: getIndent(settings.bodyText),
@@ -263,8 +295,8 @@ export function createDocumentStyles(settings: StyleSettings): IStylesOptions {
         },
         paragraph: {
           spacing: {
-            line: LINE_SPACING_EXACT,
-            lineRule: LineRuleType.EXACT,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
           },
           indent: {
             firstLine: getIndent(settings.listItem),

@@ -207,5 +207,51 @@ describe('Template Registry', () => {
         }
       }
     });
+
+    it('all templates should have documentSettings', () => {
+      const names = getTemplateNames();
+      for (const name of names) {
+        const template = getTemplate(name);
+        expect(template).toHaveProperty('documentSettings');
+        expect(template.documentSettings).toHaveProperty('lineSpacing');
+        expect(template.documentSettings).toHaveProperty('pageNumberFormat');
+        expect(template.documentSettings).toHaveProperty('margins');
+      }
+    });
+  });
+
+  describe('Document settings by template', () => {
+    it('cn-gov should use exact 28pt line spacing', () => {
+      const template = getTemplate('cn-gov');
+      expect(template.documentSettings.lineSpacing.type).toBe('exact');
+      expect(template.documentSettings.lineSpacing.value).toBe(560); // 28pt exact
+    });
+
+    it('cn-gov should use dash page number format', () => {
+      const template = getTemplate('cn-gov');
+      expect(template.documentSettings.pageNumberFormat).toBe('dash');
+    });
+
+    it('en-standard should use 1.5 auto line spacing', () => {
+      const template = getTemplate('en-standard');
+      expect(template.documentSettings.lineSpacing.type).toBe('auto');
+      expect(template.documentSettings.lineSpacing.value).toBe(360); // 1.5 lines
+    });
+
+    it('en-standard should use plain page number format', () => {
+      const template = getTemplate('en-standard');
+      expect(template.documentSettings.pageNumberFormat).toBe('plain');
+    });
+
+    it('en-standard should have different header/footer distances', () => {
+      const cnTemplate = getTemplate('cn-gov');
+      const enTemplate = getTemplate('en-standard');
+
+      // EN template should have smaller header/footer distances
+      expect(enTemplate.documentSettings.margins.header).toBe(720);
+      expect(enTemplate.documentSettings.margins.footer).toBe(720);
+      expect(cnTemplate.documentSettings.margins.header).toBe(851);
+      expect(cnTemplate.documentSettings.margins.footer).toBe(992);
+    });
   });
 });

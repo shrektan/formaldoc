@@ -103,6 +103,31 @@ export const ENGLISH_FONT_SIZES: { name: string; pt: number }[] = [
 // Template types
 export type TemplateName = 'cn-gov' | 'en-standard';
 
+// Document-level settings (line spacing, page numbers, margins)
+export type LineSpacingType = 'exact' | 'auto';
+
+export interface LineSpacingConfig {
+  type: LineSpacingType;
+  value: number; // twips: 560=28pt exact, 360=1.5 auto (240=single)
+}
+
+export type PageNumberFormat = 'dash' | 'plain';
+
+export interface PageMargins {
+  top: number; // twips
+  bottom: number;
+  left: number;
+  right: number;
+  header: number;
+  footer: number;
+}
+
+export interface DocumentSettings {
+  lineSpacing: LineSpacingConfig;
+  pageNumberFormat: PageNumberFormat;
+  margins: PageMargins;
+}
+
 export interface Template {
   id: TemplateName;
   name: string;
@@ -110,4 +135,5 @@ export interface Template {
   styles: StyleSettings;
   fontSizes: { name: string; pt: number }[];
   availableFonts: DocumentFont[];
+  documentSettings: DocumentSettings;
 }
