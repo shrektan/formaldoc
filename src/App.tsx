@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { TemplateGallery } from './components/TemplateGallery';
+import { MarkdownEditor } from './components/Editor/MarkdownEditor';
 import { StyleProvider } from './contexts/StyleContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useStyles } from './contexts/useStyles';
@@ -58,11 +59,40 @@ function AppContent() {
     return currentTemplate.nameEn;
   };
 
-  // Check if text has markdown headings
-  const checkForHeadings = (content: string) => {
-    const hasHeadings = /^#{1,2}\s+.+$/m.test(content);
-    if (!hasHeadings && content.trim().length > 50) {
+  /**
+   * Check if text contains markdown formatting.
+   * We look for common markdown patterns, not just headings.
+   */
+  const checkForMarkdown = (content: string) => {
+    const trimmed = content.trim();
+    if (trimmed.length < 50) {
+      setShowHeadingHint(false);
+      return;
+    }
+
+    // Check for various markdown patterns
+    const markdownPatterns = [
+      /^#{1,6}\s+.+$/m, // Headings: # ## ### etc
+      /^\s*[-*+]\s+.+$/m, // Unordered list: - * +
+      /^\s*\d+\.\s+.+$/m, // Ordered list: 1. 2. etc
+      /\*\*.+?\*\*/m, // Bold: **text**
+      /\*.+?\*/m, // Italic: *text*
+      /\[.+?\]\(.+?\)/m, // Links: [text](url)
+      /^\s*>\s+.+$/m, // Blockquote: > text
+      /`[^`]+`/m, // Inline code: `code`
+      /^```/m, // Code block: ```
+      /^\|.+\|$/m, // Table: |col|col|
+      /^\s*[-*_]{3,}\s*$/m, // Horizontal rule: --- or *** or ___
+      /\$\$.+?\$\$/s, // Block math: $$...$$
+      /\$.+?\$/m, // Inline math: $...$
+    ];
+
+    const hasMarkdown = markdownPatterns.some((pattern) => pattern.test(trimmed));
+
+    if (!hasMarkdown) {
       setShowHeadingHint(true);
+    } else {
+      setShowHeadingHint(false);
     }
   };
 
@@ -84,20 +114,22 @@ function AppContent() {
       return '\u201C' + content + '\u201D';
     });
     setText(converted);
-    checkForHeadings(converted);
+    checkForMarkdown(converted);
     alert(count > 0 ? t.alerts.quotesConverted(count) : t.alerts.noQuotesFound);
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    setShowHeadingHint(false); // Reset hint on new paste
-    const html = e.clipboardData.getData('text/html');
-    if (html) {
-      e.preventDefault();
-      const markdown = htmlToMarkdown(html);
-      setText(markdown);
-      checkForHeadings(markdown);
-    }
-    // If no HTML, let default paste behavior handle plain text.
+  // Handle paste from HTML (e.g., AI chatbots)
+  const handlePaste = (html: string): string | null => {
+    setShowHeadingHint(false);
+    const markdown = htmlToMarkdown(html);
+    checkForMarkdown(markdown);
+    return markdown;
+  };
+
+  // Handle text changes from the editor
+  const handleTextChange = (value: string) => {
+    setText(value);
+    checkForMarkdown(value);
   };
 
   return (
@@ -157,14 +189,9 @@ function AppContent() {
               </button>
             </div>
           </div>
-          <textarea
-            id="content"
-            className="content-input"
+          <MarkdownEditor
             value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              checkForHeadings(e.target.value);
-            }}
+            onChange={handleTextChange}
             onPaste={handlePaste}
             placeholder={t.input.placeholder}
           />
