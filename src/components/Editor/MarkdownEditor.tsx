@@ -34,7 +34,7 @@ export function MarkdownEditor({ value, onChange, onPaste, placeholder }: Markdo
         value={value}
         onChange={handleChange}
         height="100%"
-        preview="preview"
+        preview="edit"
         hideToolbar={false}
         enableScroll={true}
         extraCommands={extraCommands}
