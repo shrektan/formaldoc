@@ -42,7 +42,9 @@ function isSuitableTitle(text: string): boolean {
  * 1. First H1 heading (#)
  * 2. First H2 heading (##)
  * 3. First H3 heading (###)
- * 4. First non-empty line if it looks like a title
+ * 4. First line that is entirely bold (**text**)
+ * 5. First line that is entirely italic (*text*)
+ * 6. First non-empty line if it looks like a title
  */
 function extractTitle(markdown: string): string | null {
   // Try H1 first
@@ -63,6 +65,36 @@ function extractTitle(markdown: string): string | null {
   const h3Match = markdown.match(/^###\s+(.+)$/m);
   if (h3Match) {
     const title = cleanMarkdownFormatting(h3Match[1]);
+    if (isSuitableTitle(title)) return title;
+  }
+
+  // Try first line with bold formatting (entire line is bold)
+  // Match: **text** or __text__ at the start of a line
+  const boldMatch = markdown.match(/^\*\*(.+?)\*\*\s*$/m);
+  if (boldMatch) {
+    const title = cleanMarkdownFormatting(boldMatch[1]);
+    if (isSuitableTitle(title)) return title;
+  }
+
+  // Also try underscores for bold: __text__
+  const boldMatch2 = markdown.match(/^__(.+?)__\s*$/m);
+  if (boldMatch2) {
+    const title = cleanMarkdownFormatting(boldMatch2[1]);
+    if (isSuitableTitle(title)) return title;
+  }
+
+  // Try first line with italic formatting (entire line is italic)
+  // Match: *text* or _text_ at the start of a line (but not ** or __)
+  const italicMatch = markdown.match(/^(?<!\*)\*([^*]+?)\*(?!\*)\s*$/m);
+  if (italicMatch) {
+    const title = cleanMarkdownFormatting(italicMatch[1]);
+    if (isSuitableTitle(title)) return title;
+  }
+
+  // Also try underscore for italic: _text_
+  const italicMatch2 = markdown.match(/^(?<!_)_([^_]+?)_(?!_)\s*$/m);
+  if (italicMatch2) {
+    const title = cleanMarkdownFormatting(italicMatch2[1]);
     if (isSuitableTitle(title)) return title;
   }
 
