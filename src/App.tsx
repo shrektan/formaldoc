@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { TemplateGallery } from './components/TemplateGallery';
 import { MarkdownEditor } from './components/Editor/MarkdownEditor';
+import { LoadingOverlay } from './components/LoadingOverlay';
 import { StyleProvider } from './contexts/StyleContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useStyles } from './contexts/useStyles';
@@ -241,6 +242,9 @@ function AppContent() {
         onSelect={handleTemplateSelect}
         onClose={() => setIsGalleryOpen(false)}
       />
+
+      {/* Loading overlay */}
+      <LoadingOverlay isVisible={isGenerating} message={t.loading.generating} />
     </div>
   );
 }
