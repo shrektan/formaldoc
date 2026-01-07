@@ -125,6 +125,48 @@ body {
   opacity: 0.8;
 }
 
+/* Template Selector Button */
+.template-selector-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.template-selector-btn:hover {
+  border-color: var(--primary);
+  background: rgba(26, 115, 232, 0.05);
+}
+
+.template-selector-btn:active {
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+.template-icon {
+  font-size: 16px;
+}
+
+.template-name {
+  font-weight: 500;
+}
+
+.template-arrow {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-left: 2px;
+}
+
 /* Main content */
 .main-simple {
   flex: 1;

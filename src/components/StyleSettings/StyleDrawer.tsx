@@ -1,7 +1,6 @@
 import { useStyles } from '../../contexts/useStyles';
 import { useTranslation } from '../../hooks/useTranslation';
-import type { StyleKey, TemplateName } from '../../types/styles';
-import { TEMPLATES } from '../../lib/styles/templates';
+import type { StyleKey } from '../../types/styles';
 import { StyleSection } from './StyleSection';
 
 interface StyleDrawerProps {
@@ -24,17 +23,10 @@ const STYLE_ORDER: StyleKey[] = [
 ];
 
 export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
-  const { styles, template, currentTemplate, updateStyle, setTemplate, resetStyles } = useStyles();
+  const { styles, currentTemplate, updateStyle, resetStyles } = useStyles();
   const t = useTranslation();
 
   if (!isOpen) return null;
-
-  const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newTemplate = e.target.value as TemplateName;
-    if (confirm(t.styleDrawer.confirmTemplateChange)) {
-      setTemplate(newTemplate);
-    }
-  };
 
   const handleReset = () => {
     if (confirm(t.styleDrawer.confirmReset)) {
@@ -59,19 +51,6 @@ export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
         </div>
 
         <div className="drawer-content">
-          {/* Template Selector */}
-          <div className="template-selector">
-            <label>{t.styleDrawer.template}</label>
-            <select value={template} onChange={handleTemplateChange}>
-              {Object.values(TEMPLATES).map((tmpl) => (
-                <option key={tmpl.id} value={tmpl.id}>
-                  {tmpl.name}
-                </option>
-              ))}
-            </select>
-            <span className="template-desc">{currentTemplate.description}</span>
-          </div>
-
           {/* Style Sections */}
           {STYLE_ORDER.map((key) => (
             <StyleSection
