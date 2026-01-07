@@ -54,10 +54,11 @@ function AppContent() {
 
   // Get display name for current template based on language
   const getTemplateDisplayName = () => {
+    const prefix = currentTemplate.category === 'chinese' ? '中文-' : 'EN-';
     if (language === 'cn' && currentTemplate.category === 'chinese') {
-      return currentTemplate.name;
+      return prefix + currentTemplate.name;
     }
-    return currentTemplate.nameEn;
+    return prefix + currentTemplate.nameEn;
   };
 
   /**

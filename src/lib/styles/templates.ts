@@ -150,12 +150,12 @@ const CN_GENERAL_STYLES: StyleSettings = {
   bodyText: {
     font: '宋体',
     size: 12,
-    indent: true,
+    indent: false,
   },
   listItem: {
     font: '宋体',
     size: 12,
-    indent: true,
+    indent: false,
   },
   tableHeader: {
     font: '黑体',
@@ -710,7 +710,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
       bodyFont: '宋体',
       headingFont: '黑体',
       lineSpacing: '1.5倍',
-      indent: '首行缩进',
+      indent: '无缩进',
     },
     styles: CN_GENERAL_STYLES,
     fontSizes: CHINESE_FONT_SIZES,

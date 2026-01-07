@@ -325,6 +325,22 @@ body {
 .editor-container .w-md-editor-preview {
   background: var(--surface) !important;
   padding: 16px !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+}
+
+/* Fix preview-only mode height */
+.editor-container .w-md-editor-show-preview {
+  height: 100% !important;
+}
+
+.editor-container .w-md-editor-show-preview .w-md-editor-content {
+  height: 100% !important;
+}
+
+.editor-container .w-md-editor-show-preview .w-md-editor-preview {
+  display: block !important;
+  width: 100% !important;
 }
 
 .editor-container .wmde-markdown {
