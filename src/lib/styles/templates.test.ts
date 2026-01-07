@@ -19,8 +19,8 @@ describe('Template Registry', () => {
       expect(TEMPLATES['en-standard']).toBeDefined();
     });
 
-    it('should have exactly 2 templates', () => {
-      expect(Object.keys(TEMPLATES)).toHaveLength(2);
+    it('should have exactly 8 templates', () => {
+      expect(Object.keys(TEMPLATES)).toHaveLength(8);
     });
   });
 
@@ -38,13 +38,13 @@ describe('Template Registry', () => {
     it('should return cn-gov template', () => {
       const template = getTemplate('cn-gov');
       expect(template.id).toBe('cn-gov');
-      expect(template.name).toBe('公文格式');
+      expect(template.name).toBe('政府公文');
     });
 
     it('should return en-standard template', () => {
       const template = getTemplate('en-standard');
       expect(template.id).toBe('en-standard');
-      expect(template.name).toBe('English Standard');
+      expect(template.name).toBe('Standard');
     });
 
     it('should return template with all required properties', () => {
@@ -96,8 +96,14 @@ describe('Template Registry', () => {
     it('should return all template names', () => {
       const names = getTemplateNames();
       expect(names).toContain('cn-gov');
+      expect(names).toContain('cn-general');
+      expect(names).toContain('cn-academic');
+      expect(names).toContain('cn-report');
       expect(names).toContain('en-standard');
-      expect(names).toHaveLength(2);
+      expect(names).toContain('en-business');
+      expect(names).toContain('en-academic');
+      expect(names).toContain('en-legal');
+      expect(names).toHaveLength(8);
     });
   });
 
