@@ -87,7 +87,8 @@ $$\\frac{a}{b}$$（独立公式）`,
       downloading: '生成中...',
     },
     hints: {
-      noHeadings: '未检测到标题格式。可让AI"把内容放在markdown代码块中"再复制。',
+      noHeadings:
+        '未检测到Markdown格式。可让AI"用Markdown格式回复"或"把内容放在markdown代码块中"再复制。',
       closeHint: '关闭提示',
     },
     alerts: {
@@ -155,7 +156,8 @@ $$\\frac{a}{b}$$ (block formula)`,
       downloading: 'Generating...',
     },
     hints: {
-      noHeadings: 'No headings detected. Ask AI to format content in a markdown code block.',
+      noHeadings:
+        'No Markdown formatting detected. Ask AI to reply in Markdown format or wrap content in a code block.',
       closeHint: 'Close hint',
     },
     alerts: {
