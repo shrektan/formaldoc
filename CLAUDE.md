@@ -2,6 +2,16 @@
 
 This file contains instructions for Claude Code when working on this project.
 
+## Installing Dependencies
+
+In Claude Code environment, use npm instead of bun for installing dependencies:
+
+```bash
+npm install    # Use npm in Claude Code environment
+```
+
+Locally, you can use either `bun install` or `npm install`.
+
 ## Before Every Commit
 
 After making any code changes, **always** run the following commands in order:
@@ -30,8 +40,11 @@ Fix any remaining errors before committing. Do not commit code that fails lintin
 | `bun run format` | Format code with Prettier |
 | `bun run lint` | Check for linting errors |
 | `bun run lint:fix` | Auto-fix linting errors |
-| `bun run test` | Run tests |
+| `bun run test` | Run all tests (~20s) |
+| `bun run test:fast` | Run unit tests only, skip CLI integration tests (~1.5s) |
 | `bun run test:watch` | Run tests in watch mode |
+
+**Note**: CLI tests (`cli/cli.test.ts`) are slow (~19s) because each test spawns a subprocess. Use `test:fast` during development for quick feedback, run full `test` before commits.
 
 ## Project Purpose
 
@@ -50,10 +63,21 @@ FormalDoc uses a template system to support different document formats.
 
 ### Available Templates
 
-| Template | Description | Default Fonts |
-|----------|-------------|---------------|
-| `cn-gov` | Chinese government format (GB/T 9704-2012) | 宋体, 黑体, 楷体, 仿宋 |
-| `en-standard` | English standard format | Times New Roman (body), Arial (headings) |
+**Chinese Templates:**
+| Template | Description | Body Font | Line Spacing |
+|----------|-------------|-----------|--------------|
+| `cn-gov` | Government format (GB/T 9704) | 仿宋 | Fixed 28pt |
+| `cn-general` | General document | 宋体 | 1.5x |
+| `cn-academic` | Thesis/Journal format | 宋体 | 1.5x |
+| `cn-report` | Business reports | 宋体 | 1.5x |
+
+**English Templates:**
+| Template | Description | Body Font | Line Spacing |
+|----------|-------------|-----------|--------------|
+| `en-standard` | Standard format | Times New Roman | 1.5x |
+| `en-business` | Modern corporate | Calibri | 1.15x |
+| `en-academic` | APA style | Times New Roman | Double |
+| `en-legal` | Contracts/legal | Times New Roman | 1.5x |
 
 ### Key Files
 
@@ -61,7 +85,8 @@ FormalDoc uses a template system to support different document formats.
 - `src/lib/styles/templates.ts` - Template registry with style definitions
 - `src/lib/styles/storage.ts` - Template/style persistence to localStorage
 - `src/contexts/StyleContext.tsx` - React context for template state
-- `src/components/StyleSettings/StyleDrawer.tsx` - Template selector UI
+- `src/components/TemplateGallery/` - Template selection gallery UI
+- `src/components/StyleSettings/StyleDrawer.tsx` - Style customization drawer
 
 ### CLI Template Flag
 

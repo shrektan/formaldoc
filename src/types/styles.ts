@@ -83,7 +83,7 @@ export const STYLE_META = STYLE_META_CN;
 
 // Get style meta based on template
 export function getStyleMeta(template: TemplateName): Record<StyleKey, StyleMeta> {
-  return template === 'en-standard' ? STYLE_META_EN : STYLE_META_CN;
+  return template.startsWith('en-') ? STYLE_META_EN : STYLE_META_CN;
 }
 
 // Font arrays for dropdowns
@@ -124,7 +124,18 @@ export const ENGLISH_FONT_SIZES: { name: string; pt: number }[] = [
 ];
 
 // Template types
-export type TemplateName = 'cn-gov' | 'en-standard';
+export type TemplateName =
+  | 'cn-gov'
+  | 'cn-general'
+  | 'cn-academic'
+  | 'cn-report'
+  | 'en-standard'
+  | 'en-business'
+  | 'en-academic'
+  | 'en-legal';
+
+// Template categories for grouping in gallery
+export type TemplateCategory = 'chinese' | 'english';
 
 // Document-level settings (line spacing, page numbers, margins)
 export type LineSpacingType = 'exact' | 'auto';
@@ -152,10 +163,22 @@ export interface DocumentSettings {
   spacingAfter: number; // twips: 200 = 10pt for EN, 0 for CN
 }
 
+// Template specification for gallery display
+export interface TemplateSpecs {
+  bodyFont: string;
+  headingFont: string;
+  lineSpacing: string;
+  indent: string;
+}
+
 export interface Template {
   id: TemplateName;
   name: string;
+  nameEn: string;
   description: string;
+  descriptionEn: string;
+  category: TemplateCategory;
+  specs: TemplateSpecs;
   styles: StyleSettings;
   fontSizes: { name: string; pt: number }[];
   availableFonts: DocumentFont[];

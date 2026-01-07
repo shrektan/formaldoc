@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
+import { TemplateGallery } from './components/TemplateGallery';
 import { MarkdownEditor } from './components/Editor/MarkdownEditor';
 import { StyleProvider } from './contexts/StyleContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -10,6 +11,7 @@ import { useDocxGenerator } from './hooks/useDocxGenerator';
 import { htmlToMarkdown } from './lib/html-to-markdown';
 import { examples } from './i18n';
 import type { Language } from './i18n';
+import type { TemplateName } from './types/styles';
 import './styles/app.css';
 
 function LanguageSwitch() {
@@ -39,10 +41,23 @@ function LanguageSwitch() {
 function AppContent() {
   const [text, setText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
-  const { styles, currentTemplate } = useStyles();
+  const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
   const { generate, isGenerating, error } = useDocxGenerator();
+
+  const handleTemplateSelect = (templateId: TemplateName) => {
+    setTemplate(templateId);
+  };
+
+  // Get display name for current template based on language
+  const getTemplateDisplayName = () => {
+    if (language === 'cn' && currentTemplate.category === 'chinese') {
+      return currentTemplate.name;
+    }
+    return currentTemplate.nameEn;
+  };
 
   /**
    * Check if text contains markdown formatting.
@@ -139,6 +154,16 @@ function AppContent() {
         </div>
         <p className="tagline">{t.header.tagline}</p>
         <p className="tip">{t.header.tip}</p>
+        {/* Template selector button */}
+        <button
+          type="button"
+          className="template-selector-btn"
+          onClick={() => setIsGalleryOpen(true)}
+        >
+          <span className="template-icon">📄</span>
+          <span className="template-name">{getTemplateDisplayName()}</span>
+          <span className="template-arrow">▾</span>
+        </button>
       </header>
 
       {/* Main content */}
@@ -157,7 +182,7 @@ function AppContent() {
                 {t.buttons.quoteConvert}
               </button>
               <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
-                {t.buttons.styles}
+                {t.buttons.customize}
               </button>
               <button className="action-btn" onClick={handleLoadExample} type="button">
                 {t.buttons.example}
@@ -208,20 +233,34 @@ function AppContent() {
 
       {/* Settings drawer */}
       <StyleDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Template gallery */}
+      <TemplateGallery
+        isOpen={isGalleryOpen}
+        currentTemplate={template}
+        onSelect={handleTemplateSelect}
+        onClose={() => setIsGalleryOpen(false)}
+      />
     </div>
   );
 }
 
 function AppWithLanguage() {
-  const { setTemplate } = useStyles();
+  const { currentTemplate, setTemplate } = useStyles();
 
   const handleLanguageChange = useCallback(
     (lang: Language) => {
-      // Auto-switch template based on language
-      const templateForLang = lang === 'cn' ? 'cn-gov' : 'en-standard';
-      setTemplate(templateForLang);
+      // Auto-switch template only if current template's category doesn't match language
+      const currentCategory = currentTemplate.category;
+      const targetCategory = lang === 'cn' ? 'chinese' : 'english';
+
+      if (currentCategory !== targetCategory) {
+        // Switch to default template for the new language
+        const templateForLang = lang === 'cn' ? 'cn-general' : 'en-standard';
+        setTemplate(templateForLang);
+      }
     },
-    [setTemplate]
+    [currentTemplate.category, setTemplate]
   );
 
   return (

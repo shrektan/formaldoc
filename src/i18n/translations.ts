@@ -13,6 +13,7 @@ export interface Translations {
   buttons: {
     quoteConvert: string;
     styles: string;
+    customize: string;
     example: string;
     download: string;
     downloading: string;
@@ -27,6 +28,10 @@ export interface Translations {
   };
   footer: {
     tagline: string;
+  };
+  templateGallery: {
+    title: string;
+    chinese: string;
   };
   styleDrawer: {
     title: string;
@@ -82,6 +87,7 @@ $$\\frac{a}{b}$$（独立公式）`,
     buttons: {
       quoteConvert: '引号转换',
       styles: '字体样式',
+      customize: '自定义',
       example: '示例',
       download: '下载Word文档',
       downloading: '生成中...',
@@ -98,8 +104,12 @@ $$\\frac{a}{b}$$（独立公式）`,
     footer: {
       tagline: '无需登录 · 无需安装 · 可离线使用 · 数据不上传',
     },
+    templateGallery: {
+      title: '选择模板',
+      chinese: '中文',
+    },
     styleDrawer: {
-      title: '文档样式',
+      title: '自定义样式',
       template: '模板',
       reset: '恢复默认',
       confirmReset: '确定要恢复为模板默认样式吗？',
@@ -151,6 +161,7 @@ $$\\frac{a}{b}$$ (block formula)`,
     buttons: {
       quoteConvert: 'Convert Quotes',
       styles: 'Styles',
+      customize: 'Customize',
       example: 'Example',
       download: 'Download Word',
       downloading: 'Generating...',
@@ -167,8 +178,12 @@ $$\\frac{a}{b}$$ (block formula)`,
     footer: {
       tagline: 'No login · No install · Works offline · Data stays local',
     },
+    templateGallery: {
+      title: 'Choose Template',
+      chinese: 'Chinese',
+    },
     styleDrawer: {
-      title: 'Document Styles',
+      title: 'Customize Styles',
       template: 'Template',
       reset: 'Reset',
       confirmReset: 'Reset all styles to template defaults?',
