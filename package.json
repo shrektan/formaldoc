@@ -15,6 +15,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
     "test": "bun test",
+    "test:fast": "bun test src/",
     "test:watch": "bun test --watch",
     "cli": "bun run cli/index.ts",
     "cli:link": "bun link"

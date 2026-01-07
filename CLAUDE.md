@@ -40,8 +40,11 @@ Fix any remaining errors before committing. Do not commit code that fails lintin
 | `bun run format` | Format code with Prettier |
 | `bun run lint` | Check for linting errors |
 | `bun run lint:fix` | Auto-fix linting errors |
-| `bun run test` | Run tests |
+| `bun run test` | Run all tests (~20s) |
+| `bun run test:fast` | Run unit tests only, skip CLI integration tests (~1.5s) |
 | `bun run test:watch` | Run tests in watch mode |
+
+**Note**: CLI tests (`cli/cli.test.ts`) are slow (~19s) because each test spawns a subprocess. Use `test:fast` during development for quick feedback, run full `test` before commits.
 
 ## Project Purpose
 
