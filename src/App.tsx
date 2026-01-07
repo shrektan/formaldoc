@@ -7,6 +7,7 @@ import { useStyles } from './contexts/useStyles';
 import { useLanguage } from './hooks/useTranslation';
 import { useDocxGenerator } from './hooks/useDocxGenerator';
 import { htmlToMarkdown } from './lib/html-to-markdown';
+import { detectInitialLanguage } from './lib/language-detection';
 import { examples } from './i18n';
 import type { Language } from './i18n';
 import './styles/app.css';
@@ -185,30 +186,22 @@ function AppContent() {
   );
 }
 
-function AppWithLanguage() {
-  const { setTemplate } = useStyles();
-
-  const handleLanguageChange = useCallback(
-    (lang: Language) => {
-      // Auto-switch template based on language
-      const templateForLang = lang === 'cn' ? 'cn-gov' : 'en-standard';
-      setTemplate(templateForLang);
-    },
-    [setTemplate]
-  );
-
-  return (
-    <LanguageProvider onLanguageChange={handleLanguageChange}>
-      <AppContent />
-      <Analytics />
-    </LanguageProvider>
-  );
-}
-
 function App() {
+  // Detect language synchronously before rendering
+  const [language, setLanguage] = useState<Language>(() => detectInitialLanguage());
+
+  // Handle language change from LanguageProvider
+  const handleLanguageChange = useCallback((lang: Language) => {
+    setLanguage(lang);
+  }, []);
+
   return (
-    <StyleProvider>
-      <AppWithLanguage />
+    // Key forces StyleProvider to remount and reload settings when language changes
+    <StyleProvider key={language} language={language}>
+      <LanguageProvider initialLanguage={language} onLanguageChange={handleLanguageChange}>
+        <AppContent />
+        <Analytics />
+      </LanguageProvider>
     </StyleProvider>
   );
 }
