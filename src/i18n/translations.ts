@@ -18,6 +18,9 @@ export interface Translations {
     download: string;
     downloading: string;
   };
+  loading: {
+    generating: string;
+  };
   hints: {
     noHeadings: string;
     closeHint: string;
@@ -92,6 +95,9 @@ $$\\frac{a}{b}$$（独立公式）`,
       download: '下载Word文档',
       downloading: '生成中...',
     },
+    loading: {
+      generating: '正在生成文档...',
+    },
     hints: {
       noHeadings:
         '未检测到Markdown格式。可让AI"用Markdown格式回复"或"把内容放在markdown代码块中"再复制。',
@@ -165,6 +171,9 @@ $$\\frac{a}{b}$$ (block formula)`,
       example: 'Example',
       download: 'Download Word',
       downloading: 'Generating...',
+    },
+    loading: {
+      generating: 'Generating document...',
     },
     hints: {
       noHeadings:
