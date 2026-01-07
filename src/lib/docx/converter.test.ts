@@ -1,3 +1,10 @@
+// Suppress mathml2omml library warnings about unsupported MathML elements (span, annotation)
+const originalLog = console.log;
+const originalWarn = console.warn;
+const filter = (...args: unknown[]) => !String(args[0]).includes('Type not supported');
+console.log = (...args: unknown[]) => filter(...args) && originalLog(...args);
+console.warn = (...args: unknown[]) => filter(...args) && originalWarn(...args);
+
 import { describe, it, expect } from 'bun:test';
 import { initDomPolyfill } from '../../../cli/dom-polyfill';
 import { convertMdastToDocx } from './converter';
