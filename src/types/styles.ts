@@ -17,11 +17,25 @@ export type FontSize = number;
 // Individual style configuration
 export interface TextStyle {
   font: DocumentFont;
+  englishFont?: EnglishFont; // Optional English font for Chinese templates
   size: FontSize;
   bold?: boolean;
   italic?: boolean;
   center?: boolean;
   indent?: boolean; // Two-character first line indent
+}
+
+// Font pairing rules: serif Chinese fonts → serif English fonts, sans-serif → sans-serif
+export const FONT_PAIRING: Record<ChineseFont, EnglishFont> = {
+  宋体: 'Times New Roman',
+  仿宋: 'Times New Roman',
+  楷体: 'Times New Roman',
+  黑体: 'Arial',
+};
+
+// Get the paired English font for a Chinese font
+export function getEnglishFontForChinese(chineseFont: ChineseFont): EnglishFont {
+  return FONT_PAIRING[chineseFont];
 }
 
 // All configurable styles
@@ -166,7 +180,9 @@ export interface DocumentSettings {
 // Template specification for gallery display
 export interface TemplateSpecs {
   bodyFont: string;
+  bodyEnglishFont?: string; // For Chinese templates
   headingFont: string;
+  headingEnglishFont?: string; // For Chinese templates
   lineSpacing: string;
   indent: string;
 }
@@ -182,5 +198,6 @@ export interface Template {
   styles: StyleSettings;
   fontSizes: { name: string; pt: number }[];
   availableFonts: DocumentFont[];
+  availableEnglishFonts?: EnglishFont[]; // For Chinese templates
   documentSettings: DocumentSettings;
 }

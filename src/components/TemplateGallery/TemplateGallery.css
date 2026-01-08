@@ -171,6 +171,11 @@
   font-weight: 500;
 }
 
+.spec-english-font {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
 /* ===== Mobile Responsive ===== */
 @media (max-width: 480px) {
   .template-gallery {

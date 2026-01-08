@@ -24,6 +24,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 公文标题: 宋体 22pt, bold, centered
   title: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 22,
     bold: true,
     center: true,
@@ -32,6 +33,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 一级标题 (一、二、三): 黑体 16pt
   heading1: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 16,
     bold: false,
     indent: true,
@@ -40,6 +42,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 二级标题 (（一）（二）): 楷体 16pt
   heading2: {
     font: '楷体',
+    englishFont: 'Times New Roman',
     size: 16,
     bold: false,
     indent: true,
@@ -48,6 +51,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 三级标题 (1. 2. 3.): 仿宋 16pt, bold
   heading3: {
     font: '仿宋',
+    englishFont: 'Times New Roman',
     size: 16,
     bold: true,
     indent: true,
@@ -56,6 +60,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 四级标题 (（1）（2）): 仿宋 16pt, bold
   heading4: {
     font: '仿宋',
+    englishFont: 'Times New Roman',
     size: 16,
     bold: true,
     indent: true,
@@ -64,6 +69,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 正文: 仿宋 16pt
   bodyText: {
     font: '仿宋',
+    englishFont: 'Times New Roman',
     size: 16,
     indent: true,
   },
@@ -71,6 +77,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 列表项: 仿宋 16pt
   listItem: {
     font: '仿宋',
+    englishFont: 'Times New Roman',
     size: 16,
     indent: true,
   },
@@ -78,6 +85,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 表头: 仿宋 16pt (三号), bold, centered
   tableHeader: {
     font: '仿宋',
+    englishFont: 'Times New Roman',
     size: 16,
     bold: true,
     center: true,
@@ -86,6 +94,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 表格内容: 仿宋 16pt (三号), centered
   tableCell: {
     font: '仿宋',
+    englishFont: 'Times New Roman',
     size: 16,
     center: true,
   },
@@ -93,6 +102,7 @@ const CN_GOV_STYLES: StyleSettings = {
   // 页脚: 仿宋 14pt (四号)
   pageFooter: {
     font: '仿宋',
+    englishFont: 'Times New Roman',
     size: 14,
   },
 };
@@ -119,57 +129,67 @@ const CN_GOV_DOCUMENT_SETTINGS: DocumentSettings = {
 const CN_GENERAL_STYLES: StyleSettings = {
   title: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 22,
     bold: false, // 黑体 is inherently bold
     center: true,
   },
   heading1: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 16,
     bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading2: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 14,
     bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading3: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 12,
     bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading4: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 12,
     bold: true,
     indent: false,
   },
   bodyText: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 12,
     indent: false,
   },
   listItem: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 12,
     indent: false,
   },
   tableHeader: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 10.5,
     bold: true,
     center: true,
   },
   tableCell: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 10.5,
     center: false,
   },
   pageFooter: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 10.5,
   },
 };
@@ -195,12 +215,14 @@ const CN_GENERAL_DOCUMENT_SETTINGS: DocumentSettings = {
 const CN_ACADEMIC_STYLES: StyleSettings = {
   title: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 18,
     bold: false, // 黑体 is inherently bold
     center: true,
   },
   heading1: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 15,
     bold: false, // 黑体 is inherently bold
     indent: true,
@@ -208,45 +230,53 @@ const CN_ACADEMIC_STYLES: StyleSettings = {
   },
   heading2: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 14,
     bold: false, // 黑体 is inherently bold
     indent: true,
   },
   heading3: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 12,
     bold: false, // 黑体 is inherently bold
     indent: true,
   },
   heading4: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 12,
     bold: true,
     indent: true,
   },
   bodyText: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 12,
     indent: true,
   },
   listItem: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 12,
     indent: true,
   },
   tableHeader: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 10.5,
     bold: true,
     center: true,
   },
   tableCell: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 10.5,
     center: false,
   },
   pageFooter: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 10.5,
   },
 };
@@ -272,57 +302,67 @@ const CN_ACADEMIC_DOCUMENT_SETTINGS: DocumentSettings = {
 const CN_REPORT_STYLES: StyleSettings = {
   title: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 24,
     bold: false, // 黑体 is inherently bold
     center: true,
   },
   heading1: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 18,
     bold: false, // 黑体 is inherently bold
     indent: true,
   },
   heading2: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 16,
     bold: false, // 黑体 is inherently bold
     indent: true,
   },
   heading3: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 14,
     bold: false, // 黑体 is inherently bold
     indent: true,
   },
   heading4: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 12,
     bold: false, // 黑体 is inherently bold
     indent: true,
   },
   bodyText: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 12,
     indent: true,
   },
   listItem: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 12,
     indent: false,
   },
   tableHeader: {
     font: '黑体',
+    englishFont: 'Arial',
     size: 11,
     bold: true,
     center: true,
   },
   tableCell: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 11,
     center: false,
   },
   pageFooter: {
     font: '宋体',
+    englishFont: 'Times New Roman',
     size: 10,
   },
 };
@@ -690,13 +730,16 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     category: 'chinese',
     specs: {
       bodyFont: '仿宋',
+      bodyEnglishFont: 'Times New Roman',
       headingFont: '黑体/楷体',
+      headingEnglishFont: 'Arial/TNR',
       lineSpacing: '固定28磅',
       indent: '首行缩进',
     },
     styles: CN_GOV_STYLES,
     fontSizes: CHINESE_FONT_SIZES,
     availableFonts: [...CHINESE_FONTS] as DocumentFont[],
+    availableEnglishFonts: [...ENGLISH_FONTS],
     documentSettings: CN_GOV_DOCUMENT_SETTINGS,
   },
   'cn-general': {
@@ -708,13 +751,16 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     category: 'chinese',
     specs: {
       bodyFont: '宋体',
+      bodyEnglishFont: 'Times New Roman',
       headingFont: '黑体',
+      headingEnglishFont: 'Arial',
       lineSpacing: '1.5倍',
       indent: '无缩进',
     },
     styles: CN_GENERAL_STYLES,
     fontSizes: CHINESE_FONT_SIZES,
     availableFonts: [...CHINESE_FONTS] as DocumentFont[],
+    availableEnglishFonts: [...ENGLISH_FONTS],
     documentSettings: CN_GENERAL_DOCUMENT_SETTINGS,
   },
   'cn-academic': {
@@ -726,13 +772,16 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     category: 'chinese',
     specs: {
       bodyFont: '宋体',
+      bodyEnglishFont: 'Times New Roman',
       headingFont: '黑体',
+      headingEnglishFont: 'Arial',
       lineSpacing: '1.5倍',
       indent: '首行缩进',
     },
     styles: CN_ACADEMIC_STYLES,
     fontSizes: CHINESE_FONT_SIZES,
     availableFonts: [...CHINESE_FONTS] as DocumentFont[],
+    availableEnglishFonts: [...ENGLISH_FONTS],
     documentSettings: CN_ACADEMIC_DOCUMENT_SETTINGS,
   },
   'cn-report': {
@@ -744,13 +793,16 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     category: 'chinese',
     specs: {
       bodyFont: '宋体',
+      bodyEnglishFont: 'Times New Roman',
       headingFont: '黑体',
+      headingEnglishFont: 'Arial',
       lineSpacing: '1.5倍',
       indent: '首行缩进',
     },
     styles: CN_REPORT_STYLES,
     fontSizes: CHINESE_FONT_SIZES,
     availableFonts: [...CHINESE_FONTS] as DocumentFont[],
+    availableEnglishFonts: [...ENGLISH_FONTS],
     documentSettings: CN_REPORT_DOCUMENT_SETTINGS,
   },
   'en-standard': {

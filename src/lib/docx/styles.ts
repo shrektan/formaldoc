@@ -4,10 +4,11 @@ import type {
   TextStyle,
   DocumentFont,
   ChineseFont,
+  EnglishFont,
   DocumentSettings,
   LineSpacingConfig,
 } from '../../types/styles';
-import { CHINESE_FONTS } from '../../types/styles';
+import { CHINESE_FONTS, FONT_PAIRING } from '../../types/styles';
 
 /**
  * GB/T 9704-2012 Chinese Government Document Format Specifications
@@ -39,17 +40,19 @@ function isChineseFont(font: string): font is ChineseFont {
 }
 
 /**
- * Creates a font object from a font name
- * For Chinese fonts: uses the font for all properties
- * For English fonts: uses the font for ascii/hAnsi, falls back to 宋体 for eastAsia
+ * Creates a font object from a font name with optional English font override
+ * For Chinese fonts: uses Chinese font for eastAsia, English font for ascii/hAnsi
+ * For English fonts: uses English font for ascii/hAnsi, falls back to 宋体 for eastAsia
  */
-function createFont(fontName: DocumentFont) {
+function createFont(fontName: DocumentFont, englishFont?: EnglishFont) {
   if (isChineseFont(fontName)) {
+    // Chinese font with paired or explicit English font
+    const english = englishFont ?? FONT_PAIRING[fontName];
     return {
-      ascii: fontName,
-      eastAsia: fontName,
-      hAnsi: fontName,
-      cs: '宋体',
+      ascii: english, // Latin characters use English font
+      eastAsia: fontName, // Chinese characters use Chinese font
+      hAnsi: english, // Extended Latin characters use English font
+      cs: english, // Complex scripts use English font
     };
   } else {
     // English font - use for ascii/hAnsi, fallback to 宋体 for eastAsia (Chinese characters)
@@ -66,7 +69,7 @@ function createFont(fontName: DocumentFont) {
  * Creates footer font object from style settings
  */
 export function createFooterFont(settings: StyleSettings) {
-  return createFont(settings.pageFooter.font);
+  return createFont(settings.pageFooter.font, settings.pageFooter.englishFont);
 }
 
 /**
@@ -124,7 +127,7 @@ export function createDocumentStyles(
         id: 'Normal',
         name: 'Normal',
         run: {
-          font: createFont(settings.bodyText.font),
+          font: createFont(settings.bodyText.font, settings.bodyText.englishFont),
           size: ptToHalfPoints(settings.bodyText.size),
         },
         paragraph: {
@@ -144,7 +147,7 @@ export function createDocumentStyles(
         next: 'BodyText',
         quickFormat: true,
         run: {
-          font: createFont(settings.title.font),
+          font: createFont(settings.title.font, settings.title.englishFont),
           size: ptToHalfPoints(settings.title.size),
           bold: settings.title.bold,
         },
@@ -167,7 +170,7 @@ export function createDocumentStyles(
         next: 'BodyText',
         quickFormat: true,
         run: {
-          font: createFont(settings.heading1.font),
+          font: createFont(settings.heading1.font, settings.heading1.englishFont),
           size: ptToHalfPoints(settings.heading1.size),
           bold: settings.heading1.bold,
         },
@@ -194,7 +197,7 @@ export function createDocumentStyles(
         next: 'BodyText',
         quickFormat: true,
         run: {
-          font: createFont(settings.heading2.font),
+          font: createFont(settings.heading2.font, settings.heading2.englishFont),
           size: ptToHalfPoints(settings.heading2.size),
           bold: settings.heading2.bold,
         },
@@ -221,7 +224,7 @@ export function createDocumentStyles(
         next: 'BodyText',
         quickFormat: true,
         run: {
-          font: createFont(settings.heading3.font),
+          font: createFont(settings.heading3.font, settings.heading3.englishFont),
           size: ptToHalfPoints(settings.heading3.size),
           bold: settings.heading3.bold,
         },
@@ -248,7 +251,7 @@ export function createDocumentStyles(
         next: 'BodyText',
         quickFormat: true,
         run: {
-          font: createFont(settings.heading4.font),
+          font: createFont(settings.heading4.font, settings.heading4.englishFont),
           size: ptToHalfPoints(settings.heading4.size),
           bold: settings.heading4.bold,
         },
@@ -274,7 +277,7 @@ export function createDocumentStyles(
         basedOn: 'Normal',
         quickFormat: true,
         run: {
-          font: createFont(settings.bodyText.font),
+          font: createFont(settings.bodyText.font, settings.bodyText.englishFont),
           size: ptToHalfPoints(settings.bodyText.size),
         },
         paragraph: {
@@ -297,7 +300,7 @@ export function createDocumentStyles(
         basedOn: 'BodyText',
         quickFormat: true,
         run: {
-          font: createFont(settings.listItem.font),
+          font: createFont(settings.listItem.font, settings.listItem.englishFont),
           size: ptToHalfPoints(settings.listItem.size),
         },
         paragraph: {
@@ -319,7 +322,7 @@ export function createDocumentStyles(
         basedOn: 'BodyText',
         quickFormat: true,
         run: {
-          font: createFont(settings.tableHeader.font),
+          font: createFont(settings.tableHeader.font, settings.tableHeader.englishFont),
           size: ptToHalfPoints(settings.tableHeader.size),
           bold: settings.tableHeader.bold,
         },
@@ -343,7 +346,7 @@ export function createDocumentStyles(
         basedOn: 'Normal',
         quickFormat: true,
         run: {
-          font: createFont(settings.tableCell.font),
+          font: createFont(settings.tableCell.font, settings.tableCell.englishFont),
           size: ptToHalfPoints(settings.tableCell.size),
         },
         paragraph: {

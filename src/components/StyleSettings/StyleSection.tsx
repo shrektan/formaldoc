@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
-import type { TextStyle, DocumentFont, Template, StyleKey } from '../../types/styles';
-import { STYLE_META } from '../../types/styles';
+import type {
+  TextStyle,
+  DocumentFont,
+  Template,
+  StyleKey,
+  EnglishFont,
+  ChineseFont,
+} from '../../types/styles';
+import { STYLE_META, CHINESE_FONTS, ENGLISH_FONTS, FONT_PAIRING } from '../../types/styles';
 
 interface StyleSectionProps {
   styleKey: StyleKey;
@@ -19,6 +26,14 @@ export function StyleSection({ styleKey, label, style, template, onChange }: Sty
   // Use template-specific fonts and sizes
   const availableFonts = template.availableFonts;
   const fontSizes = template.fontSizes;
+  const isCnTemplate = template.category === 'chinese';
+
+  // Derive effective English font for display
+  const effectiveEnglishFont: EnglishFont =
+    style.englishFont ??
+    (CHINESE_FONTS.includes(style.font as ChineseFont)
+      ? FONT_PAIRING[style.font as ChineseFont]
+      : (style.font as EnglishFont));
 
   // Helper to find size name for a pt size
   const getSizeName = (pt: number): string => {
@@ -31,7 +46,9 @@ export function StyleSection({ styleKey, label, style, template, onChange }: Sty
       <button className="style-section-header" onClick={() => setIsOpen(!isOpen)}>
         <span className="style-section-title">{label}</span>
         <span className="style-section-preview">
-          {style.font} {getSizeName(style.size)}
+          {style.font}
+          {isCnTemplate && <span className="preview-english"> + {effectiveEnglishFont}</span>}{' '}
+          {getSizeName(style.size)}
         </span>
         <span className={`style-section-arrow ${isOpen ? 'open' : ''}`}>▶</span>
       </button>
@@ -40,7 +57,7 @@ export function StyleSection({ styleKey, label, style, template, onChange }: Sty
         <div className="style-section-content">
           <div className="style-row">
             <label>
-              {t.styleLabels.font}
+              {isCnTemplate ? t.styleLabels.chineseFont : t.styleLabels.font}
               <select
                 value={style.font}
                 onChange={(e) => onChange({ font: e.target.value as DocumentFont })}
@@ -52,6 +69,22 @@ export function StyleSection({ styleKey, label, style, template, onChange }: Sty
                 ))}
               </select>
             </label>
+
+            {isCnTemplate && (
+              <label>
+                {t.styleLabels.englishFont}
+                <select
+                  value={style.englishFont ?? effectiveEnglishFont}
+                  onChange={(e) => onChange({ englishFont: e.target.value as EnglishFont })}
+                >
+                  {ENGLISH_FONTS.map((font) => (
+                    <option key={font} value={font}>
+                      {font}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             <label>
               {t.styleLabels.size}

@@ -590,6 +590,10 @@ body {
   color: var(--text-secondary);
 }
 
+.preview-english {
+  opacity: 0.7;
+}
+
 .style-section-arrow {
   font-size: 10px;
   color: var(--text-secondary);

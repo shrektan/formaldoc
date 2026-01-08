@@ -46,6 +46,8 @@ export interface Translations {
   };
   styleLabels: {
     font: string;
+    chineseFont: string;
+    englishFont: string;
     size: string;
     bold: string;
     italic: string;
@@ -130,6 +132,8 @@ $$\\frac{a}{b}$$（独立公式）`,
     },
     styleLabels: {
       font: '字体',
+      chineseFont: '中文字体',
+      englishFont: '英文字体',
       size: '字号',
       bold: '加粗',
       italic: '斜体',
@@ -212,6 +216,8 @@ $$\\frac{a}{b}$$ (block formula)`,
     },
     styleLabels: {
       font: 'Font',
+      chineseFont: 'Chinese Font',
+      englishFont: 'English Font',
       size: 'Size',
       bold: 'Bold',
       italic: 'Italic',

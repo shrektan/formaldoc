@@ -131,7 +131,8 @@ describe('createFooterFont', () => {
     const font = createFooterFont(DEFAULT_STYLES);
 
     expect(font.eastAsia).toBe('仿宋');
-    expect(font.ascii).toBe('仿宋');
+    // With dual-font support, Chinese fonts use paired English font for ascii
+    expect(font.ascii).toBe('Times New Roman');
   });
 
   it('should use custom footer font', () => {
@@ -145,6 +146,23 @@ describe('createFooterFont', () => {
 
     const font = createFooterFont(customStyles);
     expect(font.eastAsia).toBe('宋体');
+    // With dual-font support, 宋体 pairs with Times New Roman
+    expect(font.ascii).toBe('Times New Roman');
+  });
+
+  it('should use explicit englishFont when provided', () => {
+    const customStyles = {
+      ...DEFAULT_STYLES,
+      pageFooter: {
+        font: '仿宋' as const,
+        englishFont: 'Arial' as const,
+        size: 14,
+      },
+    };
+
+    const font = createFooterFont(customStyles);
+    expect(font.eastAsia).toBe('仿宋');
+    expect(font.ascii).toBe('Arial');
   });
 });
 
@@ -235,8 +253,28 @@ describe('English font support', () => {
     const titleStyle = styles.paragraphStyles!.find((s) => s.id === 'Title');
 
     const font = titleStyle!.run?.font as { ascii?: string; eastAsia?: string };
-    // Chinese font should use same font for both ascii and eastAsia
-    expect(font?.ascii).toBe('宋体');
+    // With dual-font support, Chinese font uses paired English font for ascii
+    expect(font?.ascii).toBe('Times New Roman');
+    expect(font?.eastAsia).toBe('宋体');
+  });
+
+  it('should use explicit englishFont when provided', () => {
+    const mixedStyles = {
+      ...enStyles,
+      title: {
+        font: '宋体' as const,
+        englishFont: 'Arial' as const,
+        size: 22,
+        bold: true,
+        center: true,
+      },
+    };
+
+    const styles = createDocumentStyles(mixedStyles);
+    const titleStyle = styles.paragraphStyles!.find((s) => s.id === 'Title');
+
+    const font = titleStyle!.run?.font as { ascii?: string; eastAsia?: string };
+    expect(font?.ascii).toBe('Arial');
     expect(font?.eastAsia).toBe('宋体');
   });
 });

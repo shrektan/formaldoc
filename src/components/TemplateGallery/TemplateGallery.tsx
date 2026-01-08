@@ -42,11 +42,21 @@ function TemplateCard({
       <div className="template-card-specs">
         <div className="spec-row">
           <span className="spec-label">{isChinese ? '正文' : 'Body'}:</span>
-          <span className="spec-value">{specs.bodyFont}</span>
+          <span className="spec-value">
+            {specs.bodyFont}
+            {template.category === 'chinese' && specs.bodyEnglishFont && (
+              <span className="spec-english-font"> + {specs.bodyEnglishFont}</span>
+            )}
+          </span>
         </div>
         <div className="spec-row">
           <span className="spec-label">{isChinese ? '标题' : 'Heading'}:</span>
-          <span className="spec-value">{specs.headingFont}</span>
+          <span className="spec-value">
+            {specs.headingFont}
+            {template.category === 'chinese' && specs.headingEnglishFont && (
+              <span className="spec-english-font"> + {specs.headingEnglishFont}</span>
+            )}
+          </span>
         </div>
         <div className="spec-row">
           <span className="spec-label">{isChinese ? '行距' : 'Spacing'}:</span>
