@@ -26,6 +26,27 @@ function cleanMarkdownFormatting(text: string): string {
 }
 
 /**
+ * Sanitize a string for use as a filename
+ * Replaces invalid characters and truncates if too long
+ */
+function sanitizeFilename(name: string): string {
+  // Replace invalid filename characters with underscore
+  // Invalid on Windows/Mac/Linux: / \ : * ? " < > |
+  let safe = name.replace(/[/\\:*?"<>|]/g, '_');
+
+  // Remove leading/trailing dots and spaces
+  safe = safe.replace(/^[\s.]+|[\s.]+$/g, '');
+
+  // Truncate to 200 chars (leave room for .docx extension)
+  if (safe.length > 200) {
+    safe = safe.slice(0, 200);
+  }
+
+  // Fallback if empty after sanitization
+  return safe || 'document';
+}
+
+/**
  * Check if text is suitable as a title (not too long, not a full sentence)
  */
 function isSuitableTitle(text: string): boolean {
@@ -142,7 +163,7 @@ export function useDocxGenerator(): UseDocxGeneratorResult {
         // Generate filename from title or fallback to timestamp
         const title = extractTitle(trimmedMarkdown);
         const filename = title
-          ? `${title}.docx`
+          ? `${sanitizeFilename(title)}.docx`
           : `document-${new Date().toISOString().slice(0, 10)}.docx`;
 
         saveAs(blob, filename);

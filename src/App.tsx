@@ -10,6 +10,7 @@ import { useStyles } from './contexts/useStyles';
 import { useLanguage } from './hooks/useTranslation';
 import { useDocxGenerator } from './hooks/useDocxGenerator';
 import { htmlToMarkdown } from './lib/html-to-markdown';
+import { detectInitialLanguage } from './lib/language-detection';
 import { examples } from './i18n';
 import type { Language } from './i18n';
 import type { TemplateName } from './types/styles';
@@ -250,11 +251,20 @@ function AppContent() {
   );
 }
 
-function AppWithLanguage() {
+function AppWithLanguage({
+  language,
+  onLanguageChange,
+}: {
+  language: Language;
+  onLanguageChange: (lang: Language) => void;
+}) {
   const { currentTemplate, setTemplate } = useStyles();
 
   const handleLanguageChange = useCallback(
     (lang: Language) => {
+      // Notify App to update state (triggers StyleProvider remount)
+      onLanguageChange(lang);
+
       // Auto-switch template only if current template's category doesn't match language
       const currentCategory = currentTemplate.category;
       const targetCategory = lang === 'cn' ? 'chinese' : 'english';
@@ -265,11 +275,11 @@ function AppWithLanguage() {
         setTemplate(templateForLang);
       }
     },
-    [currentTemplate.category, setTemplate]
+    [currentTemplate.category, setTemplate, onLanguageChange]
   );
 
   return (
-    <LanguageProvider onLanguageChange={handleLanguageChange}>
+    <LanguageProvider initialLanguage={language} onLanguageChange={handleLanguageChange}>
       <AppContent />
       <Analytics />
     </LanguageProvider>
@@ -277,9 +287,13 @@ function AppWithLanguage() {
 }
 
 function App() {
+  // Detect language synchronously before rendering
+  const [language, setLanguage] = useState<Language>(() => detectInitialLanguage());
+
   return (
-    <StyleProvider>
-      <AppWithLanguage />
+    // Key forces StyleProvider to remount and reload settings when language changes
+    <StyleProvider key={language} language={language}>
+      <AppWithLanguage language={language} onLanguageChange={setLanguage} />
     </StyleProvider>
   );
 }
