@@ -1,15 +1,18 @@
 import { useState, useCallback } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
+import { TemplateGallery } from './components/TemplateGallery';
+import { MarkdownEditor } from './components/Editor/MarkdownEditor';
+import { LoadingOverlay } from './components/LoadingOverlay';
 import { StyleProvider } from './contexts/StyleContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useStyles } from './contexts/useStyles';
 import { useLanguage } from './hooks/useTranslation';
 import { useDocxGenerator } from './hooks/useDocxGenerator';
 import { htmlToMarkdown } from './lib/html-to-markdown';
-import { detectInitialLanguage } from './lib/language-detection';
 import { examples } from './i18n';
 import type { Language } from './i18n';
+import type { TemplateName } from './types/styles';
 import './styles/app.css';
 
 function LanguageSwitch() {
@@ -39,16 +42,59 @@ function LanguageSwitch() {
 function AppContent() {
   const [text, setText] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
-  const { styles, currentTemplate } = useStyles();
+  const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
   const { generate, isGenerating, error } = useDocxGenerator();
 
-  // Check if text has markdown headings
-  const checkForHeadings = (content: string) => {
-    const hasHeadings = /^#{1,2}\s+.+$/m.test(content);
-    if (!hasHeadings && content.trim().length > 50) {
+  const handleTemplateSelect = (templateId: TemplateName) => {
+    setTemplate(templateId);
+  };
+
+  // Get display name for current template based on language
+  const getTemplateDisplayName = () => {
+    const prefix = currentTemplate.category === 'chinese' ? '中文-' : 'EN-';
+    if (language === 'cn' && currentTemplate.category === 'chinese') {
+      return prefix + currentTemplate.name;
+    }
+    return prefix + currentTemplate.nameEn;
+  };
+
+  /**
+   * Check if text contains markdown formatting.
+   * We look for common markdown patterns, not just headings.
+   */
+  const checkForMarkdown = (content: string) => {
+    const trimmed = content.trim();
+    if (trimmed.length < 50) {
+      setShowHeadingHint(false);
+      return;
+    }
+
+    // Check for various markdown patterns
+    const markdownPatterns = [
+      /^#{1,6}\s+.+$/m, // Headings: # ## ### etc
+      /^\s*[-*+]\s+.+$/m, // Unordered list: - * +
+      /^\s*\d+\.\s+.+$/m, // Ordered list: 1. 2. etc
+      /\*\*.+?\*\*/m, // Bold: **text**
+      /\*.+?\*/m, // Italic: *text*
+      /\[.+?\]\(.+?\)/m, // Links: [text](url)
+      /^\s*>\s+.+$/m, // Blockquote: > text
+      /`[^`]+`/m, // Inline code: `code`
+      /^```/m, // Code block: ```
+      /^\|.+\|$/m, // Table: |col|col|
+      /^\s*[-*_]{3,}\s*$/m, // Horizontal rule: --- or *** or ___
+      /\$\$.+?\$\$/s, // Block math: $$...$$
+      /\$.+?\$/m, // Inline math: $...$
+    ];
+
+    const hasMarkdown = markdownPatterns.some((pattern) => pattern.test(trimmed));
+
+    if (!hasMarkdown) {
       setShowHeadingHint(true);
+    } else {
+      setShowHeadingHint(false);
     }
   };
 
@@ -70,20 +116,22 @@ function AppContent() {
       return '\u201C' + content + '\u201D';
     });
     setText(converted);
-    checkForHeadings(converted);
+    checkForMarkdown(converted);
     alert(count > 0 ? t.alerts.quotesConverted(count) : t.alerts.noQuotesFound);
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    setShowHeadingHint(false); // Reset hint on new paste
-    const html = e.clipboardData.getData('text/html');
-    if (html) {
-      e.preventDefault();
-      const markdown = htmlToMarkdown(html);
-      setText(markdown);
-      checkForHeadings(markdown);
-    }
-    // If no HTML, let default paste behavior handle plain text.
+  // Handle paste from HTML (e.g., AI chatbots)
+  const handlePaste = (html: string): string | null => {
+    setShowHeadingHint(false);
+    const markdown = htmlToMarkdown(html);
+    checkForMarkdown(markdown);
+    return markdown;
+  };
+
+  // Handle text changes from the editor
+  const handleTextChange = (value: string) => {
+    setText(value);
+    checkForMarkdown(value);
   };
 
   return (
@@ -108,6 +156,16 @@ function AppContent() {
         </div>
         <p className="tagline">{t.header.tagline}</p>
         <p className="tip">{t.header.tip}</p>
+        {/* Template selector button */}
+        <button
+          type="button"
+          className="template-selector-btn"
+          onClick={() => setIsGalleryOpen(true)}
+        >
+          <span className="template-icon">📄</span>
+          <span className="template-name">{getTemplateDisplayName()}</span>
+          <span className="template-arrow">▾</span>
+        </button>
       </header>
 
       {/* Main content */}
@@ -126,21 +184,16 @@ function AppContent() {
                 {t.buttons.quoteConvert}
               </button>
               <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
-                {t.buttons.styles}
+                {t.buttons.customize}
               </button>
               <button className="action-btn" onClick={handleLoadExample} type="button">
                 {t.buttons.example}
               </button>
             </div>
           </div>
-          <textarea
-            id="content"
-            className="content-input"
+          <MarkdownEditor
             value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              checkForHeadings(e.target.value);
-            }}
+            onChange={handleTextChange}
             onPaste={handlePaste}
             placeholder={t.input.placeholder}
           />
@@ -182,26 +235,51 @@ function AppContent() {
 
       {/* Settings drawer */}
       <StyleDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Template gallery */}
+      <TemplateGallery
+        isOpen={isGalleryOpen}
+        currentTemplate={template}
+        onSelect={handleTemplateSelect}
+        onClose={() => setIsGalleryOpen(false)}
+      />
+
+      {/* Loading overlay */}
+      <LoadingOverlay isVisible={isGenerating} message={t.loading.generating} />
     </div>
   );
 }
 
-function App() {
-  // Detect language synchronously before rendering
-  const [language, setLanguage] = useState<Language>(() => detectInitialLanguage());
+function AppWithLanguage() {
+  const { currentTemplate, setTemplate } = useStyles();
 
-  // Handle language change from LanguageProvider
-  const handleLanguageChange = useCallback((lang: Language) => {
-    setLanguage(lang);
-  }, []);
+  const handleLanguageChange = useCallback(
+    (lang: Language) => {
+      // Auto-switch template only if current template's category doesn't match language
+      const currentCategory = currentTemplate.category;
+      const targetCategory = lang === 'cn' ? 'chinese' : 'english';
+
+      if (currentCategory !== targetCategory) {
+        // Switch to default template for the new language
+        const templateForLang = lang === 'cn' ? 'cn-general' : 'en-standard';
+        setTemplate(templateForLang);
+      }
+    },
+    [currentTemplate.category, setTemplate]
+  );
 
   return (
-    // Key forces StyleProvider to remount and reload settings when language changes
-    <StyleProvider key={language} language={language}>
-      <LanguageProvider initialLanguage={language} onLanguageChange={handleLanguageChange}>
-        <AppContent />
-        <Analytics />
-      </LanguageProvider>
+    <LanguageProvider onLanguageChange={handleLanguageChange}>
+      <AppContent />
+      <Analytics />
+    </LanguageProvider>
+  );
+}
+
+function App() {
+  return (
+    <StyleProvider>
+      <AppWithLanguage />
     </StyleProvider>
   );
 }

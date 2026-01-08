@@ -13,9 +13,13 @@ export interface Translations {
   buttons: {
     quoteConvert: string;
     styles: string;
+    customize: string;
     example: string;
     download: string;
     downloading: string;
+  };
+  loading: {
+    generating: string;
   };
   hints: {
     noHeadings: string;
@@ -27,6 +31,10 @@ export interface Translations {
   };
   footer: {
     tagline: string;
+  };
+  templateGallery: {
+    title: string;
+    chinese: string;
   };
   styleDrawer: {
     title: string;
@@ -82,12 +90,17 @@ $$\\frac{a}{b}$$（独立公式）`,
     buttons: {
       quoteConvert: '引号转换',
       styles: '字体样式',
+      customize: '自定义',
       example: '示例',
       download: '下载Word文档',
       downloading: '生成中...',
     },
+    loading: {
+      generating: '正在生成文档...',
+    },
     hints: {
-      noHeadings: '未检测到标题格式。可让AI"把内容放在markdown代码块中"再复制。',
+      noHeadings:
+        '未检测到Markdown格式。可让AI"用Markdown格式回复"或"把内容放在markdown代码块中"再复制。',
       closeHint: '关闭提示',
     },
     alerts: {
@@ -97,8 +110,12 @@ $$\\frac{a}{b}$$（独立公式）`,
     footer: {
       tagline: '无需登录 · 无需安装 · 可离线使用 · 数据不上传',
     },
+    templateGallery: {
+      title: '选择模板',
+      chinese: '中文',
+    },
     styleDrawer: {
-      title: '文档样式',
+      title: '自定义样式',
       template: '模板',
       reset: '恢复默认',
       confirmReset: '确定要恢复为模板默认样式吗？',
@@ -150,12 +167,17 @@ $$\\frac{a}{b}$$ (block formula)`,
     buttons: {
       quoteConvert: 'Convert Quotes',
       styles: 'Styles',
+      customize: 'Customize',
       example: 'Example',
       download: 'Download Word',
       downloading: 'Generating...',
     },
+    loading: {
+      generating: 'Generating document...',
+    },
     hints: {
-      noHeadings: 'No headings detected. Ask AI to format content in a markdown code block.',
+      noHeadings:
+        'No Markdown formatting detected. Ask AI to reply in Markdown format or wrap content in a code block.',
       closeHint: 'Close hint',
     },
     alerts: {
@@ -165,8 +187,12 @@ $$\\frac{a}{b}$$ (block formula)`,
     footer: {
       tagline: 'No login · No install · Works offline · Data stays local',
     },
+    templateGallery: {
+      title: 'Choose Template',
+      chinese: 'Chinese',
+    },
     styleDrawer: {
-      title: 'Document Styles',
+      title: 'Customize Styles',
       template: 'Template',
       reset: 'Reset',
       confirmReset: 'Reset all styles to template defaults?',
