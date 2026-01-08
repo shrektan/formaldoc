@@ -1,0 +1,140 @@
+/* Template Strip Container */
+.template-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  margin-bottom: -6px;
+}
+
+/* Template Cards Container */
+.template-cards {
+  display: flex;
+  flex: 1;
+}
+
+/* Mini Card */
+.mini-card {
+  position: relative;
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.1s;
+  text-align: left;
+}
+
+/* Divider between cards using pseudo-element */
+.mini-card:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background: var(--border);
+}
+
+.mini-card:hover {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.mini-card:active {
+  transform: scale(0.98);
+}
+
+.mini-card.selected {
+  border-color: var(--primary);
+  background: rgba(26, 115, 232, 0.08);
+}
+
+.mini-card-check {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 10px;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.mini-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-card-spec {
+  font-size: 9px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Settings Button */
+.strip-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s;
+  flex-shrink: 0;
+}
+
+.strip-settings-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(26, 115, 232, 0.05);
+}
+
+.strip-settings-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .template-strip {
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .mini-card {
+    padding: 5px 6px;
+  }
+
+  .mini-card-name {
+    font-size: 11px;
+  }
+
+  .mini-card-spec {
+    font-size: 8px;
+  }
+
+  .strip-settings-btn {
+    padding: 5px;
+  }
+
+  .strip-settings-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}

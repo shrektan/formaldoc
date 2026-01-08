@@ -125,6 +125,29 @@ formaldoc input.md -o output.docx -t en-standard
 | Table Cell | TableText | Times New Roman 11pt |
 | Page Footer | - | Times New Roman 10pt |
 
+## Responsive CSS Layout
+
+The app uses mobile-first CSS with desktop overrides in `src/styles/app.css`.
+
+### Mobile (default, < 768px)
+- `.app-simple` padding: 16px
+- `.header-simple` padding: 24px 0 16px
+- `.input-section` min-height: 240px
+- `.editor-container` min-height: 240px
+
+### Desktop (@media min-width: 768px)
+Located at the bottom of `app.css` (~line 733):
+- `.app-simple` padding: 12px 24px
+- `.header-simple` padding: 8px 0 16px
+- `.input-section` min-height: 400px
+- `.editor-container` min-height: 350px
+
+### Template Strip Component
+`src/components/TemplateStrip/` - Horizontal template selector with mini cards:
+- Cards use `flex: 1` to fill available width evenly
+- Dividers between cards via `::after` pseudo-element
+- Settings gear button on the right
+
 ## LaTeX Formula Support
 
 Formulas are converted to **native Word equations** (OMML format), which are editable in Word.

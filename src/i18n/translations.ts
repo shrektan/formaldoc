@@ -37,6 +37,10 @@ export interface Translations {
     title: string;
     chinese: string;
   };
+  templateStrip: {
+    chinese: string;
+    english: string;
+  };
   styleDrawer: {
     title: string;
     template: string;
@@ -123,6 +127,10 @@ $$\\frac{a}{b}$$（独立公式）`,
       title: '选择模板',
       chinese: '中文',
     },
+    templateStrip: {
+      chinese: '中文',
+      english: 'EN',
+    },
     styleDrawer: {
       title: '自定义样式',
       template: '模板',
@@ -206,6 +214,10 @@ $$\\frac{a}{b}$$ (block formula)`,
     templateGallery: {
       title: 'Choose Template',
       chinese: 'Chinese',
+    },
+    templateStrip: {
+      chinese: 'CN',
+      english: 'English',
     },
     styleDrawer: {
       title: 'Customize Styles',

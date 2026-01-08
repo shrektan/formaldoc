@@ -1,0 +1,1 @@
+export { TemplateStrip } from './TemplateStrip';

@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
-import { TemplateGallery } from './components/TemplateGallery';
+import { TemplateStrip } from './components/TemplateStrip';
 import { MarkdownEditor } from './components/Editor/MarkdownEditor';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { StyleProvider } from './contexts/StyleContext';
@@ -44,7 +44,6 @@ function AppContent() {
   const [text, setText] = useState('');
   const [customFilename, setCustomFilename] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
   const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
@@ -58,15 +57,6 @@ function AppContent() {
 
   const handleTemplateSelect = (templateId: TemplateName) => {
     setTemplate(templateId);
-  };
-
-  // Get display name for current template based on language
-  const getTemplateDisplayName = () => {
-    const prefix = currentTemplate.category === 'chinese' ? '中文-' : 'EN-';
-    if (language === 'cn' && currentTemplate.category === 'chinese') {
-      return prefix + currentTemplate.name;
-    }
-    return prefix + currentTemplate.nameEn;
   };
 
   /**
@@ -172,16 +162,12 @@ function AppContent() {
         </div>
         <p className="tagline">{t.header.tagline}</p>
         <p className="tip">{t.header.tip}</p>
-        {/* Template selector button */}
-        <button
-          type="button"
-          className="template-selector-btn"
-          onClick={() => setIsGalleryOpen(true)}
-        >
-          <span className="template-icon">📄</span>
-          <span className="template-name">{getTemplateDisplayName()}</span>
-          <span className="template-arrow">▾</span>
-        </button>
+        {/* Template strip */}
+        <TemplateStrip
+          currentTemplate={template}
+          onSelect={handleTemplateSelect}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
       </header>
 
       {/* Main content */}
@@ -285,14 +271,6 @@ function AppContent() {
 
       {/* Settings drawer */}
       <StyleDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-
-      {/* Template gallery */}
-      <TemplateGallery
-        isOpen={isGalleryOpen}
-        currentTemplate={template}
-        onSelect={handleTemplateSelect}
-        onClose={() => setIsGalleryOpen(false)}
-      />
 
       {/* Loading overlay */}
       <LoadingOverlay isVisible={isGenerating} message={t.loading.generating} />
