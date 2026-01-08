@@ -203,26 +203,26 @@ const CN_ACADEMIC_STYLES: StyleSettings = {
     font: '黑体',
     size: 15,
     bold: false, // 黑体 is inherently bold
-    indent: false,
+    indent: true,
     center: true,
   },
   heading2: {
     font: '黑体',
     size: 14,
     bold: false, // 黑体 is inherently bold
-    indent: false,
+    indent: true,
   },
   heading3: {
     font: '黑体',
     size: 12,
     bold: false, // 黑体 is inherently bold
-    indent: false,
+    indent: true,
   },
   heading4: {
     font: '宋体',
     size: 12,
     bold: true,
-    indent: false,
+    indent: true,
   },
   bodyText: {
     font: '宋体',
@@ -280,25 +280,25 @@ const CN_REPORT_STYLES: StyleSettings = {
     font: '黑体',
     size: 18,
     bold: false, // 黑体 is inherently bold
-    indent: false,
+    indent: true,
   },
   heading2: {
     font: '黑体',
     size: 16,
     bold: false, // 黑体 is inherently bold
-    indent: false,
+    indent: true,
   },
   heading3: {
     font: '黑体',
     size: 14,
     bold: false, // 黑体 is inherently bold
-    indent: false,
+    indent: true,
   },
   heading4: {
     font: '黑体',
     size: 12,
     bold: false, // 黑体 is inherently bold
-    indent: false,
+    indent: true,
   },
   bodyText: {
     font: '宋体',
