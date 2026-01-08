@@ -117,6 +117,12 @@ function AppContent() {
     setShowHeadingHint(false);
   };
 
+  const handleClear = () => {
+    setText('');
+    setCustomFilename('');
+    setShowHeadingHint(false);
+  };
+
   const handleConvertQuotes = () => {
     // Convert English double quotes to Chinese double quotes
     // "content" → "content" (U+201C and U+201D)
@@ -198,6 +204,14 @@ function AppContent() {
               </button>
               <button className="action-btn" onClick={handleLoadExample} type="button">
                 {t.buttons.example}
+              </button>
+              <button
+                className="action-btn"
+                onClick={handleClear}
+                type="button"
+                disabled={!text.trim()}
+              >
+                {t.buttons.clear}
               </button>
             </div>
           </div>

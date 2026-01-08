@@ -120,25 +120,25 @@ const CN_GENERAL_STYLES: StyleSettings = {
   title: {
     font: '黑体',
     size: 22,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     center: true,
   },
   heading1: {
     font: '黑体',
     size: 16,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading2: {
     font: '黑体',
     size: 14,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading3: {
     font: '黑体',
     size: 12,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading4: {
@@ -196,26 +196,26 @@ const CN_ACADEMIC_STYLES: StyleSettings = {
   title: {
     font: '黑体',
     size: 18,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     center: true,
   },
   heading1: {
     font: '黑体',
     size: 15,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
     center: true,
   },
   heading2: {
     font: '黑体',
     size: 14,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading3: {
     font: '黑体',
     size: 12,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading4: {
@@ -273,31 +273,31 @@ const CN_REPORT_STYLES: StyleSettings = {
   title: {
     font: '黑体',
     size: 24,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     center: true,
   },
   heading1: {
     font: '黑体',
     size: 18,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading2: {
     font: '黑体',
     size: 16,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading3: {
     font: '黑体',
     size: 14,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   heading4: {
     font: '黑体',
     size: 12,
-    bold: true,
+    bold: false, // 黑体 is inherently bold
     indent: false,
   },
   bodyText: {

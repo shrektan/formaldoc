@@ -15,6 +15,7 @@ export interface Translations {
     styles: string;
     customize: string;
     example: string;
+    clear: string;
     download: string;
     downloading: string;
   };
@@ -74,8 +75,8 @@ export const translations: Record<Language, Translations> = {
   cn: {
     header: {
       title: 'AI文字 → 公文Word',
-      tagline: '把豆包、千问、DeepSeek、Kimi、ChatGPT生成的文字，一键转成公文格式Word文档',
-      tip: '提示：让AI"用Markdown格式回复"，可正确识别标题层级',
+      tagline: '粘贴豆包、ChatGPT等AI回复，自动生成规范Word文档',
+      tip: '小技巧：让AI"用Markdown格式回复"，标题层级更准确',
     },
     input: {
       label: '粘贴AI生成的文字',
@@ -97,6 +98,7 @@ $$\\frac{a}{b}$$（独立公式）`,
       styles: '字体样式',
       customize: '自定义',
       example: '示例',
+      clear: '清除',
       download: '下载Word文档',
       downloading: '生成中...',
     },
@@ -155,9 +157,8 @@ $$\\frac{a}{b}$$（独立公式）`,
   en: {
     header: {
       title: 'AI Text → Word Doc',
-      tagline:
-        'Convert AI-generated text from ChatGPT, Claude, Gemini into properly formatted Word documents',
-      tip: 'Tip: Ask AI to reply in Markdown format for proper heading detection',
+      tagline: 'Paste ChatGPT, Claude responses → formatted Word document',
+      tip: 'Pro tip: Ask AI to "reply in Markdown format" for better heading detection',
     },
     input: {
       label: 'Paste AI-generated text',
@@ -179,6 +180,7 @@ $$\\frac{a}{b}$$ (block formula)`,
       styles: 'Styles',
       customize: 'Customize',
       example: 'Example',
+      clear: 'Clear',
       download: 'Download Word',
       downloading: 'Generating...',
     },

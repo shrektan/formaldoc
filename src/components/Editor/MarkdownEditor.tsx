@@ -1,5 +1,3 @@
-import MDEditor, { commands } from '@uiw/react-md-editor';
-
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -8,11 +6,7 @@ interface MarkdownEditorProps {
 }
 
 export function MarkdownEditor({ value, onChange, onPaste, placeholder }: MarkdownEditorProps) {
-  const handleChange = (val: string | undefined) => {
-    onChange(val || '');
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     if (!onPaste) return;
 
     const html = e.clipboardData.getData('text/html');
@@ -25,22 +19,14 @@ export function MarkdownEditor({ value, onChange, onPaste, placeholder }: Markdo
     }
   };
 
-  // Custom toolbar with commonly used commands
-  const extraCommands = [commands.codeEdit, commands.codeLive, commands.codePreview];
-
   return (
-    <div className="editor-container" data-color-mode="light" onPaste={handlePaste}>
-      <MDEditor
+    <div className="editor-container">
+      {!value && placeholder && <div className="custom-placeholder">{placeholder}</div>}
+      <textarea
+        className="content-textarea"
         value={value}
-        onChange={handleChange}
-        height="100%"
-        preview="edit"
-        hideToolbar={false}
-        enableScroll={true}
-        extraCommands={extraCommands}
-        textareaProps={{
-          placeholder: placeholder,
-        }}
+        onChange={(e) => onChange(e.target.value)}
+        onPaste={handlePaste}
       />
     </div>
   );
