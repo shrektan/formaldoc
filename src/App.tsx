@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { TemplateGallery } from './components/TemplateGallery';
@@ -8,7 +8,7 @@ import { StyleProvider } from './contexts/StyleContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useStyles } from './contexts/useStyles';
 import { useLanguage } from './hooks/useTranslation';
-import { useDocxGenerator } from './hooks/useDocxGenerator';
+import { useDocxGenerator, extractTitle, sanitizeFilename } from './hooks/useDocxGenerator';
 import { htmlToMarkdown } from './lib/html-to-markdown';
 import { detectInitialLanguage } from './lib/language-detection';
 import { examples } from './i18n';
@@ -42,12 +42,19 @@ function LanguageSwitch() {
 
 function AppContent() {
   const [text, setText] = useState('');
+  const [customFilename, setCustomFilename] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
   const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
   const { generate, isGenerating, error } = useDocxGenerator();
+
+  // Auto-detect filename from markdown title
+  const detectedFilename = useMemo(() => {
+    const title = extractTitle(text);
+    return title ? sanitizeFilename(title) : '';
+  }, [text]);
 
   const handleTemplateSelect = (templateId: TemplateName) => {
     setTemplate(templateId);
@@ -100,7 +107,9 @@ function AppContent() {
   };
 
   const handleGenerate = () => {
-    generate(text, styles, currentTemplate.documentSettings);
+    // Use custom filename if set, otherwise use auto-detected
+    const filename = customFilename.trim() || detectedFilename;
+    generate(text, styles, currentTemplate.documentSettings, filename);
   };
 
   const handleLoadExample = () => {
@@ -212,6 +221,32 @@ function AppContent() {
               </button>
             </div>
           )}
+
+          {/* Filename input */}
+          <div className="filename-row">
+            <label htmlFor="filename">{t.filename.label}</label>
+            <div className="filename-input-wrapper">
+              <input
+                type="text"
+                id="filename"
+                className="filename-input"
+                value={customFilename || detectedFilename}
+                onChange={(e) => setCustomFilename(e.target.value)}
+                placeholder={t.filename.placeholder}
+              />
+              <span className="filename-ext">.docx</span>
+              {customFilename && (
+                <button
+                  type="button"
+                  className="filename-reset"
+                  onClick={() => setCustomFilename('')}
+                  title={t.filename.reset}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Error message */}

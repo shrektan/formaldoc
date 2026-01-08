@@ -63,6 +63,11 @@ export interface Translations {
     tableCell: string;
     pageFooter: string;
   };
+  filename: {
+    label: string;
+    placeholder: string;
+    reset: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -141,6 +146,11 @@ $$\\frac{a}{b}$$（独立公式）`,
       tableCell: '表格内容',
       pageFooter: '页脚',
     },
+    filename: {
+      label: '文件名',
+      placeholder: '自动检测标题',
+      reset: '重置',
+    },
   },
   en: {
     header: {
@@ -217,6 +227,11 @@ $$\\frac{a}{b}$$ (block formula)`,
       tableHeader: 'Table Header',
       tableCell: 'Table Cell',
       pageFooter: 'Page Footer',
+    },
+    filename: {
+      label: 'Filename',
+      placeholder: 'Auto-detect from title',
+      reset: 'Reset',
     },
   },
 };

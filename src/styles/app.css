@@ -397,6 +397,85 @@ body {
   color: #999;
 }
 
+/* Filename input */
+.filename-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.filename-row label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.filename-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 8px;
+  transition: border-color 0.2s;
+}
+
+.filename-input-wrapper:focus-within {
+  border-color: var(--primary);
+}
+
+.filename-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  padding: 8px 0;
+  color: var(--text);
+  min-width: 0;
+}
+
+.filename-input:focus {
+  outline: none;
+}
+
+.filename-input::placeholder {
+  color: #999;
+}
+
+.filename-ext {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.filename-reset {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 50%;
+  margin-left: 4px;
+}
+
+.filename-reset:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
 /* Error message */
 .error-msg {
   padding: 12px 16px;

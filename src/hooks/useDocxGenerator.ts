@@ -7,7 +7,8 @@ interface UseDocxGeneratorResult {
   generate: (
     markdown: string,
     styles: StyleSettings,
-    documentSettings?: DocumentSettings
+    documentSettings?: DocumentSettings,
+    customFilename?: string
   ) => Promise<void>;
   isGenerating: boolean;
   error: string | null;
@@ -29,17 +30,29 @@ function cleanMarkdownFormatting(text: string): string {
  * Sanitize a string for use as a filename
  * Replaces invalid characters and truncates if too long
  */
-function sanitizeFilename(name: string): string {
+export function sanitizeFilename(name: string): string {
+  // Remove newlines first (replace with space)
+  let safe = name.replace(/[\n\r]/g, ' ');
+
   // Replace invalid filename characters with underscore
   // Invalid on Windows/Mac/Linux: / \ : * ? " < > |
-  let safe = name.replace(/[/\\:*?"<>|]/g, '_');
+  safe = safe.replace(/[/\\:*?"<>|]/g, '_');
 
   // Remove leading/trailing dots and spaces
   safe = safe.replace(/^[\s.]+|[\s.]+$/g, '');
 
+  // Collapse multiple spaces into one
+  safe = safe.replace(/\s+/g, ' ');
+
   // Truncate to 200 chars (leave room for .docx extension)
   if (safe.length > 200) {
     safe = safe.slice(0, 200);
+  }
+
+  // Handle Windows reserved names (CON, PRN, AUX, NUL, COM1-9, LPT1-9)
+  const reserved = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
+  if (reserved.test(safe)) {
+    safe = `${safe}_file`;
   }
 
   // Fallback if empty after sanitization
@@ -67,7 +80,7 @@ function isSuitableTitle(text: string): boolean {
  * 5. First line that is entirely italic (*text*)
  * 6. First non-empty line if it looks like a title
  */
-function extractTitle(markdown: string): string | null {
+export function extractTitle(markdown: string): string | null {
   // Try H1 first
   const h1Match = markdown.match(/^#\s+(.+)$/m);
   if (h1Match) {
@@ -145,7 +158,12 @@ export function useDocxGenerator(): UseDocxGeneratorResult {
   const [error, setError] = useState<string | null>(null);
 
   const generate = useCallback(
-    async (markdown: string, styles: StyleSettings, documentSettings?: DocumentSettings) => {
+    async (
+      markdown: string,
+      styles: StyleSettings,
+      documentSettings?: DocumentSettings,
+      customFilename?: string
+    ) => {
       // Auto-trim leading/trailing whitespace and empty lines
       const trimmedMarkdown = markdown.trim();
 
@@ -160,11 +178,16 @@ export function useDocxGenerator(): UseDocxGeneratorResult {
       try {
         const blob = await generateDocx(trimmedMarkdown, styles, documentSettings);
 
-        // Generate filename from title or fallback to timestamp
-        const title = extractTitle(trimmedMarkdown);
-        const filename = title
-          ? `${sanitizeFilename(title)}.docx`
-          : `document-${new Date().toISOString().slice(0, 10)}.docx`;
+        // Use custom filename if provided, otherwise auto-detect from title
+        let filename: string;
+        if (customFilename && customFilename.trim()) {
+          filename = `${sanitizeFilename(customFilename)}.docx`;
+        } else {
+          const title = extractTitle(trimmedMarkdown);
+          filename = title
+            ? `${sanitizeFilename(title)}.docx`
+            : `document-${new Date().toISOString().slice(0, 10)}.docx`;
+        }
 
         saveAs(blob, filename);
       } catch (err) {
