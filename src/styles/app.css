@@ -303,9 +303,11 @@ body {
   top: 16px;
   left: 16px;
   right: 16px;
+  bottom: 16px;
   color: #999;
   pointer-events: none;
   white-space: pre-wrap;
+  overflow: hidden;
   font-size: 15px;
   line-height: 1.6;
   font-family:
