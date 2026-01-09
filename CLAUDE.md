@@ -24,6 +24,10 @@ bun run build       # Verify the build passes
 
 Fix any remaining errors before committing. Do not commit code that fails linting or build.
 
+**Version Bumping**: Every commit must bump the `version` field in `package.json`:
+- **Patch** (e.g., 1.6.0 → 1.6.1): Bug fixes, minor tweaks, CSS adjustments
+- **Minor** (e.g., 1.6.0 → 1.7.0): New features, significant enhancements
+
 ## Project Stack
 
 - **Framework**: React 19 + TypeScript + Vite

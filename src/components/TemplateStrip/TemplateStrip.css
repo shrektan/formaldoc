@@ -5,18 +5,22 @@
   gap: 6px;
   margin-top: 6px;
   margin-bottom: -6px;
+  overflow: hidden; /* Prevent x-axis overflow */
 }
 
 /* Template Cards Container */
 .template-cards {
   display: flex;
   flex: 1;
+  min-width: 0; /* Allow shrinking below content size */
+  overflow: hidden;
 }
 
 /* Mini Card */
 .mini-card {
   position: relative;
   flex: 1;
+  min-width: 0; /* Allow shrinking below content size */
   padding: 6px 8px;
   background: var(--bg);
   border: 2px solid transparent;
