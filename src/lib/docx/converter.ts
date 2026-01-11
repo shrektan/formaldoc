@@ -9,6 +9,8 @@ import {
   BorderStyle,
   AlignmentType,
   VerticalAlign,
+  PageBreak,
+  ExternalHyperlink,
   type ParagraphChild,
 } from 'docx';
 import { latexToDocxMath } from '../math/latex-to-docx';
@@ -25,6 +27,8 @@ import type {
   TableCell as MdTableCell,
   Html,
   Blockquote,
+  Link,
+  Delete,
 } from 'mdast';
 
 // Type for docx elements that can be in a section
@@ -88,6 +92,8 @@ function convertNode(node: Content): DocxElement[] {
       return [convertMath(node as unknown as MathNode)];
     case 'blockquote':
       return convertBlockquote(node as Blockquote);
+    case 'thematicBreak':
+      return [convertThematicBreak()];
     default:
       // Fallback: try to extract text content from unknown nodes
       return convertUnknownNode(node);
@@ -135,6 +141,13 @@ function extractTextFromNode(node: unknown): string {
 }
 
 /**
+ * Extracts text from link children (for hyperlink display text)
+ */
+function extractLinkText(children: PhrasingContent[]): string {
+  return children.map((child) => extractTextFromNode(child)).join('');
+}
+
+/**
  * Converts a heading node to a docx Paragraph with appropriate style
  */
 function convertHeading(node: Heading): Paragraph {
@@ -174,32 +187,43 @@ const BLOCKQUOTE_INDENT = 567;
 
 /**
  * Converts a blockquote node to docx Paragraph(s)
- * Blockquote content is indented from the left margin
+ * Uses BlockQuote style with additional indent for nested quotes
  */
 function convertBlockquote(node: Blockquote, level: number = 1): Paragraph[] {
   const paragraphs: Paragraph[] = [];
-  const indent = BLOCKQUOTE_INDENT * level;
+  // BlockQuote style has base indent of 567 twips; add more for nested quotes
+  const additionalIndent = level > 1 ? BLOCKQUOTE_INDENT * (level - 1) : 0;
 
   for (const child of node.children) {
     if (child.type === 'paragraph') {
       const runs = convertPhrasingContent(child.children);
-      paragraphs.push(
-        new Paragraph({
-          style: 'BodyText',
-          children: runs,
-          indent: {
-            left: indent,
-            firstLine: 0, // No first line indent for blockquotes
-          },
-        })
-      );
+      // Add extra indent for nested blockquotes
+      if (additionalIndent > 0) {
+        paragraphs.push(
+          new Paragraph({
+            style: 'BlockQuote',
+            children: runs,
+            indent: {
+              left: BLOCKQUOTE_INDENT + additionalIndent,
+              firstLine: 0,
+            },
+          })
+        );
+      } else {
+        paragraphs.push(
+          new Paragraph({
+            style: 'BlockQuote',
+            children: runs,
+          })
+        );
+      }
     } else if (child.type === 'blockquote') {
       // Nested blockquote - recurse with increased level
       const nested = convertBlockquote(child, level + 1);
       paragraphs.push(...nested);
     } else if (child.type === 'list') {
       // Lists inside blockquotes - convert and adjust indent
-      const listParagraphs = convertBlockquoteList(child, indent);
+      const listParagraphs = convertBlockquoteList(child, BLOCKQUOTE_INDENT + additionalIndent);
       paragraphs.push(...listParagraphs);
     }
   }
@@ -267,6 +291,15 @@ function convertBlockquoteListItem(
   });
 
   return paragraphs;
+}
+
+/**
+ * Converts a thematic break (---) to a page break
+ */
+function convertThematicBreak(): Paragraph {
+  return new Paragraph({
+    children: [new PageBreak()],
+  });
 }
 
 /**
@@ -408,6 +441,31 @@ function convertPhrasingNode(node: PhrasingContent): ParagraphChild[] {
         // Fallback to italic text if conversion fails
         return [new TextRun({ text: (node as unknown as InlineMathNode).value, italics: true })];
       }
+    }
+
+    case 'delete':
+      // Strikethrough text
+      return convertStyledContent((node as Delete).children, { strike: true });
+
+    case 'break':
+      // Line break within a paragraph
+      return [new TextRun({ break: 1 })];
+
+    case 'link': {
+      // Hyperlink - extract text and create hyperlink with styling
+      const linkNode = node as Link;
+      const linkText = extractLinkText(linkNode.children);
+      return [
+        new ExternalHyperlink({
+          link: linkNode.url,
+          children: [
+            new TextRun({
+              text: linkText,
+              style: 'Hyperlink',
+            }),
+          ],
+        }),
+      ];
     }
 
     default:

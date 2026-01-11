@@ -315,6 +315,30 @@ export function createDocumentStyles(
         },
       },
 
+      // Block Quote - indented text for quotations
+      {
+        id: 'BlockQuote',
+        name: 'Block Quote',
+        basedOn: 'BodyText',
+        quickFormat: true,
+        run: {
+          font: createFont(settings.blockquote.font, settings.blockquote.englishFont),
+          size: ptToHalfPoints(settings.blockquote.size),
+          italics: settings.blockquote.italic,
+        },
+        paragraph: {
+          spacing: {
+            after: spacingAfter,
+            line: spacing.line,
+            lineRule: spacing.lineRule,
+          },
+          indent: {
+            left: 567, // ~1cm left indent for quotes
+            firstLine: 0, // No first line indent
+          },
+        },
+      },
+
       // Table Caption (Table Header) - always keepNext: true
       {
         id: 'TableCaption',
@@ -386,6 +410,19 @@ export function createDocumentStyles(
           },
           indent: {
             firstLine: 0,
+          },
+        },
+      },
+    ],
+    characterStyles: [
+      // Hyperlink style for links
+      {
+        id: 'Hyperlink',
+        name: 'Hyperlink',
+        run: {
+          color: '0563C1', // Standard Word hyperlink blue
+          underline: {
+            type: 'single',
           },
         },
       },

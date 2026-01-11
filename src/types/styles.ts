@@ -47,6 +47,7 @@ export interface StyleSettings {
   heading4: TextStyle;
   bodyText: TextStyle;
   listItem: TextStyle;
+  blockquote: TextStyle;
   tableHeader: TextStyle;
   tableCell: TextStyle;
   pageFooter: TextStyle;
@@ -73,6 +74,7 @@ export const STYLE_META_CN: Record<StyleKey, StyleMeta> = {
   heading4: { label: '四级标题', allowBold: true, allowIndent: true },
   bodyText: { label: '正文', allowIndent: true },
   listItem: { label: '列表项', allowIndent: true },
+  blockquote: { label: '引用', allowItalic: true },
   tableHeader: { label: '表头', allowBold: true, allowCenter: true },
   tableCell: { label: '表格内容', allowCenter: true },
   pageFooter: { label: '页脚' },
@@ -87,6 +89,7 @@ export const STYLE_META_EN: Record<StyleKey, StyleMeta> = {
   heading4: { label: 'Heading 4', allowBold: true, allowIndent: true },
   bodyText: { label: 'Body Text', allowIndent: true },
   listItem: { label: 'List Item', allowIndent: true },
+  blockquote: { label: 'Block Quote', allowItalic: true },
   tableHeader: { label: 'Table Header', allowBold: true, allowCenter: true },
   tableCell: { label: 'Table Cell', allowCenter: true },
   pageFooter: { label: 'Page Footer' },
