@@ -24,6 +24,7 @@ import type {
   TableRow as MdTableRow,
   TableCell as MdTableCell,
   Html,
+  Blockquote,
 } from 'mdast';
 
 // Type for docx elements that can be in a section
@@ -85,6 +86,8 @@ function convertNode(node: Content): DocxElement[] {
       return convertHtmlBlock(node as Html);
     case 'math':
       return [convertMath(node as unknown as MathNode)];
+    case 'blockquote':
+      return convertBlockquote(node as Blockquote);
     default:
       // For unsupported nodes, return empty (or could add fallback)
       return [];
@@ -124,6 +127,106 @@ function convertHtmlBlock(node: Html): Paragraph[] {
       children: [new TextRun({ text: line })],
     });
   });
+}
+
+// Blockquote left indent: approximately 1cm = 567 twips
+const BLOCKQUOTE_INDENT = 567;
+
+/**
+ * Converts a blockquote node to docx Paragraph(s)
+ * Blockquote content is indented from the left margin
+ */
+function convertBlockquote(node: Blockquote, level: number = 1): Paragraph[] {
+  const paragraphs: Paragraph[] = [];
+  const indent = BLOCKQUOTE_INDENT * level;
+
+  for (const child of node.children) {
+    if (child.type === 'paragraph') {
+      const runs = convertPhrasingContent(child.children);
+      paragraphs.push(
+        new Paragraph({
+          style: 'BodyText',
+          children: runs,
+          indent: {
+            left: indent,
+            firstLine: 0, // No first line indent for blockquotes
+          },
+        })
+      );
+    } else if (child.type === 'blockquote') {
+      // Nested blockquote - recurse with increased level
+      const nested = convertBlockquote(child, level + 1);
+      paragraphs.push(...nested);
+    } else if (child.type === 'list') {
+      // Lists inside blockquotes - convert and adjust indent
+      const listParagraphs = convertBlockquoteList(child, indent);
+      paragraphs.push(...listParagraphs);
+    }
+  }
+
+  return paragraphs;
+}
+
+/**
+ * Converts a list inside a blockquote with additional left indent
+ */
+function convertBlockquoteList(node: List, baseIndent: number, level: number = 0): Paragraph[] {
+  const paragraphs: Paragraph[] = [];
+  const isOrdered = node.ordered ?? false;
+  const startNum = node.start ?? 1;
+
+  node.children.forEach((item, index) => {
+    const itemParagraphs = convertBlockquoteListItem(
+      item,
+      isOrdered,
+      startNum + index,
+      baseIndent,
+      level
+    );
+    paragraphs.push(...itemParagraphs);
+  });
+
+  return paragraphs;
+}
+
+/**
+ * Converts a list item inside a blockquote
+ */
+function convertBlockquoteListItem(
+  item: ListItem,
+  isOrdered: boolean,
+  number: number,
+  baseIndent: number,
+  level: number
+): Paragraph[] {
+  const paragraphs: Paragraph[] = [];
+  const prefix = isOrdered ? `${number}. ` : '• ';
+
+  item.children.forEach((child, childIndex) => {
+    if (child.type === 'paragraph') {
+      const runs = convertPhrasingContent(child.children);
+
+      if (childIndex === 0) {
+        runs.unshift(new TextRun({ text: prefix }));
+      }
+
+      paragraphs.push(
+        new Paragraph({
+          style: 'ListParagraph',
+          children: runs,
+          indent: {
+            left: baseIndent,
+            firstLine: LIST_INDENT_BASE + LIST_INDENT_BASE * level,
+          },
+        })
+      );
+    } else if (child.type === 'list') {
+      const nestedParagraphs = convertBlockquoteList(child, baseIndent, level + 1);
+      paragraphs.push(...nestedParagraphs);
+    }
+  });
+
+  return paragraphs;
 }
 
 /**
