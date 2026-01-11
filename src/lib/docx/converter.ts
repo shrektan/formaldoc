@@ -9,7 +9,7 @@ import {
   BorderStyle,
   AlignmentType,
   VerticalAlign,
-  PageBreak,
+  ShadingType,
   ExternalHyperlink,
   type ParagraphChild,
 } from 'docx';
@@ -93,7 +93,8 @@ function convertNode(node: Content): DocxElement[] {
     case 'blockquote':
       return convertBlockquote(node as Blockquote);
     case 'thematicBreak':
-      return [convertThematicBreak()];
+      // Ignore thematic breaks (---) as AI often generates many of these
+      return [];
     default:
       // Fallback: try to extract text content from unknown nodes
       return convertUnknownNode(node);
@@ -184,51 +185,55 @@ function convertHtmlBlock(node: Html): Paragraph[] {
 
 // Blockquote left indent: approximately 1cm = 567 twips
 const BLOCKQUOTE_INDENT = 567;
+// Light gray background for blockquotes
+const BLOCKQUOTE_SHADING = 'E8E8E8';
 
 /**
  * Converts a blockquote node to docx Paragraph(s)
- * Uses BlockQuote style with additional indent for nested quotes
+ * Uses BodyText style with italic text and light gray background
  */
 function convertBlockquote(node: Blockquote, level: number = 1): Paragraph[] {
   const paragraphs: Paragraph[] = [];
-  // BlockQuote style has base indent of 567 twips; add more for nested quotes
-  const additionalIndent = level > 1 ? BLOCKQUOTE_INDENT * (level - 1) : 0;
+  const indent = BLOCKQUOTE_INDENT * level;
 
   for (const child of node.children) {
     if (child.type === 'paragraph') {
-      const runs = convertPhrasingContent(child.children);
-      // Add extra indent for nested blockquotes
-      if (additionalIndent > 0) {
-        paragraphs.push(
-          new Paragraph({
-            style: 'BlockQuote',
-            children: runs,
-            indent: {
-              left: BLOCKQUOTE_INDENT + additionalIndent,
-              firstLine: 0,
-            },
-          })
-        );
-      } else {
-        paragraphs.push(
-          new Paragraph({
-            style: 'BlockQuote',
-            children: runs,
-          })
-        );
-      }
+      // Convert content with italic styling
+      const runs = convertBlockquoteContent(child.children);
+      paragraphs.push(
+        new Paragraph({
+          style: 'BodyText',
+          children: runs,
+          shading: {
+            type: ShadingType.SOLID,
+            fill: BLOCKQUOTE_SHADING,
+          },
+          indent: {
+            left: indent,
+            firstLine: 0,
+          },
+        })
+      );
     } else if (child.type === 'blockquote') {
       // Nested blockquote - recurse with increased level
       const nested = convertBlockquote(child, level + 1);
       paragraphs.push(...nested);
     } else if (child.type === 'list') {
       // Lists inside blockquotes - convert and adjust indent
-      const listParagraphs = convertBlockquoteList(child, BLOCKQUOTE_INDENT + additionalIndent);
+      const listParagraphs = convertBlockquoteList(child, indent);
       paragraphs.push(...listParagraphs);
     }
   }
 
   return paragraphs;
+}
+
+/**
+ * Converts blockquote content with italic styling
+ */
+function convertBlockquoteContent(nodes: PhrasingContent[]): TextRun[] {
+  // Use convertStyledContent which properly handles nested formatting
+  return convertStyledContent(nodes, { italics: true });
 }
 
 /**
@@ -291,15 +296,6 @@ function convertBlockquoteListItem(
   });
 
   return paragraphs;
-}
-
-/**
- * Converts a thematic break (---) to a page break
- */
-function convertThematicBreak(): Paragraph {
-  return new Paragraph({
-    children: [new PageBreak()],
-  });
 }
 
 /**
@@ -448,8 +444,8 @@ function convertPhrasingNode(node: PhrasingContent): ParagraphChild[] {
       return convertStyledContent((node as Delete).children, { strike: true });
 
     case 'break':
-      // Line break within a paragraph
-      return [new TextRun({ break: 1 })];
+      // Ignore manual line breaks as AI often generates many of these
+      return [];
 
     case 'link': {
       // Hyperlink - extract text and create hyperlink with styling
