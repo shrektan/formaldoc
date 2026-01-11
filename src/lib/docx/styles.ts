@@ -414,5 +414,18 @@ export function createDocumentStyles(
         },
       },
     ],
+    characterStyles: [
+      // Hyperlink style for links
+      {
+        id: 'Hyperlink',
+        name: 'Hyperlink',
+        run: {
+          color: '0563C1', // Standard Word hyperlink blue
+          underline: {
+            type: 'single',
+          },
+        },
+      },
+    ],
   };
 }

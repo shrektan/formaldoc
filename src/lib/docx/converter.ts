@@ -9,6 +9,8 @@ import {
   BorderStyle,
   AlignmentType,
   VerticalAlign,
+  PageBreak,
+  ExternalHyperlink,
   type ParagraphChild,
 } from 'docx';
 import { latexToDocxMath } from '../math/latex-to-docx';
@@ -25,6 +27,8 @@ import type {
   TableCell as MdTableCell,
   Html,
   Blockquote,
+  Link,
+  Delete,
 } from 'mdast';
 
 // Type for docx elements that can be in a section
@@ -88,6 +92,8 @@ function convertNode(node: Content): DocxElement[] {
       return [convertMath(node as unknown as MathNode)];
     case 'blockquote':
       return convertBlockquote(node as Blockquote);
+    case 'thematicBreak':
+      return [convertThematicBreak()];
     default:
       // Fallback: try to extract text content from unknown nodes
       return convertUnknownNode(node);
@@ -132,6 +138,13 @@ function extractTextFromNode(node: unknown): string {
   }
 
   return '';
+}
+
+/**
+ * Extracts text from link children (for hyperlink display text)
+ */
+function extractLinkText(children: PhrasingContent[]): string {
+  return children.map((child) => extractTextFromNode(child)).join('');
 }
 
 /**
@@ -281,6 +294,15 @@ function convertBlockquoteListItem(
 }
 
 /**
+ * Converts a thematic break (---) to a page break
+ */
+function convertThematicBreak(): Paragraph {
+  return new Paragraph({
+    children: [new PageBreak()],
+  });
+}
+
+/**
  * Converts a math node to a centered paragraph with native Word equation
  * Uses LaTeX → MathML → OMML → docx Math pipeline
  */
@@ -419,6 +441,31 @@ function convertPhrasingNode(node: PhrasingContent): ParagraphChild[] {
         // Fallback to italic text if conversion fails
         return [new TextRun({ text: (node as unknown as InlineMathNode).value, italics: true })];
       }
+    }
+
+    case 'delete':
+      // Strikethrough text
+      return convertStyledContent((node as Delete).children, { strike: true });
+
+    case 'break':
+      // Line break within a paragraph
+      return [new TextRun({ break: 1 })];
+
+    case 'link': {
+      // Hyperlink - extract text and create hyperlink with styling
+      const linkNode = node as Link;
+      const linkText = extractLinkText(linkNode.children);
+      return [
+        new ExternalHyperlink({
+          link: linkNode.url,
+          children: [
+            new TextRun({
+              text: linkText,
+              style: 'Hyperlink',
+            }),
+          ],
+        }),
+      ];
     }
 
     default:
