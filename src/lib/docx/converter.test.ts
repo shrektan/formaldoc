@@ -74,6 +74,51 @@ describe('convertMdastToDocx', () => {
       expect(elements[0]).toBeInstanceOf(Paragraph);
     });
 
+    it('should handle bold text with ASCII quotes', () => {
+      // This tests the bold-preprocessor fix for **"text"** pattern
+      const mdast = parseMarkdown('这是**"功能性"**的安排');
+      const elements = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      // Verify that 'strong' node was created (bold was recognized)
+      const para = mdast.children[0];
+      expect(para.type).toBe('paragraph');
+      if (para.type === 'paragraph') {
+        const hasStrong = para.children.some((c) => c.type === 'strong');
+        expect(hasStrong).toBe(true);
+      }
+    });
+
+    it('should handle bold text with Chinese quotes', () => {
+      // Chinese curly quotes: " (U+201C) and " (U+201D)
+      const mdast = parseMarkdown('这是**\u201C功能性\u201D**的安排');
+      const elements = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      const para = mdast.children[0];
+      expect(para.type).toBe('paragraph');
+      if (para.type === 'paragraph') {
+        const hasStrong = para.children.some((c) => c.type === 'strong');
+        expect(hasStrong).toBe(true);
+      }
+    });
+
+    it('should handle bold text with parentheses', () => {
+      const mdast = parseMarkdown('这是**(括号内容)**的安排');
+      const elements = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      const para = mdast.children[0];
+      expect(para.type).toBe('paragraph');
+      if (para.type === 'paragraph') {
+        const hasStrong = para.children.some((c) => c.type === 'strong');
+        expect(hasStrong).toBe(true);
+      }
+    });
+
     it('should handle italic text', () => {
       const mdast = parseMarkdown('这是*斜体*文字');
       const elements = convertMdastToDocx(mdast);
