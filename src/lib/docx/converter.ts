@@ -89,9 +89,49 @@ function convertNode(node: Content): DocxElement[] {
     case 'blockquote':
       return convertBlockquote(node as Blockquote);
     default:
-      // For unsupported nodes, return empty (or could add fallback)
-      return [];
+      // Fallback: try to extract text content from unknown nodes
+      return convertUnknownNode(node);
   }
+}
+
+/**
+ * Fallback converter for unknown node types
+ * Attempts to extract any text content so it doesn't silently disappear
+ */
+function convertUnknownNode(node: Content): Paragraph[] {
+  const text = extractTextFromNode(node);
+  if (!text.trim()) {
+    return [];
+  }
+  return [
+    new Paragraph({
+      style: 'BodyText',
+      children: [new TextRun({ text })],
+    }),
+  ];
+}
+
+/**
+ * Recursively extracts all text content from a node
+ */
+function extractTextFromNode(node: unknown): string {
+  if (!node || typeof node !== 'object') {
+    return '';
+  }
+
+  const n = node as Record<string, unknown>;
+
+  // If node has a 'value' property (like text nodes), return it
+  if (typeof n.value === 'string') {
+    return n.value;
+  }
+
+  // If node has children, recursively extract text from them
+  if (Array.isArray(n.children)) {
+    return n.children.map((child) => extractTextFromNode(child)).join('');
+  }
+
+  return '';
 }
 
 /**
