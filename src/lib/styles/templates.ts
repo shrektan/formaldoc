@@ -82,6 +82,13 @@ const CN_GOV_STYLES: StyleSettings = {
     indent: true,
   },
 
+  // 引用: 楷体 16pt (使用楷体区分引用内容)
+  blockquote: {
+    font: '楷体',
+    englishFont: 'Times New Roman',
+    size: 16,
+  },
+
   // 表头: 仿宋 16pt (三号), bold, centered
   tableHeader: {
     font: '仿宋',
@@ -174,6 +181,11 @@ const CN_GENERAL_STYLES: StyleSettings = {
     size: 12,
     indent: false,
   },
+  blockquote: {
+    font: '楷体',
+    englishFont: 'Times New Roman',
+    size: 12,
+  },
   tableHeader: {
     font: '黑体',
     englishFont: 'Arial',
@@ -261,6 +273,11 @@ const CN_ACADEMIC_STYLES: StyleSettings = {
     size: 12,
     indent: true,
   },
+  blockquote: {
+    font: '楷体',
+    englishFont: 'Times New Roman',
+    size: 12,
+  },
   tableHeader: {
     font: '黑体',
     englishFont: 'Arial',
@@ -346,6 +363,11 @@ const CN_REPORT_STYLES: StyleSettings = {
     englishFont: 'Times New Roman',
     size: 12,
     indent: false,
+  },
+  blockquote: {
+    font: '楷体',
+    englishFont: 'Times New Roman',
+    size: 12,
   },
   tableHeader: {
     font: '黑体',
@@ -445,6 +467,13 @@ const EN_STANDARD_STYLES: StyleSettings = {
     indent: false,
   },
 
+  // Block Quote: Times New Roman 11pt, italic
+  blockquote: {
+    font: 'Times New Roman',
+    size: 11,
+    italic: true,
+  },
+
   // Table Header: Arial 11pt, bold, centered
   tableHeader: {
     font: 'Arial',
@@ -526,6 +555,11 @@ const EN_BUSINESS_STYLES: StyleSettings = {
     size: 11,
     indent: false,
   },
+  blockquote: {
+    font: 'Georgia',
+    size: 10,
+    italic: true,
+  },
   tableHeader: {
     font: 'Arial',
     size: 10,
@@ -605,6 +639,11 @@ const EN_ACADEMIC_STYLES: StyleSettings = {
     size: 12,
     indent: false,
   },
+  blockquote: {
+    font: 'Times New Roman',
+    size: 11,
+    italic: true,
+  },
   tableHeader: {
     font: 'Times New Roman',
     size: 11,
@@ -681,6 +720,10 @@ const EN_LEGAL_STYLES: StyleSettings = {
     font: 'Times New Roman',
     size: 12,
     indent: false,
+  },
+  blockquote: {
+    font: 'Times New Roman',
+    size: 11,
   },
   tableHeader: {
     font: 'Times New Roman',

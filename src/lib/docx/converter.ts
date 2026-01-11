@@ -174,32 +174,43 @@ const BLOCKQUOTE_INDENT = 567;
 
 /**
  * Converts a blockquote node to docx Paragraph(s)
- * Blockquote content is indented from the left margin
+ * Uses BlockQuote style with additional indent for nested quotes
  */
 function convertBlockquote(node: Blockquote, level: number = 1): Paragraph[] {
   const paragraphs: Paragraph[] = [];
-  const indent = BLOCKQUOTE_INDENT * level;
+  // BlockQuote style has base indent of 567 twips; add more for nested quotes
+  const additionalIndent = level > 1 ? BLOCKQUOTE_INDENT * (level - 1) : 0;
 
   for (const child of node.children) {
     if (child.type === 'paragraph') {
       const runs = convertPhrasingContent(child.children);
-      paragraphs.push(
-        new Paragraph({
-          style: 'BodyText',
-          children: runs,
-          indent: {
-            left: indent,
-            firstLine: 0, // No first line indent for blockquotes
-          },
-        })
-      );
+      // Add extra indent for nested blockquotes
+      if (additionalIndent > 0) {
+        paragraphs.push(
+          new Paragraph({
+            style: 'BlockQuote',
+            children: runs,
+            indent: {
+              left: BLOCKQUOTE_INDENT + additionalIndent,
+              firstLine: 0,
+            },
+          })
+        );
+      } else {
+        paragraphs.push(
+          new Paragraph({
+            style: 'BlockQuote',
+            children: runs,
+          })
+        );
+      }
     } else if (child.type === 'blockquote') {
       // Nested blockquote - recurse with increased level
       const nested = convertBlockquote(child, level + 1);
       paragraphs.push(...nested);
     } else if (child.type === 'list') {
       // Lists inside blockquotes - convert and adjust indent
-      const listParagraphs = convertBlockquoteList(child, indent);
+      const listParagraphs = convertBlockquoteList(child, BLOCKQUOTE_INDENT + additionalIndent);
       paragraphs.push(...listParagraphs);
     }
   }

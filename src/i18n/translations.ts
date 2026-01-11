@@ -66,6 +66,7 @@ export interface Translations {
     heading4: string;
     bodyText: string;
     listItem: string;
+    blockquote: string;
     tableHeader: string;
     tableCell: string;
     pageFooter: string;
@@ -156,6 +157,7 @@ $$\\frac{a}{b}$$（独立公式）`,
       heading4: '四级标题',
       bodyText: '正文',
       listItem: '列表项',
+      blockquote: '引用',
       tableHeader: '表头',
       tableCell: '表格内容',
       pageFooter: '页脚',
@@ -244,6 +246,7 @@ $$\\frac{a}{b}$$ (block formula)`,
       heading4: 'Heading 4',
       bodyText: 'Body Text',
       listItem: 'List Item',
+      blockquote: 'Block Quote',
       tableHeader: 'Table Header',
       tableCell: 'Table Cell',
       pageFooter: 'Page Footer',
