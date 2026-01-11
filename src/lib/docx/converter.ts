@@ -205,7 +205,7 @@ function convertBlockquote(node: Blockquote, level: number = 1): Paragraph[] {
           style: 'BodyText',
           children: runs,
           shading: {
-            type: ShadingType.SOLID,
+            type: ShadingType.CLEAR,
             fill: BLOCKQUOTE_SHADING,
           },
           indent: {
