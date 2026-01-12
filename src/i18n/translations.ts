@@ -27,6 +27,8 @@ export interface Translations {
     closeHint: string;
     escapedLatex: string;
     fixEscapedLatex: string;
+    pasteConverted: string;
+    undoPaste: string;
   };
   alerts: {
     quotesConverted: (count: number) => string;
@@ -120,6 +122,8 @@ $$\\frac{a}{b}$$（独立公式）`,
       closeHint: '关闭提示',
       escapedLatex: '检测到可能被转义的公式（如从AI复制）',
       fixEscapedLatex: '修复转义',
+      pasteConverted: '已转换为Markdown格式',
+      undoPaste: '撤销',
     },
     alerts: {
       quotesConverted: (count: number) => `已转换 ${count} 处引号`,
@@ -211,6 +215,8 @@ $$\\frac{a}{b}$$ (block formula)`,
       closeHint: 'Close hint',
       escapedLatex: 'Detected possibly escaped formulas (e.g., copied from AI)',
       fixEscapedLatex: 'Fix escaping',
+      pasteConverted: 'Converted to Markdown format',
+      undoPaste: 'Undo',
     },
     alerts: {
       quotesConverted: (count: number) => `Converted ${count} quote(s)`,

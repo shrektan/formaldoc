@@ -1,7 +1,7 @@
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
-  onPaste?: (html: string) => string | null;
+  onPaste?: (html: string, plainText: string) => string | null;
   placeholder?: string;
 }
 
@@ -10,8 +10,9 @@ export function MarkdownEditor({ value, onChange, onPaste, placeholder }: Markdo
     if (!onPaste) return;
 
     const html = e.clipboardData.getData('text/html');
+    const plainText = e.clipboardData.getData('text/plain');
     if (html) {
-      const markdown = onPaste(html);
+      const markdown = onPaste(html, plainText);
       if (markdown !== null) {
         e.preventDefault();
         onChange(markdown);

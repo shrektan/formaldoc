@@ -47,6 +47,8 @@ function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
   const [showEscapedLatexHint, setShowEscapedLatexHint] = useState(false);
+  const [showPasteUndoHint, setShowPasteUndoHint] = useState(false);
+  const [originalPlainText, setOriginalPlainText] = useState<string | null>(null);
   const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
   const { generate, isGenerating, error } = useDocxGenerator();
@@ -137,6 +139,8 @@ function AppContent() {
     setCustomFilename('');
     setShowHeadingHint(false);
     setShowEscapedLatexHint(false);
+    setShowPasteUndoHint(false);
+    setOriginalPlainText(null);
   };
 
   const handleConvertQuotes = () => {
@@ -153,9 +157,21 @@ function AppContent() {
   };
 
   // Handle paste from HTML (e.g., AI chatbots)
-  const handlePaste = (html: string): string | null => {
+  const handlePaste = (html: string, plainText: string): string | null => {
     setShowHeadingHint(false);
+    setShowPasteUndoHint(false);
     const markdown = htmlToMarkdown(html);
+
+    // Only show undo hint if actual conversion happened (markdown differs from plain text)
+    if (markdown.trim() !== plainText.trim()) {
+      setOriginalPlainText(plainText);
+      setShowPasteUndoHint(true);
+      // Auto-dismiss after 8 seconds
+      setTimeout(() => {
+        setShowPasteUndoHint(false);
+      }, 8000);
+    }
+
     checkForMarkdown(markdown);
     // Detect escaped LaTeX in pasted content
     if (detectEscapedLatex(markdown)) {
@@ -164,9 +180,22 @@ function AppContent() {
     return markdown;
   };
 
+  // Handle undo paste - restore original plain text
+  const handleUndoPaste = () => {
+    if (originalPlainText !== null) {
+      setText(originalPlainText);
+      setShowPasteUndoHint(false);
+      setOriginalPlainText(null);
+      checkForMarkdown(originalPlainText);
+    }
+  };
+
   // Handle text changes from the editor
   const handleTextChange = (value: string) => {
     setText(value);
+    // Dismiss paste undo hint on any edit
+    setShowPasteUndoHint(false);
+    setOriginalPlainText(null);
     checkForMarkdown(value);
     // Detect escaped LaTeX (only show hint if not already dismissed for this content)
     if (detectEscapedLatex(value)) {
@@ -267,6 +296,27 @@ function AppContent() {
                 type="button"
                 className="hint-close"
                 onClick={() => setShowEscapedLatexHint(false)}
+                aria-label={t.hints.closeHint}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Paste undo hint */}
+          {showPasteUndoHint && (
+            <div className="heading-hint">
+              <span>{t.hints.pasteConverted}</span>
+              <button type="button" className="fix-btn" onClick={handleUndoPaste}>
+                {t.hints.undoPaste}
+              </button>
+              <button
+                type="button"
+                className="hint-close"
+                onClick={() => {
+                  setShowPasteUndoHint(false);
+                  setOriginalPlainText(null);
+                }}
                 aria-label={t.hints.closeHint}
               >
                 ×

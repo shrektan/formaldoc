@@ -238,6 +238,27 @@ describe('OMML structure verification', () => {
     });
   });
 
+  describe('matrix (cases environment)', () => {
+    it('should generate m:m for cases', () => {
+      const omml = latexToOmml('\\begin{cases} a & b \\\\ c & d \\end{cases}', true);
+      expect(omml).toContain('<m:m>');
+      expect(omml).toContain('<m:mr>'); // matrix row
+      expect(omml).toContain('<m:e>'); // matrix element
+    });
+
+    it('should generate m:m for pmatrix', () => {
+      const omml = latexToOmml('\\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}', true);
+      expect(omml).toContain('<m:m>');
+    });
+
+    it('should handle cases with conditions', () => {
+      const omml = latexToOmml('R = \\begin{cases} a & x > 0 \\\\ b & x < 0 \\end{cases}', true);
+      expect(omml).toContain('<m:m>');
+      expect(omml).toContain('&lt;'); // < should be escaped
+      expect(omml).toContain('&gt;'); // > should be escaped
+    });
+  });
+
   describe('fixOmmlEscaping', () => {
     it('should escape < in m:t content', () => {
       const omml = latexToOmml('P < Q', true);

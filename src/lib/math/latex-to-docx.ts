@@ -13,7 +13,9 @@ import {
   MathCurlyBrackets,
   MathSum,
   MathIntegral,
+  BuilderElement,
   type MathComponent,
+  type XmlComponent,
 } from 'docx';
 
 /**
@@ -230,6 +232,9 @@ function parseOmmlElement(element: Element): MathComponent | MathComponent[] | n
 
     case 'acc': // Accents (hat, vec, overline, dot)
       return parseMathAccent(element);
+
+    case 'm': // Matrix (for \begin{cases}, \begin{pmatrix}, etc.)
+      return parseMathMatrix(element);
 
     case 'oMath': // Nested oMath
       return parseOmmlChildren(element);
@@ -491,4 +496,101 @@ function parseMathAccent(element: Element): MathComponent[] {
       superScript: [new MathRun(accent)],
     }),
   ];
+}
+
+/**
+ * Parses m:m (matrix) element for \begin{cases}, \begin{pmatrix}, etc.
+ * Uses BuilderElement to create proper OMML matrix structure.
+ */
+function parseMathMatrix(element: Element): MathComponent {
+  const children: XmlComponent[] = [];
+
+  // Parse matrix properties (m:mPr) if present
+  const mPr = element.querySelector('mPr') || element.getElementsByTagNameNS('*', 'mPr')[0];
+  if (mPr) {
+    children.push(parseOmmlElementGeneric(mPr));
+  }
+
+  // Get all matrix rows (m:mr elements) - direct children only
+  const allMr = element.querySelectorAll('mr');
+  const rowElements = allMr.length > 0 ? allMr : element.getElementsByTagNameNS('*', 'mr');
+
+  // Filter to direct children only (not nested matrices)
+  const directRows = Array.from(rowElements).filter(
+    (row) => row.parentElement === element || row.parentNode === element
+  );
+
+  for (const row of directRows) {
+    const rowChildren: XmlComponent[] = [];
+
+    // Get all cells in this row (m:e elements) - direct children only
+    const allCells = row.querySelectorAll('e');
+    const cellElements = allCells.length > 0 ? allCells : row.getElementsByTagNameNS('*', 'e');
+
+    const directCells = Array.from(cellElements).filter(
+      (cell) => cell.parentElement === row || cell.parentNode === row
+    );
+
+    for (const cell of directCells) {
+      // Parse cell content recursively
+      const cellContent = parseOmmlChildren(cell);
+      rowChildren.push(
+        new BuilderElement({
+          name: 'm:e',
+          children: cellContent as XmlComponent[],
+        })
+      );
+    }
+
+    children.push(
+      new BuilderElement({
+        name: 'm:mr',
+        children: rowChildren,
+      })
+    );
+  }
+
+  return new BuilderElement({
+    name: 'm:m',
+    children,
+  }) as unknown as MathComponent;
+}
+
+/**
+ * Generic OMML element parser that preserves structure using BuilderElement.
+ * Used for matrix properties and other elements that need to be passed through.
+ */
+function parseOmmlElementGeneric(element: Element): XmlComponent {
+  const children: XmlComponent[] = [];
+
+  for (const child of Array.from(element.children)) {
+    if (child.children.length > 0) {
+      // Recursively parse nested elements
+      children.push(parseOmmlElementGeneric(child));
+    } else {
+      // Leaf element - check for text content or attributes
+      const text = child.textContent?.trim();
+      if (text) {
+        children.push(
+          new BuilderElement({
+            name: `m:${child.localName}`,
+            children: [new MathRun(text) as unknown as XmlComponent],
+          })
+        );
+      } else {
+        // Element with attributes but no text (like <m:ctrlPr/>)
+        children.push(
+          new BuilderElement({
+            name: `m:${child.localName}`,
+            children: [],
+          })
+        );
+      }
+    }
+  }
+
+  return new BuilderElement({
+    name: `m:${element.localName}`,
+    children,
+  });
 }
