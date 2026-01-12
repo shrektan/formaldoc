@@ -25,6 +25,8 @@ export interface Translations {
   hints: {
     noHeadings: string;
     closeHint: string;
+    escapedLatex: string;
+    fixEscapedLatex: string;
   };
   alerts: {
     quotesConverted: (count: number) => string;
@@ -116,6 +118,8 @@ $$\\frac{a}{b}$$（独立公式）`,
       noHeadings:
         '未检测到Markdown格式。可让AI"用Markdown格式回复"或"把内容放在markdown代码块中"再复制。',
       closeHint: '关闭提示',
+      escapedLatex: '检测到可能被转义的公式（如从AI复制）',
+      fixEscapedLatex: '修复转义',
     },
     alerts: {
       quotesConverted: (count: number) => `已转换 ${count} 处引号`,
@@ -205,6 +209,8 @@ $$\\frac{a}{b}$$ (block formula)`,
       noHeadings:
         'No Markdown formatting detected. Ask AI to reply in Markdown format or wrap content in a code block.',
       closeHint: 'Close hint',
+      escapedLatex: 'Detected possibly escaped formulas (e.g., copied from AI)',
+      fixEscapedLatex: 'Fix escaping',
     },
     alerts: {
       quotesConverted: (count: number) => `Converted ${count} quote(s)`,

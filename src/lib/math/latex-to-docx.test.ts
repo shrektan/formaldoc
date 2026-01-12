@@ -8,7 +8,7 @@ console.warn = (...args: unknown[]) => filter(...args) && originalWarn(...args);
 
 import { describe, it, expect } from 'bun:test';
 import { initDomPolyfill } from '../../../cli/dom-polyfill';
-import { latexToDocxMath } from './latex-to-docx';
+import { latexToDocxMath, latexToOmml } from './latex-to-docx';
 import { Math as DocxMath } from 'docx';
 
 // Initialize DOM polyfill for DOMParser support in tests
@@ -175,6 +175,93 @@ describe('latexToDocxMath', () => {
       const result = latexToDocxMath('', true);
 
       expect(result).toBeInstanceOf(DocxMath);
+    });
+  });
+});
+
+describe('OMML structure verification', () => {
+  describe('nary operators', () => {
+    it('should generate m:nary for sum', () => {
+      const omml = latexToOmml('\\sum_{i=1}^{n} x_i', true);
+      expect(omml).toContain('<m:nary>');
+      expect(omml).toMatch(/<m:chr[^>]*val="∑"/);
+      expect(omml).toContain('<m:sub>');
+      expect(omml).toContain('<m:sup>');
+      expect(omml).toContain('<m:e>');
+    });
+
+    it('should generate m:nary for integral', () => {
+      const omml = latexToOmml('\\int_0^1 f(x)', true);
+      expect(omml).toContain('<m:nary>');
+      expect(omml).toMatch(/<m:chr[^>]*val="∫"/);
+    });
+
+    it('should generate m:nary for product', () => {
+      const omml = latexToOmml('\\prod_{i=1}^{n} a_i', true);
+      expect(omml).toContain('<m:nary>');
+      expect(omml).toMatch(/<m:chr[^>]*val="∏"/);
+    });
+
+    it('should render sum without limits as text symbol', () => {
+      // When sum has no subscript/superscript, it's rendered as simple text
+      const omml = latexToOmml('\\sum x', true);
+      expect(omml).toContain('∑');
+    });
+  });
+
+  describe('accents', () => {
+    it('should generate m:acc for hat', () => {
+      const omml = latexToOmml('\\hat{x}', true);
+      expect(omml).toContain('<m:acc>');
+      expect(omml).toContain('<m:accPr>');
+      expect(omml).toContain('<m:e>');
+    });
+
+    it('should generate m:acc for vec', () => {
+      const omml = latexToOmml('\\vec{v}', true);
+      expect(omml).toContain('<m:acc>');
+    });
+
+    it('should generate m:acc for overline', () => {
+      const omml = latexToOmml('\\overline{AB}', true);
+      expect(omml).toContain('<m:acc>');
+    });
+
+    it('should generate m:acc for dot', () => {
+      const omml = latexToOmml('\\dot{a}', true);
+      expect(omml).toContain('<m:acc>');
+    });
+
+    it('should generate m:acc for tilde', () => {
+      const omml = latexToOmml('\\tilde{x}', true);
+      expect(omml).toContain('<m:acc>');
+    });
+  });
+
+  describe('fixOmmlEscaping', () => {
+    it('should escape < in m:t content', () => {
+      const omml = latexToOmml('P < Q', true);
+      expect(omml).toContain('&lt;');
+    });
+
+    it('should escape > in m:t content', () => {
+      const omml = latexToOmml('A > B', true);
+      expect(omml).toContain('&gt;');
+    });
+
+    it('should escape both < and > in comparison chain', () => {
+      const omml = latexToOmml('a < b < c', true);
+      expect(omml).toContain('&lt;');
+      // Should not have unescaped < inside m:t (except for tags)
+      expect(omml).not.toMatch(/<m:t>[^<]*[<>][^<]*<\/m:t>/);
+    });
+
+    it('should not break fractions when escaping', () => {
+      // This tests that m:type is not incorrectly matched as m:t
+      const omml = latexToOmml('\\frac{a}{b}', true);
+      expect(omml).toContain('<m:f>');
+      expect(omml).toContain('<m:num>');
+      expect(omml).toContain('<m:den>');
     });
   });
 });

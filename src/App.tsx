@@ -10,6 +10,7 @@ import { useStyles } from './contexts/useStyles';
 import { useLanguage } from './hooks/useTranslation';
 import { useDocxGenerator, extractTitle, sanitizeFilename } from './hooks/useDocxGenerator';
 import { htmlToMarkdown } from './lib/html-to-markdown';
+import { unescapeLatex } from './lib/math/latex-to-docx';
 import { detectInitialLanguage } from './lib/language-detection';
 import { examples } from './i18n';
 import type { Language } from './i18n';
@@ -45,6 +46,7 @@ function AppContent() {
   const [customFilename, setCustomFilename] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
+  const [showEscapedLatexHint, setShowEscapedLatexHint] = useState(false);
   const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
   const { generate, isGenerating, error } = useDocxGenerator();
@@ -96,6 +98,29 @@ function AppContent() {
     }
   };
 
+  /**
+   * Detect if text contains escaped LaTeX (e.g., \\frac instead of \frac).
+   * This commonly happens when copying from AI chatbots like Claude/ChatGPT.
+   */
+  const detectEscapedLatex = (content: string): boolean => {
+    // Look for double-backslash patterns inside math environments ($...$ or $$...$$)
+    // Common escaped commands: \\frac, \\left, \\right, \\sum, \\int, \\alpha, etc.
+    const escapedPattern =
+      /\$[^$]*\\\\(frac|left|right|sum|int|prod|lim|sqrt|alpha|beta|gamma|delta|times|cdot|leq|geq|neq)[^$]*\$/;
+    return escapedPattern.test(content);
+  };
+
+  /**
+   * Fix escaped LaTeX by converting double backslashes to single.
+   */
+  const handleFixEscapedLatex = () => {
+    const fixed = unescapeLatex(text);
+    setText(fixed);
+    setShowEscapedLatexHint(false);
+    // Re-check for markdown after fixing
+    checkForMarkdown(fixed);
+  };
+
   const handleGenerate = () => {
     // Use custom filename if set, otherwise use auto-detected
     const filename = customFilename.trim() || detectedFilename;
@@ -111,6 +136,7 @@ function AppContent() {
     setText('');
     setCustomFilename('');
     setShowHeadingHint(false);
+    setShowEscapedLatexHint(false);
   };
 
   const handleConvertQuotes = () => {
@@ -131,6 +157,10 @@ function AppContent() {
     setShowHeadingHint(false);
     const markdown = htmlToMarkdown(html);
     checkForMarkdown(markdown);
+    // Detect escaped LaTeX in pasted content
+    if (detectEscapedLatex(markdown)) {
+      setShowEscapedLatexHint(true);
+    }
     return markdown;
   };
 
@@ -138,6 +168,10 @@ function AppContent() {
   const handleTextChange = (value: string) => {
     setText(value);
     checkForMarkdown(value);
+    // Detect escaped LaTeX (only show hint if not already dismissed for this content)
+    if (detectEscapedLatex(value)) {
+      setShowEscapedLatexHint(true);
+    }
   };
 
   return (
@@ -215,6 +249,24 @@ function AppContent() {
                 type="button"
                 className="hint-close"
                 onClick={() => setShowHeadingHint(false)}
+                aria-label={t.hints.closeHint}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Escaped LaTeX hint */}
+          {showEscapedLatexHint && (
+            <div className="heading-hint">
+              <span>{t.hints.escapedLatex}</span>
+              <button type="button" className="fix-btn" onClick={handleFixEscapedLatex}>
+                {t.hints.fixEscapedLatex}
+              </button>
+              <button
+                type="button"
+                className="hint-close"
+                onClick={() => setShowEscapedLatexHint(false)}
                 aria-label={t.hints.closeHint}
               >
                 ×
