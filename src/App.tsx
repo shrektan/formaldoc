@@ -20,6 +20,7 @@ import './styles/app.css';
 type PasteMode = 'auto' | 'plain';
 
 const PASTE_MODE_STORAGE_KEY = 'formaldoc.pasteMode';
+const FEEDBACK_URL = 'https://wj.qq.com/s2/25520616/850f/';
 
 const isPasteMode = (value: string): value is PasteMode => value === 'auto' || value === 'plain';
 
@@ -429,6 +430,14 @@ function AppContent() {
       {/* Footer */}
       <footer className="footer-simple">
         <p>{t.footer.tagline}</p>
+        <a
+          className="footer-feedback"
+          href={FEEDBACK_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t.footer.feedback}
+        </a>
         <p className="version">v{__APP_VERSION__}</p>
       </footer>
 

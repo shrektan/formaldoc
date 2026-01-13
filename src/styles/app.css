@@ -480,6 +480,21 @@ body {
   color: var(--text-secondary);
 }
 
+.footer-feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.footer-feedback:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
 .footer-simple .version {
   font-size: 12px;
   margin-top: 4px;

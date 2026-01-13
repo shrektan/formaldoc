@@ -39,6 +39,7 @@ export interface Translations {
   };
   footer: {
     tagline: string;
+    feedback: string;
   };
   templateGallery: {
     title: string;
@@ -137,6 +138,7 @@ $$\\frac{a}{b}$$（独立公式）`,
     },
     footer: {
       tagline: '无需登录 · 无需安装 · 可离线使用 · 数据不上传',
+      feedback: '反馈/评价',
     },
     templateGallery: {
       title: '选择模板',
@@ -233,6 +235,7 @@ $$\\frac{a}{b}$$ (block formula)`,
     },
     footer: {
       tagline: 'No login · No install · Works offline · Data stays local',
+      feedback: 'Feedback',
     },
     templateGallery: {
       title: 'Choose Template',
