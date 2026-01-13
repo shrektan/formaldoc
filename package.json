@@ -1,7 +1,7 @@
 {
   "name": "formaldoc",
   "private": true,
-  "version": "1.13.2",
+  "version": "1.13.3",
   "type": "module",
   "bin": {
     "formaldoc": "./cli/index.ts"
@@ -14,6 +14,7 @@
     "lint:fix": "eslint src cli --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
+    "check": "npm run format && npm run lint && npm run build && npm run test",
     "test": "bun test",
     "test:fast": "bun test src/",
     "test:watch": "bun test --watch",

@@ -17,14 +17,12 @@ Locally, you can use either `bun install` or `npm install`.
 After making any code changes, **always** run the following commands in order:
 
 ```bash
-bun run format      # Format all source files with Prettier
-bun run lint:fix    # Fix linting errors with ESLint
-bun run build       # Verify the build passes
+npm run check       # Format, lint, type-check, and run tests
 ```
 
-Fix any remaining errors before committing. Do not commit code that fails linting or build.
+Fix any remaining errors before committing. Do not commit code that fails linting, build, or tests.
 
-**Version Bumping**: Every commit must bump the `version` field in `package.json`:
+**Version Bumping**: Every commit must bump the `version` field in `package.json` **before** committing:
 - **Patch** (e.g., 1.6.0 → 1.6.1): Bug fixes, minor tweaks, CSS adjustments
 - **Minor** (e.g., 1.6.0 → 1.7.0): New features, significant enhancements
 
@@ -41,6 +39,7 @@ Fix any remaining errors before committing. Do not commit code that fails lintin
 |---------|-------------|
 | `bun run dev` | Start development server |
 | `bun run build` | Build for production |
+| `npm run check` | Format, lint, type-check, and run tests |
 | `bun run format` | Format code with Prettier |
 | `bun run lint` | Check for linting errors |
 | `bun run lint:fix` | Auto-fix linting errors |
