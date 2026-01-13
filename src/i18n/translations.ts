@@ -9,6 +9,9 @@ export interface Translations {
   input: {
     label: string;
     placeholder: string;
+    pasteModeLabel: string;
+    pasteModeAuto: string;
+    pasteModePlain: string;
   };
   buttons: {
     quoteConvert: string;
@@ -103,6 +106,9 @@ export const translations: Record<Language, Translations> = {
 支持 LaTeX 公式（导出为原生Word公式，可编辑）：
 $E = mc^2$（行内公式）
 $$\\frac{a}{b}$$（独立公式）`,
+      pasteModeLabel: '粘贴方式',
+      pasteModeAuto: '自动识别',
+      pasteModePlain: '纯文本',
     },
     buttons: {
       quoteConvert: '引号转换',
@@ -122,8 +128,8 @@ $$\\frac{a}{b}$$（独立公式）`,
       closeHint: '关闭提示',
       escapedLatex: '检测到可能被转义的公式（如从AI复制）',
       fixEscapedLatex: '修复转义',
-      pasteConverted: '已转换为Markdown格式',
-      undoPaste: '撤销',
+      pasteConverted: '识别到富文本，已按Markdown粘贴',
+      undoPaste: '改用纯文本',
     },
     alerts: {
       quotesConverted: (count: number) => `已转换 ${count} 处引号`,
@@ -196,6 +202,9 @@ Supported Markdown formats:
 LaTeX formulas (exported as native Word equations):
 $E = mc^2$ (inline formula)
 $$\\frac{a}{b}$$ (block formula)`,
+      pasteModeLabel: 'Paste mode',
+      pasteModeAuto: 'Auto',
+      pasteModePlain: 'Plain text',
     },
     buttons: {
       quoteConvert: 'Convert Quotes',
@@ -215,8 +224,8 @@ $$\\frac{a}{b}$$ (block formula)`,
       closeHint: 'Close hint',
       escapedLatex: 'Detected possibly escaped formulas (e.g., copied from AI)',
       fixEscapedLatex: 'Fix escaping',
-      pasteConverted: 'Converted to Markdown format',
-      undoPaste: 'Undo',
+      pasteConverted: 'Rich text detected, pasted as Markdown',
+      undoPaste: 'Use plain text',
     },
     alerts: {
       quotesConverted: (count: number) => `Converted ${count} quote(s)`,

@@ -17,6 +17,34 @@ import type { Language } from './i18n';
 import type { TemplateName } from './types/styles';
 import './styles/app.css';
 
+type PasteMode = 'auto' | 'plain';
+
+const PASTE_MODE_STORAGE_KEY = 'formaldoc.pasteMode';
+
+const isPasteMode = (value: string): value is PasteMode => value === 'auto' || value === 'plain';
+
+const loadPasteMode = (): PasteMode => {
+  if (typeof window === 'undefined') return 'auto';
+  try {
+    const stored = window.localStorage.getItem(PASTE_MODE_STORAGE_KEY);
+    if (stored && isPasteMode(stored)) {
+      return stored;
+    }
+  } catch {
+    // Ignore storage errors and fall back to default.
+  }
+  return 'auto';
+};
+
+const savePasteMode = (mode: PasteMode) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(PASTE_MODE_STORAGE_KEY, mode);
+  } catch {
+    // Ignore storage errors.
+  }
+};
+
 function LanguageSwitch() {
   const { language, setLanguage } = useLanguage();
 
@@ -49,6 +77,7 @@ function AppContent() {
   const [showEscapedLatexHint, setShowEscapedLatexHint] = useState(false);
   const [showPasteUndoHint, setShowPasteUndoHint] = useState(false);
   const [originalPlainText, setOriginalPlainText] = useState<string | null>(null);
+  const [pasteMode, setPasteMode] = useState<PasteMode>(loadPasteMode);
   const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
   const { generate, isGenerating, error } = useDocxGenerator();
@@ -67,6 +96,30 @@ function AppContent() {
    * Check if text contains markdown formatting.
    * We look for common markdown patterns, not just headings.
    */
+  const markdownPatterns = [
+    /^#{1,6}\s+.+$/m, // Headings: # ## ### etc
+    /^\s*[-*+]\s+.+$/m, // Unordered list: - * +
+    /^\s*\d+\.\s+.+$/m, // Ordered list: 1. 2. etc
+    /\*\*.+?\*\*/m, // Bold: **text**
+    /\*.+?\*/m, // Italic: *text*
+    /\[.+?\]\(.+?\)/m, // Links: [text](url)
+    /^\s*>\s+.+$/m, // Blockquote: > text
+    /`[^`]+`/m, // Inline code: `code`
+    /^```/m, // Code block: ```
+    /^\|.+\|$/m, // Table: |col|col|
+    /^\s*[-*_]{3,}\s*$/m, // Horizontal rule: --- or *** or ___
+    /\$\$.+?\$\$/s, // Block math: $$...$$
+    /\$.+?\$/m, // Inline math: $...$
+  ];
+
+  const containsMarkdown = (content: string): boolean => {
+    const trimmed = content.trim();
+    if (!trimmed) {
+      return false;
+    }
+    return markdownPatterns.some((pattern) => pattern.test(trimmed));
+  };
+
   const checkForMarkdown = (content: string) => {
     const trimmed = content.trim();
     if (trimmed.length < 50) {
@@ -74,30 +127,8 @@ function AppContent() {
       return;
     }
 
-    // Check for various markdown patterns
-    const markdownPatterns = [
-      /^#{1,6}\s+.+$/m, // Headings: # ## ### etc
-      /^\s*[-*+]\s+.+$/m, // Unordered list: - * +
-      /^\s*\d+\.\s+.+$/m, // Ordered list: 1. 2. etc
-      /\*\*.+?\*\*/m, // Bold: **text**
-      /\*.+?\*/m, // Italic: *text*
-      /\[.+?\]\(.+?\)/m, // Links: [text](url)
-      /^\s*>\s+.+$/m, // Blockquote: > text
-      /`[^`]+`/m, // Inline code: `code`
-      /^```/m, // Code block: ```
-      /^\|.+\|$/m, // Table: |col|col|
-      /^\s*[-*_]{3,}\s*$/m, // Horizontal rule: --- or *** or ___
-      /\$\$.+?\$\$/s, // Block math: $$...$$
-      /\$.+?\$/m, // Inline math: $...$
-    ];
-
-    const hasMarkdown = markdownPatterns.some((pattern) => pattern.test(trimmed));
-
-    if (!hasMarkdown) {
-      setShowHeadingHint(true);
-    } else {
-      setShowHeadingHint(false);
-    }
+    const hasMarkdown = containsMarkdown(trimmed);
+    setShowHeadingHint(!hasMarkdown);
   };
 
   /**
@@ -156,14 +187,32 @@ function AppContent() {
     alert(count > 0 ? t.alerts.quotesConverted(count) : t.alerts.noQuotesFound);
   };
 
+  const hasRichHtml = (html: string): boolean =>
+    /<(table|tr|th|td|ul|ol|li|h[1-6]|blockquote|pre|code|strong|em|b|i|br|hr|p)\b/i.test(
+      html,
+    );
+
   // Handle paste from HTML (e.g., AI chatbots)
   const handlePaste = (html: string, plainText: string): string | null => {
     setShowHeadingHint(false);
     setShowPasteUndoHint(false);
+    setOriginalPlainText(null);
+    const plainHasMarkdown = containsMarkdown(plainText);
+    if (pasteMode === 'plain' || !html || plainHasMarkdown) {
+      checkForMarkdown(plainText);
+      if (detectEscapedLatex(plainText)) {
+        setShowEscapedLatexHint(true);
+      }
+      return plainText;
+    }
+
     const markdown = htmlToMarkdown(html);
 
-    // Only show undo hint if actual conversion happened (markdown differs from plain text)
-    if (markdown.trim() !== plainText.trim()) {
+    const shouldShowPasteUndoHint =
+      markdown.trim() !== plainText.trim() || hasRichHtml(html);
+
+    // Show undo hint for rich HTML paste even if Markdown matches plain text
+    if (shouldShowPasteUndoHint && plainText.trim().length > 0) {
       setOriginalPlainText(plainText);
       setShowPasteUndoHint(true);
       // Auto-dismiss after 8 seconds
@@ -240,6 +289,21 @@ function AppContent() {
           <div className="input-header">
             <label htmlFor="content">{t.input.label}</label>
             <div className="input-actions">
+              <div className="paste-mode">
+                <label htmlFor="paste-mode">{t.input.pasteModeLabel}</label>
+                <select
+                  id="paste-mode"
+                  value={pasteMode}
+                  onChange={(e) => {
+                    const nextMode = e.target.value as PasteMode;
+                    setPasteMode(nextMode);
+                    savePasteMode(nextMode);
+                  }}
+                >
+                  <option value="auto">{t.input.pasteModeAuto}</option>
+                  <option value="plain">{t.input.pasteModePlain}</option>
+                </select>
+              </div>
               <button
                 className="action-btn"
                 onClick={handleConvertQuotes}
