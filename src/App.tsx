@@ -188,9 +188,7 @@ function AppContent() {
   };
 
   const hasRichHtml = (html: string): boolean =>
-    /<(table|tr|th|td|ul|ol|li|h[1-6]|blockquote|pre|code|strong|em|b|i|br|hr|p)\b/i.test(
-      html,
-    );
+    /<(table|tr|th|td|ul|ol|li|h[1-6]|blockquote|pre|code|strong|em|b|i|br|hr|p)\b/i.test(html);
 
   // Handle paste from HTML (e.g., AI chatbots)
   const handlePaste = (html: string, plainText: string): string | null => {
@@ -208,8 +206,7 @@ function AppContent() {
 
     const markdown = htmlToMarkdown(html);
 
-    const shouldShowPasteUndoHint =
-      markdown.trim() !== plainText.trim() || hasRichHtml(html);
+    const shouldShowPasteUndoHint = markdown.trim() !== plainText.trim() || hasRichHtml(html);
 
     // Show undo hint for rich HTML paste even if Markdown matches plain text
     if (shouldShowPasteUndoHint && plainText.trim().length > 0) {
