@@ -90,7 +90,7 @@ export const translations: Record<Language, Translations> = {
     header: {
       title: 'AI文字 → 公文Word',
       tagline: '粘贴豆包、ChatGPT等AI回复，自动生成规范Word文档',
-      tip: '小技巧：让AI"用Markdown格式回复"，标题层级更准确',
+      tip: '小技巧：对AI说："请用Markdown格式回复，并把内容放在Markdown代码块中"，识别更准确',
     },
     input: {
       label: '粘贴AI生成的文字',
@@ -124,7 +124,7 @@ $$\\frac{a}{b}$$（独立公式）`,
     },
     hints: {
       noHeadings:
-        '未检测到Markdown格式。可让AI"用Markdown格式回复"或"把内容放在markdown代码块中"再复制。',
+        '未检测到Markdown格式。可对AI说："请用Markdown格式回复，并把内容放在Markdown代码块中"再复制。',
       closeHint: '关闭提示',
       escapedLatex: '检测到可能被转义的公式（如从AI复制）',
       fixEscapedLatex: '修复转义',
@@ -186,7 +186,7 @@ $$\\frac{a}{b}$$（独立公式）`,
     header: {
       title: 'AI Text → Word Doc',
       tagline: 'Paste ChatGPT, Claude responses → formatted Word document',
-      tip: 'Pro tip: Ask AI to "reply in Markdown format" for better heading detection',
+      tip: 'Pro tip: Tell AI: "Please reply in Markdown and wrap the content in a Markdown code block."',
     },
     input: {
       label: 'Paste AI-generated text',
@@ -220,7 +220,7 @@ $$\\frac{a}{b}$$ (block formula)`,
     },
     hints: {
       noHeadings:
-        'No Markdown formatting detected. Ask AI to reply in Markdown format or wrap content in a code block.',
+        'No Markdown detected. Tell AI: "Please reply in Markdown and wrap the content in a Markdown code block."',
       closeHint: 'Close hint',
       escapedLatex: 'Detected possibly escaped formulas (e.g., copied from AI)',
       fixEscapedLatex: 'Fix escaping',
