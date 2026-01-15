@@ -206,7 +206,24 @@ body {
 
 .input-actions {
   display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-actions-left {
+  display: flex;
   gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.input-actions-right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -302,6 +319,17 @@ body {
 .action-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Secondary action button (less prominent) */
+.action-btn-secondary {
+  color: var(--text-secondary);
+}
+
+.action-btn-secondary:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 /* Editor Container */

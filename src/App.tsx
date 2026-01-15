@@ -278,42 +278,49 @@ function AppContent() {
         {/* Textarea */}
         <div className="input-section">
           <div className="input-header">
-            <label htmlFor="content">{t.input.label}</label>
             <div className="input-actions">
-              <div className="paste-mode">
-                <label htmlFor="paste-mode">{t.input.pasteModeLabel}</label>
-                <select
-                  id="paste-mode"
-                  value={pasteMode}
-                  onChange={(e) => {
-                    const nextMode = e.target.value as PasteMode;
-                    setPasteMode(nextMode);
-                    savePasteMode(nextMode);
-                  }}
-                >
-                  <option value="auto">{t.input.pasteModeAuto}</option>
-                  <option value="plain">{t.input.pasteModePlain}</option>
-                </select>
+              <div className="input-actions-left">
+                <div className="paste-mode">
+                  <label htmlFor="paste-mode">{t.input.pasteModeLabel}</label>
+                  <select
+                    id="paste-mode"
+                    value={pasteMode}
+                    onChange={(e) => {
+                      const nextMode = e.target.value as PasteMode;
+                      setPasteMode(nextMode);
+                      savePasteMode(nextMode);
+                    }}
+                  >
+                    <option value="auto">{t.input.pasteModeAuto}</option>
+                    <option value="plain">{t.input.pasteModePlain}</option>
+                  </select>
+                </div>
+                <TextProcessingMenu
+                  text={text}
+                  onTextChange={handleTextProcessingChange}
+                  disabled={!text.trim()}
+                />
               </div>
-              <TextProcessingMenu
-                text={text}
-                onTextChange={handleTextProcessingChange}
-                disabled={!text.trim()}
-              />
-              <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
-                {t.buttons.customize}
-              </button>
-              <button className="action-btn" onClick={handleLoadExample} type="button">
-                {t.buttons.example}
-              </button>
-              <button
-                className="action-btn"
-                onClick={handleClear}
-                type="button"
-                disabled={!text.trim()}
-              >
-                {t.buttons.clear}
-              </button>
+              <div className="input-actions-right">
+                <button
+                  className="action-btn"
+                  onClick={() => setIsSettingsOpen(true)}
+                  type="button"
+                >
+                  {t.buttons.customize}
+                </button>
+                <button className="action-btn" onClick={handleLoadExample} type="button">
+                  {t.buttons.example}
+                </button>
+                <button
+                  className="action-btn action-btn-secondary"
+                  onClick={handleClear}
+                  type="button"
+                  disabled={!text.trim()}
+                >
+                  {t.buttons.clear}
+                </button>
+              </div>
             </div>
           </div>
           <MarkdownEditor

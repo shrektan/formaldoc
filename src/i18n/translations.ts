@@ -102,7 +102,7 @@ export interface Translations {
 export const translations: Record<Language, Translations> = {
   cn: {
     header: {
-      title: 'AI文字 → 公文Word',
+      title: 'AI文字一键转Word',
       tagline: '粘贴豆包、ChatGPT等AI回复，自动生成规范Word文档',
       tip: '小技巧：对AI说："请用Markdown格式回复，并把内容放在Markdown代码块中"，识别更准确',
     },
@@ -213,7 +213,7 @@ $$\\frac{a}{b}$$（独立公式）`,
   },
   en: {
     header: {
-      title: 'AI Text → Word Doc',
+      title: 'AI to Word Converter',
       tagline: 'Paste ChatGPT, Claude responses → formatted Word document',
       tip: 'Pro tip: Tell AI: "Please reply in Markdown and wrap the content in a Markdown code block."',
     },
