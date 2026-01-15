@@ -33,9 +33,22 @@ export interface Translations {
     pasteConverted: string;
     undoPaste: string;
   };
+  textProcessing: {
+    menuLabel: string;
+    convertQuotes: string;
+    removeEmphasis: string;
+    removeChineseSpaces: string;
+    cleanAll: string;
+  };
   alerts: {
     quotesConverted: (count: number) => string;
     noQuotesFound: string;
+    emphasisRemoved: (count: number) => string;
+    noEmphasisFound: string;
+    spacesRemoved: (count: number) => string;
+    noSpacesFound: string;
+    cleanedAll: (quotes: number, emphasis: number, spaces: number) => string;
+    nothingToClean: string;
   };
   footer: {
     tagline: string;
@@ -132,9 +145,23 @@ $$\\frac{a}{b}$$（独立公式）`,
       pasteConverted: '识别到富文本，已按Markdown粘贴',
       undoPaste: '改用纯文本',
     },
+    textProcessing: {
+      menuLabel: '文字处理',
+      convertQuotes: '引号转换',
+      removeEmphasis: '去除粗斜体',
+      removeChineseSpaces: '去除中文空格',
+      cleanAll: '一键清理',
+    },
     alerts: {
       quotesConverted: (count: number) => `已转换 ${count} 处引号`,
       noQuotesFound: '未找到需要转换的英文引号',
+      emphasisRemoved: (count: number) => `已移除 ${count} 处粗斜体标记`,
+      noEmphasisFound: '未找到粗斜体标记',
+      spacesRemoved: (count: number) => `已移除 ${count} 处中文空格`,
+      noSpacesFound: '未找到需要移除的中文空格',
+      cleanedAll: (quotes: number, emphasis: number, spaces: number) =>
+        `已清理：引号${quotes}处、粗斜体${emphasis}处、空格${spaces}处`,
+      nothingToClean: '未找到需要清理的内容',
     },
     footer: {
       tagline: '无需登录 · 无需安装 · 可离线使用 · 数据不上传',
@@ -229,9 +256,23 @@ $$\\frac{a}{b}$$ (block formula)`,
       pasteConverted: 'Rich text detected, pasted as Markdown',
       undoPaste: 'Use plain text',
     },
+    textProcessing: {
+      menuLabel: 'Text Processing',
+      convertQuotes: 'Convert Quotes',
+      removeEmphasis: 'Remove Bold/Italic',
+      removeChineseSpaces: 'Remove CN Spaces',
+      cleanAll: 'Clean All',
+    },
     alerts: {
       quotesConverted: (count: number) => `Converted ${count} quote(s)`,
       noQuotesFound: 'No English quotes found to convert',
+      emphasisRemoved: (count: number) => `Removed ${count} bold/italic marker(s)`,
+      noEmphasisFound: 'No bold/italic markers found',
+      spacesRemoved: (count: number) => `Removed ${count} Chinese space(s)`,
+      noSpacesFound: 'No Chinese spaces to remove',
+      cleanedAll: (quotes: number, emphasis: number, spaces: number) =>
+        `Cleaned: ${quotes} quotes, ${emphasis} emphasis, ${spaces} spaces`,
+      nothingToClean: 'Nothing to clean',
     },
     footer: {
       tagline: 'No login · No install · Works offline · Data stays local',

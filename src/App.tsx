@@ -4,6 +4,7 @@ import { StyleDrawer } from './components/StyleSettings';
 import { TemplateStrip } from './components/TemplateStrip';
 import { MarkdownEditor } from './components/Editor/MarkdownEditor';
 import { LoadingOverlay } from './components/LoadingOverlay';
+import { TextProcessingMenu } from './components/TextProcessingMenu';
 import { StyleProvider } from './contexts/StyleContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useStyles } from './contexts/useStyles';
@@ -175,17 +176,9 @@ function AppContent() {
     setOriginalPlainText(null);
   };
 
-  const handleConvertQuotes = () => {
-    // Convert English double quotes to Chinese double quotes
-    // "content" → "content" (U+201C and U+201D)
-    let count = 0;
-    const converted = text.replace(/"([^"]*)"/g, (_match, content) => {
-      count++;
-      return '\u201C' + content + '\u201D';
-    });
-    setText(converted);
-    checkForMarkdown(converted);
-    alert(count > 0 ? t.alerts.quotesConverted(count) : t.alerts.noQuotesFound);
+  const handleTextProcessingChange = (newText: string) => {
+    setText(newText);
+    checkForMarkdown(newText);
   };
 
   const hasRichHtml = (html: string): boolean =>
@@ -302,14 +295,11 @@ function AppContent() {
                   <option value="plain">{t.input.pasteModePlain}</option>
                 </select>
               </div>
-              <button
-                className="action-btn"
-                onClick={handleConvertQuotes}
-                type="button"
+              <TextProcessingMenu
+                text={text}
+                onTextChange={handleTextProcessingChange}
                 disabled={!text.trim()}
-              >
-                {t.buttons.quoteConvert}
-              </button>
+              />
               <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
                 {t.buttons.customize}
               </button>
