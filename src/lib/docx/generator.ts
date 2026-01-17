@@ -79,7 +79,8 @@ export function createDocument(
   const mdast = parseMarkdown(markdown);
 
   // Step 2: Convert AST to docx paragraphs
-  const paragraphs = convertMdastToDocx(mdast);
+  // Pass listItem font size for correct indent calculation
+  const paragraphs = convertMdastToDocx(mdast, settings.listItem.size);
 
   // Step 3: Create footer with custom styles and format
   const pageNumberFormat = documentSettings?.pageNumberFormat ?? 'dash';

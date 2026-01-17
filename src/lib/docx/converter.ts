@@ -52,12 +52,14 @@ const HEADING_STYLE_MAP: Record<number, string> = {
 
 /**
  * Converts an mdast AST to an array of docx elements (Paragraphs and Tables)
+ * @param mdast - The markdown AST root node
+ * @param listItemSize - Font size for list items (used to calculate indent), defaults to 16pt
  */
-export function convertMdastToDocx(mdast: Root): DocxElement[] {
+export function convertMdastToDocx(mdast: Root, listItemSize: number = 16): DocxElement[] {
   const elements: DocxElement[] = [];
 
   for (const node of mdast.children) {
-    const converted = convertNode(node);
+    const converted = convertNode(node, listItemSize);
     elements.push(...converted);
   }
 
@@ -76,14 +78,14 @@ interface MathNode {
 /**
  * Converts a single mdast node to docx element(s)
  */
-function convertNode(node: Content): DocxElement[] {
+function convertNode(node: Content, listItemSize: number): DocxElement[] {
   switch (node.type) {
     case 'heading':
       return [convertHeading(node)];
     case 'paragraph':
       return [convertParagraph(node)];
     case 'list':
-      return convertList(node);
+      return convertList(node, listItemSize);
     case 'table':
       return [convertTable(node as MdTable)];
     case 'html':
@@ -91,7 +93,7 @@ function convertNode(node: Content): DocxElement[] {
     case 'math':
       return [convertMath(node as unknown as MathNode)];
     case 'blockquote':
-      return convertBlockquote(node as Blockquote);
+      return convertBlockquote(node as Blockquote, listItemSize);
     case 'thematicBreak':
       // Ignore thematic breaks (---) as AI often generates many of these
       return [];
@@ -192,7 +194,7 @@ const BLOCKQUOTE_SHADING = 'E8E8E8';
  * Converts a blockquote node to docx Paragraph(s)
  * Uses BodyText style with italic text and light gray background
  */
-function convertBlockquote(node: Blockquote, level: number = 1): Paragraph[] {
+function convertBlockquote(node: Blockquote, listItemSize: number, level: number = 1): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const indent = BLOCKQUOTE_INDENT * level;
 
@@ -216,11 +218,11 @@ function convertBlockquote(node: Blockquote, level: number = 1): Paragraph[] {
       );
     } else if (child.type === 'blockquote') {
       // Nested blockquote - recurse with increased level
-      const nested = convertBlockquote(child, level + 1);
+      const nested = convertBlockquote(child, listItemSize, level + 1);
       paragraphs.push(...nested);
     } else if (child.type === 'list') {
       // Lists inside blockquotes - convert and adjust indent
-      const listParagraphs = convertBlockquoteList(child, indent);
+      const listParagraphs = convertBlockquoteList(child, indent, listItemSize);
       paragraphs.push(...listParagraphs);
     }
   }
@@ -239,7 +241,12 @@ function convertBlockquoteContent(nodes: PhrasingContent[]): TextRun[] {
 /**
  * Converts a list inside a blockquote with additional left indent
  */
-function convertBlockquoteList(node: List, baseIndent: number, level: number = 0): Paragraph[] {
+function convertBlockquoteList(
+  node: List,
+  baseIndent: number,
+  listItemSize: number,
+  level: number = 0
+): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const isOrdered = node.ordered ?? false;
   const startNum = node.start ?? 1;
@@ -250,6 +257,7 @@ function convertBlockquoteList(node: List, baseIndent: number, level: number = 0
       isOrdered,
       startNum + index,
       baseIndent,
+      listItemSize,
       level
     );
     paragraphs.push(...itemParagraphs);
@@ -266,10 +274,12 @@ function convertBlockquoteListItem(
   isOrdered: boolean,
   number: number,
   baseIndent: number,
+  listItemSize: number,
   level: number
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const prefix = isOrdered ? `${number}. ` : '• ';
+  const listIndent = getListIndent(listItemSize);
 
   item.children.forEach((child, childIndex) => {
     if (child.type === 'paragraph') {
@@ -285,12 +295,12 @@ function convertBlockquoteListItem(
           children: runs,
           indent: {
             left: baseIndent,
-            firstLine: LIST_INDENT_BASE + LIST_INDENT_BASE * level,
+            firstLine: listIndent + listIndent * level,
           },
         })
       );
     } else if (child.type === 'list') {
-      const nestedParagraphs = convertBlockquoteList(child, baseIndent, level + 1);
+      const nestedParagraphs = convertBlockquoteList(child, baseIndent, listItemSize, level + 1);
       paragraphs.push(...nestedParagraphs);
     }
   });
@@ -325,19 +335,19 @@ function convertMath(node: MathNode): Paragraph {
   }
 }
 
-// Base indent for lists: 2 chars = 640 twips
-const LIST_INDENT_BASE = 640;
+// Calculate list indent based on font size: 2 chars × fontSize × 20 twips/pt
+const getListIndent = (fontSize: number) => fontSize * 2 * 20;
 
 /**
  * Converts a list node to multiple docx Paragraphs
  */
-function convertList(node: List, level: number = 0): Paragraph[] {
+function convertList(node: List, listItemSize: number, level: number = 0): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const isOrdered = node.ordered ?? false;
   const startNum = node.start ?? 1;
 
   node.children.forEach((item, index) => {
-    const itemParagraphs = convertListItem(item, isOrdered, startNum + index, level);
+    const itemParagraphs = convertListItem(item, isOrdered, startNum + index, listItemSize, level);
     paragraphs.push(...itemParagraphs);
   });
 
@@ -352,10 +362,12 @@ function convertListItem(
   item: ListItem,
   isOrdered: boolean,
   number: number,
+  listItemSize: number,
   level: number
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const prefix = isOrdered ? `${number}. ` : '• ';
+  const listIndent = getListIndent(listItemSize);
 
   // Process each child of the list item
   item.children.forEach((child, childIndex) => {
@@ -373,13 +385,12 @@ function convertListItem(
         new Paragraph({
           style: 'ListParagraph',
           children: runs,
-          indent:
-            level > 0 ? { firstLine: LIST_INDENT_BASE + LIST_INDENT_BASE * level } : undefined,
+          indent: level > 0 ? { firstLine: listIndent + listIndent * level } : undefined,
         })
       );
     } else if (child.type === 'list') {
       // Handle nested lists with increased indentation
-      const nestedParagraphs = convertList(child, level + 1);
+      const nestedParagraphs = convertList(child, listItemSize, level + 1);
       paragraphs.push(...nestedParagraphs);
     }
   });
