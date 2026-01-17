@@ -17,8 +17,8 @@ import { CHINESE_FONTS, FONT_PAIRING } from '../../types/styles';
 // Line spacing: 560 twips = 28pt (exact)
 const LINE_SPACING_EXACT = 560;
 
-// Two character indent: 2 chars × 16pt = 32pt = 640 twips
-const TWO_CHAR_INDENT = 640;
+// Two character indent calculation: 2 chars × font size (pt) × 20 twips/pt
+const getTwoCharIndent = (fontSize: number) => fontSize * 2 * 20;
 
 // A4 page dimensions and margins (all margins 2.54cm / 1 inch)
 export const GB_PAGE = {
@@ -111,7 +111,7 @@ export function createDocumentStyles(
   settings: StyleSettings,
   documentSettings?: DocumentSettings
 ): IStylesOptions {
-  const getIndent = (style: TextStyle) => (style.indent ? TWO_CHAR_INDENT : 0);
+  const getIndent = (style: TextStyle) => (style.indent ? getTwoCharIndent(style.size) : 0);
   const getAlignment = (style: TextStyle) =>
     style.center ? AlignmentType.CENTER : AlignmentType.BOTH;
 
