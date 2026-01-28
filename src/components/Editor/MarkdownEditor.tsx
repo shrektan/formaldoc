@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -6,6 +8,8 @@ interface MarkdownEditorProps {
 }
 
 export function MarkdownEditor({ value, onChange, onPaste, placeholder }: MarkdownEditorProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     if (!onPaste) return;
 
@@ -15,7 +19,24 @@ export function MarkdownEditor({ value, onChange, onPaste, placeholder }: Markdo
       const markdown = onPaste(html, plainText);
       if (markdown !== null) {
         e.preventDefault();
-        onChange(markdown);
+
+        // Insert at cursor position instead of replacing everything
+        const textarea = textareaRef.current;
+        if (textarea) {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const newValue = value.substring(0, start) + markdown + value.substring(end);
+          onChange(newValue);
+
+          // Restore cursor position after the inserted content
+          requestAnimationFrame(() => {
+            const newCursorPos = start + markdown.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+          });
+        } else {
+          // Fallback if ref not available
+          onChange(markdown);
+        }
       }
     }
   };
@@ -24,6 +45,7 @@ export function MarkdownEditor({ value, onChange, onPaste, placeholder }: Markdo
     <div className="editor-container">
       {!value && placeholder && <div className="custom-placeholder">{placeholder}</div>}
       <textarea
+        ref={textareaRef}
         className="content-textarea"
         value={value}
         onChange={(e) => onChange(e.target.value)}
