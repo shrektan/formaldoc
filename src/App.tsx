@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { TemplateStrip } from './components/TemplateStrip';
-import { MarkdownEditor } from './components/Editor/MarkdownEditor';
+import { MarkdownEditor, type PasteSelection } from './components/Editor/MarkdownEditor';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { TextProcessingMenu } from './components/TextProcessingMenu';
 import { StyleProvider } from './contexts/StyleContext';
@@ -78,7 +78,11 @@ function AppContent() {
   const [showHeadingHint, setShowHeadingHint] = useState(false);
   const [showEscapedLatexHint, setShowEscapedLatexHint] = useState(false);
   const [showPasteUndoHint, setShowPasteUndoHint] = useState(false);
-  const [originalPlainText, setOriginalPlainText] = useState<string | null>(null);
+  const [pasteUndoState, setPasteUndoState] = useState<{
+    prePasteContent: string;
+    selection: PasteSelection;
+    plainText: string;
+  } | null>(null);
   const [pasteMode, setPasteMode] = useState<PasteMode>(loadPasteMode);
   const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
@@ -173,7 +177,7 @@ function AppContent() {
     setShowHeadingHint(false);
     setShowEscapedLatexHint(false);
     setShowPasteUndoHint(false);
-    setOriginalPlainText(null);
+    setPasteUndoState(null);
   };
 
   const handleTextProcessingChange = (newText: string) => {
@@ -185,10 +189,14 @@ function AppContent() {
     /<(table|tr|th|td|ul|ol|li|h[1-6]|blockquote|pre|code|strong|em|b|i|br|hr|p)\b/i.test(html);
 
   // Handle paste from HTML (e.g., AI chatbots)
-  const handlePaste = (html: string, plainText: string): string | null => {
+  const handlePaste = (
+    html: string,
+    plainText: string,
+    selection: PasteSelection
+  ): string | null => {
     setShowHeadingHint(false);
     setShowPasteUndoHint(false);
-    setOriginalPlainText(null);
+    setPasteUndoState(null);
     const plainHasMarkdown = containsMarkdown(plainText);
     if (pasteMode === 'plain' || !html || plainHasMarkdown) {
       checkForMarkdown(plainText);
@@ -204,7 +212,12 @@ function AppContent() {
 
     // Show undo hint for rich HTML paste even if Markdown matches plain text
     if (shouldShowPasteUndoHint && plainText.trim().length > 0) {
-      setOriginalPlainText(plainText);
+      // Store full undo state: pre-paste content, selection, and plain text
+      setPasteUndoState({
+        prePasteContent: text,
+        selection,
+        plainText,
+      });
       setShowPasteUndoHint(true);
       // Auto-dismiss after 8 seconds
       setTimeout(() => {
@@ -220,13 +233,19 @@ function AppContent() {
     return markdown;
   };
 
-  // Handle undo paste - restore original plain text
+  // Handle undo paste - replace converted markdown with plain text at original position
   const handleUndoPaste = () => {
-    if (originalPlainText !== null) {
-      setText(originalPlainText);
+    if (pasteUndoState !== null) {
+      const { prePasteContent, selection, plainText } = pasteUndoState;
+      // Reconstruct: pre-paste content with plain text inserted at original selection
+      const restoredText =
+        prePasteContent.substring(0, selection.start) +
+        plainText +
+        prePasteContent.substring(selection.end);
+      setText(restoredText);
       setShowPasteUndoHint(false);
-      setOriginalPlainText(null);
-      checkForMarkdown(originalPlainText);
+      setPasteUndoState(null);
+      checkForMarkdown(restoredText);
     }
   };
 
@@ -235,7 +254,7 @@ function AppContent() {
     setText(value);
     // Dismiss paste undo hint on any edit
     setShowPasteUndoHint(false);
-    setOriginalPlainText(null);
+    setPasteUndoState(null);
     checkForMarkdown(value);
     // Detect escaped LaTeX (only show hint if not already dismissed for this content)
     if (detectEscapedLatex(value)) {
@@ -374,7 +393,7 @@ function AppContent() {
                 className="hint-close"
                 onClick={() => {
                   setShowPasteUndoHint(false);
-                  setOriginalPlainText(null);
+                  setPasteUndoState(null);
                 }}
                 aria-label={t.hints.closeHint}
               >

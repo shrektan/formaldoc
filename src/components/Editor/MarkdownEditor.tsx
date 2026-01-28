@@ -1,9 +1,14 @@
 import { useRef } from 'react';
 
+export interface PasteSelection {
+  start: number;
+  end: number;
+}
+
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
-  onPaste?: (html: string, plainText: string) => string | null;
+  onPaste?: (html: string, plainText: string, selection: PasteSelection) => string | null;
   placeholder?: string;
 }
 
@@ -16,26 +21,24 @@ export function MarkdownEditor({ value, onChange, onPaste, placeholder }: Markdo
     const html = e.clipboardData.getData('text/html');
     const plainText = e.clipboardData.getData('text/plain');
     if (html) {
-      const markdown = onPaste(html, plainText);
+      const textarea = textareaRef.current;
+      const start = textarea?.selectionStart ?? 0;
+      const end = textarea?.selectionEnd ?? 0;
+
+      const markdown = onPaste(html, plainText, { start, end });
       if (markdown !== null) {
         e.preventDefault();
 
         // Insert at cursor position instead of replacing everything
-        const textarea = textareaRef.current;
-        if (textarea) {
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const newValue = value.substring(0, start) + markdown + value.substring(end);
-          onChange(newValue);
+        const newValue = value.substring(0, start) + markdown + value.substring(end);
+        onChange(newValue);
 
-          // Restore cursor position after the inserted content
+        // Restore cursor position after the inserted content
+        if (textarea) {
           requestAnimationFrame(() => {
             const newCursorPos = start + markdown.length;
             textarea.setSelectionRange(newCursorPos, newCursorPos);
           });
-        } else {
-          // Fallback if ref not available
-          onChange(markdown);
         }
       }
     }
