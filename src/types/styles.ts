@@ -23,6 +23,9 @@ export interface TextStyle {
   italic?: boolean;
   center?: boolean;
   indent?: boolean; // Two-character first line indent
+  color?: string; // Hex color (e.g., #1F4E79 or 1F4E79)
+  characterSpacing?: number; // Twips (1/20 pt), e.g., 10 = 0.5pt
+  spacingBefore?: number; // Twips, paragraph spacing before
 }
 
 // Font pairing rules: serif Chinese fonts → serif English fonts, sans-serif → sans-serif
@@ -198,6 +201,7 @@ export interface Template {
   descriptionEn: string;
   category: TemplateCategory;
   specs: TemplateSpecs;
+  thumbnail?: string;
   styles: StyleSettings;
   fontSizes: { name: string; pt: number }[];
   availableFonts: DocumentFont[];

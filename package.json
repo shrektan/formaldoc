@@ -19,7 +19,8 @@
     "test:fast": "bun test src/",
     "test:watch": "bun test --watch",
     "cli": "bun run cli/index.ts",
-    "cli:link": "bun link"
+    "cli:link": "bun link",
+    "thumbnails": "bun run cli/generate-thumbnails.ts"
   },
   "repository": {
     "type": "git",

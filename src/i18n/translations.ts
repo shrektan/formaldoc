@@ -57,6 +57,10 @@ export interface Translations {
   templateGallery: {
     title: string;
     chinese: string;
+    previewHint: string;
+    previewLabel: string;
+    previewAction: string;
+    previewDialogTitle: string;
   };
   templateStrip: {
     chinese: string;
@@ -170,6 +174,10 @@ $$\\frac{a}{b}$$（独立公式）`,
     templateGallery: {
       title: '选择模板',
       chinese: '中文',
+      previewHint: '缩略图仅用于快速预览，点击卡片即可切换模板。',
+      previewLabel: '预览图',
+      previewAction: '放大',
+      previewDialogTitle: '模板大图预览',
     },
     templateStrip: {
       chinese: '中文',
@@ -281,6 +289,10 @@ $$\\frac{a}{b}$$ (block formula)`,
     templateGallery: {
       title: 'Choose Template',
       chinese: 'Chinese',
+      previewHint: 'Thumbnails are for quick preview. Click a card to switch templates.',
+      previewLabel: 'Preview',
+      previewAction: 'Zoom',
+      previewDialogTitle: 'Large Template Preview',
     },
     templateStrip: {
       chinese: 'CN',

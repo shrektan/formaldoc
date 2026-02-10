@@ -147,6 +147,9 @@ const CN_GENERAL_STYLES: StyleSettings = {
     size: 16,
     bold: false, // 黑体 is inherently bold
     indent: false,
+    color: '#1f4e79',
+    characterSpacing: 10,
+    spacingBefore: 320, // ~16pt
   },
   heading2: {
     font: '黑体',
@@ -154,6 +157,7 @@ const CN_GENERAL_STYLES: StyleSettings = {
     size: 14,
     bold: false, // 黑体 is inherently bold
     indent: false,
+    spacingBefore: 240, // ~12pt
   },
   heading3: {
     font: '黑体',
@@ -426,6 +430,9 @@ const EN_STANDARD_STYLES: StyleSettings = {
     size: 16,
     bold: true,
     indent: false,
+    color: '#1f4e79',
+    characterSpacing: 10,
+    spacingBefore: 320,
   },
 
   // Heading 2: Arial 14pt, bold
@@ -434,6 +441,7 @@ const EN_STANDARD_STYLES: StyleSettings = {
     size: 14,
     bold: true,
     indent: false,
+    spacingBefore: 240,
   },
 
   // Heading 3: Arial 12pt, bold
@@ -771,6 +779,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     description: 'GB/T 9704 标准格式',
     descriptionEn: 'GB/T 9704 Standard',
     category: 'chinese',
+    thumbnail: '/thumbnails/cn-gov.png',
     specs: {
       bodyFont: '仿宋',
       bodyEnglishFont: 'Times New Roman',
@@ -792,6 +801,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     description: '宋体+TNR，1.5倍行距',
     descriptionEn: 'Song + TNR, 1.5 spacing',
     category: 'chinese',
+    thumbnail: '/thumbnails/cn-general.png',
     specs: {
       bodyFont: '宋体',
       bodyEnglishFont: 'Times New Roman',
@@ -813,6 +823,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     description: '学位论文/期刊格式',
     descriptionEn: 'Thesis/Journal format',
     category: 'chinese',
+    thumbnail: '/thumbnails/cn-academic.png',
     specs: {
       bodyFont: '宋体',
       bodyEnglishFont: 'Times New Roman',
@@ -834,6 +845,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     description: '工作汇报/分析报告',
     descriptionEn: 'Business reports',
     category: 'chinese',
+    thumbnail: '/thumbnails/cn-report.png',
     specs: {
       bodyFont: '宋体',
       bodyEnglishFont: 'Times New Roman',
@@ -855,6 +867,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     description: 'Times New Roman + Arial',
     descriptionEn: 'Times New Roman + Arial',
     category: 'english',
+    thumbnail: '/thumbnails/en-standard.png',
     specs: {
       bodyFont: 'Times New Roman',
       headingFont: 'Arial',
@@ -873,6 +886,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     description: 'Calibri + Arial, modern',
     descriptionEn: 'Calibri + Arial, modern',
     category: 'english',
+    thumbnail: '/thumbnails/en-business.png',
     specs: {
       bodyFont: 'Calibri',
       headingFont: 'Arial',
@@ -891,6 +905,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     description: 'APA style, double-spaced',
     descriptionEn: 'APA style, double-spaced',
     category: 'english',
+    thumbnail: '/thumbnails/en-academic.png',
     specs: {
       bodyFont: 'Times New Roman',
       headingFont: 'Times New Roman',
@@ -909,6 +924,7 @@ export const TEMPLATES: Record<TemplateName, Template> = {
     description: 'Contracts, legal docs',
     descriptionEn: 'Contracts, legal docs',
     category: 'english',
+    thumbnail: '/thumbnails/en-legal.png',
     specs: {
       bodyFont: 'Times New Roman',
       headingFont: 'Times New Roman',

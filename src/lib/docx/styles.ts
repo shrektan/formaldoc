@@ -86,6 +86,23 @@ function ptToHalfPoints(pt: number): number {
   return pt * 2;
 }
 
+function normalizeColor(color?: string): string | undefined {
+  if (!color) return undefined;
+  const raw = color.trim();
+  const hex = raw.startsWith('#') ? raw.slice(1) : raw;
+  if (hex.length === 3) {
+    const expanded = hex
+      .split('')
+      .map((ch) => ch + ch)
+      .join('');
+    return expanded.toUpperCase();
+  }
+  if (hex.length === 6) {
+    return hex.toUpperCase();
+  }
+  return undefined;
+}
+
 /**
  * Default line spacing config (CN Government standard: 28pt exact)
  */
@@ -173,10 +190,13 @@ export function createDocumentStyles(
           font: createFont(settings.heading1.font, settings.heading1.englishFont),
           size: ptToHalfPoints(settings.heading1.size),
           bold: settings.heading1.bold,
+          color: normalizeColor(settings.heading1.color),
+          characterSpacing: settings.heading1.characterSpacing,
         },
         paragraph: {
           outlineLevel: 0, // 一级
           spacing: {
+            before: settings.heading1.spacingBefore ?? 0,
             after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,
@@ -200,10 +220,13 @@ export function createDocumentStyles(
           font: createFont(settings.heading2.font, settings.heading2.englishFont),
           size: ptToHalfPoints(settings.heading2.size),
           bold: settings.heading2.bold,
+          color: normalizeColor(settings.heading2.color),
+          characterSpacing: settings.heading2.characterSpacing,
         },
         paragraph: {
           outlineLevel: 1, // 二级
           spacing: {
+            before: settings.heading2.spacingBefore ?? 0,
             after: spacingAfter,
             line: spacing.line,
             lineRule: spacing.lineRule,

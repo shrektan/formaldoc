@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLanguage } from '../../hooks/useTranslation';
 import type { Template, TemplateName } from '../../types/styles';
 import { getTemplatesByCategory } from '../../lib/styles/templates';
@@ -14,23 +15,64 @@ function TemplateCard({
   template,
   isSelected,
   onSelect,
+  onPreview,
   language,
+  previewLabel,
+  previewAction,
 }: {
   template: Template;
   isSelected: boolean;
   onSelect: () => void;
+  onPreview: () => void;
   language: 'cn' | 'en';
+  previewLabel: string;
+  previewAction: string;
 }) {
   const isChinese = language === 'cn';
   const specs = template.specs;
+  const [thumbFailed, setThumbFailed] = useState(false);
+  const hasThumbnail = Boolean(template.thumbnail) && !thumbFailed;
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       className={`template-card ${isSelected ? 'selected' : ''}`}
       onClick={onSelect}
-      type="button"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
     >
       {isSelected && <span className="template-check">✓</span>}
+      {hasThumbnail ? (
+        <div className="template-thumb-wrap">
+          <img
+            className="template-thumb-img"
+            src={template.thumbnail}
+            alt={`${isChinese && template.category === 'chinese' ? template.name : template.nameEn}`}
+            loading="lazy"
+            decoding="async"
+            onError={() => setThumbFailed(true)}
+          />
+          <button
+            className="template-thumb-preview-btn"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview();
+            }}
+          >
+            {previewAction}
+          </button>
+        </div>
+      ) : (
+        <div className="template-thumb placeholder">
+          <span className="template-thumb-label">{previewLabel}</span>
+        </div>
+      )}
       <div className="template-card-name">
         {isChinese && template.category === 'chinese' ? template.name : template.nameEn}
       </div>
@@ -67,7 +109,7 @@ function TemplateCard({
           <span className="spec-value">{specs.indent}</span>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -78,6 +120,7 @@ export function TemplateGallery({
   onClose,
 }: TemplateGalleryProps) {
   const { language, t } = useLanguage();
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
 
   if (!isOpen) return null;
 
@@ -103,6 +146,7 @@ export function TemplateGallery({
         </div>
 
         <div className="gallery-content">
+          <p className="gallery-hint">{t.templateGallery.previewHint}</p>
           {/* Chinese Templates */}
           <div className="template-category">
             <h3 className="category-title">{t.templateGallery.chinese}</h3>
@@ -113,7 +157,10 @@ export function TemplateGallery({
                   template={template}
                   isSelected={currentTemplate === template.id}
                   onSelect={() => handleSelect(template.id)}
+                  onPreview={() => setPreviewTemplate(template)}
                   language={language}
+                  previewLabel={t.templateGallery.previewLabel}
+                  previewAction={t.templateGallery.previewAction}
                 />
               ))}
             </div>
@@ -129,13 +176,39 @@ export function TemplateGallery({
                   template={template}
                   isSelected={currentTemplate === template.id}
                   onSelect={() => handleSelect(template.id)}
+                  onPreview={() => setPreviewTemplate(template)}
                   language={language}
+                  previewLabel={t.templateGallery.previewLabel}
+                  previewAction={t.templateGallery.previewAction}
                 />
               ))}
             </div>
           </div>
         </div>
       </div>
+
+      {previewTemplate?.thumbnail && (
+        <div className="thumb-lightbox-overlay" onClick={() => setPreviewTemplate(null)}>
+          <div className="thumb-lightbox" onClick={(e) => e.stopPropagation()}>
+            <div className="thumb-lightbox-header">
+              <h3>{t.templateGallery.previewDialogTitle}</h3>
+              <button
+                className="thumb-lightbox-close"
+                onClick={() => setPreviewTemplate(null)}
+                aria-label={t.hints.closeHint}
+                type="button"
+              >
+                ×
+              </button>
+            </div>
+            <img
+              className="thumb-lightbox-img"
+              src={previewTemplate.thumbnail}
+              alt={language === 'cn' ? previewTemplate.name : previewTemplate.nameEn}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { TemplateStrip } from './components/TemplateStrip';
+import { TemplateGallery } from './components/TemplateGallery';
 import { MarkdownEditor, type PasteSelection } from './components/Editor/MarkdownEditor';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { TextProcessingMenu } from './components/TextProcessingMenu';
@@ -75,6 +76,7 @@ function AppContent() {
   const [text, setText] = useState('');
   const [customFilename, setCustomFilename] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
   const [showEscapedLatexHint, setShowEscapedLatexHint] = useState(false);
   const [showPasteUndoHint, setShowPasteUndoHint] = useState(false);
@@ -288,7 +290,7 @@ function AppContent() {
         <TemplateStrip
           currentTemplate={template}
           onSelect={handleTemplateSelect}
-          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenSettings={() => setIsTemplateGalleryOpen(true)}
         />
       </header>
 
@@ -459,6 +461,14 @@ function AppContent() {
 
       {/* Settings drawer */}
       <StyleDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Template gallery */}
+      <TemplateGallery
+        isOpen={isTemplateGalleryOpen}
+        currentTemplate={template}
+        onSelect={handleTemplateSelect}
+        onClose={() => setIsTemplateGalleryOpen(false)}
+      />
 
       {/* Loading overlay */}
       <LoadingOverlay isVisible={isGenerating} message={t.loading.generating} />
