@@ -184,8 +184,30 @@ function parseOmml(omml: string): MathComponent[] {
  */
 function parseOmmlChildren(element: Element): MathComponent[] {
   const children: MathComponent[] = [];
+  const elementChildren = Array.from(element.children);
 
-  for (const child of Array.from(element.children)) {
+  for (let index = 0; index < elementChildren.length; index++) {
+    const child = elementChildren[index];
+    if (child.localName === 'nary') {
+      const naryTail: Element[] = [];
+      let tailIndex = index + 1;
+      while (tailIndex < elementChildren.length && !isNaryBoundaryElement(elementChildren[tailIndex])) {
+        naryTail.push(elementChildren[tailIndex]);
+        tailIndex++;
+      }
+
+      const naryComponent = parseMathNary(child, naryTail);
+      if (Array.isArray(naryComponent)) {
+        children.push(...naryComponent);
+      } else if (naryComponent) {
+        children.push(naryComponent);
+      }
+
+      // Skip consumed tail siblings
+      index = tailIndex - 1;
+      continue;
+    }
+
     const component = parseOmmlElement(child);
     if (component) {
       if (Array.isArray(component)) {
@@ -205,6 +227,24 @@ function parseOmmlChildren(element: Element): MathComponent[] {
  */
 function getDirectChild(element: Element, localName: string): Element | undefined {
   return Array.from(element.children).find((child) => child.localName === localName);
+}
+
+/**
+ * Returns true when an element should stop n-ary body merging.
+ * We only stop at clear top-level separators; multiplicative operators stay inside.
+ */
+function isNaryBoundaryElement(element: Element): boolean {
+  if (element.localName !== 'r') {
+    return false;
+  }
+
+  const textElement = getDirectChild(element, 't') || element.getElementsByTagNameNS('*', 't')[0];
+  const text = (textElement?.textContent || '').replace(/\s+/g, '');
+  if (!text) {
+    return false;
+  }
+
+  return /[=+\-±∓<>≤≥≠≈;,]/.test(text);
 }
 
 /**
@@ -388,7 +428,7 @@ function parseMathDelimiter(element: Element): MathComponent {
 /**
  * Parses m:nary (n-ary operator) element for sum, integral, product, etc.
  */
-function parseMathNary(element: Element): MathComponent[] {
+function parseMathNary(element: Element, trailingElements: Element[] = []): MathComponent[] {
   const result: MathComponent[] = [];
 
   // Get the operator character (∑, ∫, ∏, etc.)
@@ -408,6 +448,16 @@ function parseMathNary(element: Element): MathComponent[] {
   const subScript = sub ? parseOmmlChildren(sub) : undefined;
   const superScript = sup ? parseOmmlChildren(sup) : undefined;
   const children = e ? parseOmmlChildren(e) : [new MathRun('')];
+  for (const trailingElement of trailingElements) {
+    const trailingComponent = parseOmmlElement(trailingElement);
+    if (trailingComponent) {
+      if (Array.isArray(trailingComponent)) {
+        children.push(...trailingComponent);
+      } else {
+        children.push(trailingComponent);
+      }
+    }
+  }
 
   // Use appropriate docx class based on operator
   if (operator === '∑') {

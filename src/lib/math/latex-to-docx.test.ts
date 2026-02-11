@@ -121,6 +121,24 @@ describe('latexToDocxMath', () => {
 
       expect(result).toBeInstanceOf(DocxMath);
     });
+
+    it('should keep sum body attached to nary operator', () => {
+      const result = latexToDocxMath('\\sum_{i=0}^{n} NV_{Ai}', true);
+      const root = (result as unknown as { root: unknown[] }).root;
+
+      expect(root).toHaveLength(1);
+      expect(JSON.stringify(root[0])).toContain('Ai');
+    });
+
+    it('should keep additive terms outside sum body', () => {
+      const result = latexToDocxMath('\\sum_{i=0}^{n} x_i + y', true);
+      const root = (result as unknown as { root: unknown[] }).root;
+      const serialized = JSON.stringify(result);
+
+      expect(root.length).toBeGreaterThan(1);
+      expect(serialized).toContain('+');
+      expect(serialized).toContain('y');
+    });
   });
 
   describe('brackets and delimiters', () => {
