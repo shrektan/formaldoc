@@ -161,6 +161,18 @@ describe('latexToDocxMath', () => {
 
       expect(result).toBeInstanceOf(DocxMath);
     });
+
+    it('should preserve product body when limits contain nested expressions', () => {
+      const result = latexToDocxMath(
+        '\\prod_{d=d_i}^{T} \\left(1 + \\frac{R_A(d)}{365}\\right)',
+        true
+      );
+
+      const serialized = JSON.stringify(result);
+      expect(serialized).toContain('∏');
+      expect(serialized).toContain('R');
+      expect(serialized).toContain('365');
+    });
   });
 
   describe('error handling', () => {

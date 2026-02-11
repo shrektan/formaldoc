@@ -200,6 +200,14 @@ function parseOmmlChildren(element: Element): MathComponent[] {
 }
 
 /**
+ * Gets a direct child element by localName (namespace-agnostic).
+ * Falls back to undefined if not found.
+ */
+function getDirectChild(element: Element, localName: string): Element | undefined {
+  return Array.from(element.children).find((child) => child.localName === localName);
+}
+
+/**
  * Parses a single OMML element into a MathComponent
  */
 function parseOmmlElement(element: Element): MathComponent | MathComponent[] | null {
@@ -384,17 +392,18 @@ function parseMathNary(element: Element): MathComponent[] {
   const result: MathComponent[] = [];
 
   // Get the operator character (∑, ∫, ∏, etc.)
-  const naryPr =
-    element.querySelector('naryPr') || element.getElementsByTagNameNS('*', 'naryPr')[0];
-  const chr = naryPr?.querySelector('chr') || naryPr?.getElementsByTagNameNS('*', 'chr')[0];
+  const naryPr = getDirectChild(element, 'naryPr') || element.getElementsByTagNameNS('*', 'naryPr')[0];
+  const chr = naryPr
+    ? getDirectChild(naryPr, 'chr') || naryPr.getElementsByTagNameNS('*', 'chr')[0]
+    : undefined;
   const operator = chr?.getAttribute('m:val') || chr?.getAttribute('val') || '∑';
 
-  // Get sub (lower limit) and sup (upper limit)
-  const sub = element.querySelector('sub') || element.getElementsByTagNameNS('*', 'sub')[0];
-  const sup = element.querySelector('sup') || element.getElementsByTagNameNS('*', 'sup')[0];
+  // IMPORTANT: use direct children to avoid capturing nested <m:e> inside limits.
+  const sub = getDirectChild(element, 'sub') || element.getElementsByTagNameNS('*', 'sub')[0];
+  const sup = getDirectChild(element, 'sup') || element.getElementsByTagNameNS('*', 'sup')[0];
 
-  // Get the expression being operated on
-  const e = element.querySelector('e') || element.getElementsByTagNameNS('*', 'e')[0];
+  // Get the expression being operated on (direct <m:e> child of <m:nary>)
+  const e = getDirectChild(element, 'e') || element.getElementsByTagNameNS('*', 'e')[0];
 
   const subScript = sub ? parseOmmlChildren(sub) : undefined;
   const superScript = sup ? parseOmmlChildren(sup) : undefined;
