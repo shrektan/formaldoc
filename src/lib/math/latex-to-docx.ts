@@ -481,34 +481,73 @@ function parseMathNary(element: Element, trailingElements: Element[] = []): Math
       })
     );
   } else {
-    // For other operators (∏, etc.), use MathSubSuperScript with the operator symbol
-    if (subScript && superScript) {
-      result.push(
-        new MathSubSuperScript({
-          children: [new MathRun(operator)],
-          subScript,
-          superScript,
-        })
-      );
-    } else if (subScript) {
-      result.push(
-        new MathSubScript({
-          children: [new MathRun(operator)],
-          subScript,
-        })
-      );
-    } else if (superScript) {
-      result.push(
-        new MathSuperScript({
-          children: [new MathRun(operator)],
-          superScript,
-        })
-      );
-    } else {
-      result.push(new MathRun(operator));
-    }
-    // Add the expression after the operator
-    result.push(...children);
+    // For product and other n-ary operators, preserve n-ary structure so limits can render above/below.
+    const naryChildren: XmlComponent[] = [
+      new BuilderElement({
+        name: 'm:naryPr',
+        children: [
+          new BuilderElement({
+            name: 'm:chr',
+            attributes: {
+              accent: { key: 'm:val', value: operator },
+            },
+          }),
+          new BuilderElement({
+            name: 'm:limLoc',
+            attributes: {
+              value: { key: 'm:val', value: 'undOvr' },
+            },
+          }),
+          ...(!superScript
+            ? [
+                new BuilderElement({
+                  name: 'm:supHide',
+                  attributes: {
+                    hide: { key: 'm:val', value: 1 },
+                  },
+                }),
+              ]
+            : []),
+          ...(!subScript
+            ? [
+                new BuilderElement({
+                  name: 'm:subHide',
+                  attributes: {
+                    hide: { key: 'm:val', value: 1 },
+                  },
+                }),
+              ]
+            : []),
+        ],
+      }),
+      ...(subScript
+        ? [
+            new BuilderElement({
+              name: 'm:sub',
+              children: subScript as XmlComponent[],
+            }),
+          ]
+        : []),
+      ...(superScript
+        ? [
+            new BuilderElement({
+              name: 'm:sup',
+              children: superScript as XmlComponent[],
+            }),
+          ]
+        : []),
+      new BuilderElement({
+        name: 'm:e',
+        children: children as XmlComponent[],
+      }),
+    ];
+
+    result.push(
+      new BuilderElement({
+        name: 'm:nary',
+        children: naryChildren,
+      }) as unknown as MathComponent
+    );
   }
 
   return result;

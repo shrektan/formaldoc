@@ -118,8 +118,11 @@ describe('latexToDocxMath', () => {
 
     it('should convert product notation', () => {
       const result = latexToDocxMath('\\prod_{i=1}^{n} x_i', true);
+      const root = (result as unknown as { root: Array<{ rootKey?: string }> }).root;
 
       expect(result).toBeInstanceOf(DocxMath);
+      expect(root).toHaveLength(1);
+      expect(root[0]?.rootKey).toBe('m:nary');
     });
 
     it('should keep sum body attached to nary operator', () => {
