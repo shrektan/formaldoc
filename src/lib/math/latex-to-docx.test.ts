@@ -139,6 +139,20 @@ describe('latexToDocxMath', () => {
       expect(serialized).toContain('+');
       expect(serialized).toContain('y');
     });
+
+    it('should not merge multiplicative product chain into sum body', () => {
+      const result = latexToDocxMath(
+        'NV_{AT} = \\sum_{i=0}^{n} NV_{Ai} \\times \\prod_{d=d_i}^{T} \\left(1 + \\frac{R_A(d)}{365}\\right)',
+        true
+      );
+      const root = (result as unknown as { root: unknown[] }).root as Array<{ rootKey?: string }>;
+      const firstNary = root.find((node) => node.rootKey === 'm:nary');
+
+      expect(firstNary).toBeDefined();
+      expect(JSON.stringify(firstNary)).toContain('∑');
+      expect(JSON.stringify(firstNary)).not.toContain('∏');
+      expect(JSON.stringify(result)).toContain('∏');
+    });
   });
 
   describe('brackets and delimiters', () => {

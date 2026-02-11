@@ -234,6 +234,10 @@ function getDirectChild(element: Element, localName: string): Element | undefine
  * We only stop at clear top-level separators; multiplicative operators stay inside.
  */
 function isNaryBoundaryElement(element: Element): boolean {
+  if (element.localName === 'nary') {
+    return true;
+  }
+
   if (element.localName !== 'r') {
     return false;
   }
@@ -244,7 +248,7 @@ function isNaryBoundaryElement(element: Element): boolean {
     return false;
   }
 
-  return /[=+\-±∓<>≤≥≠≈;,]/.test(text);
+  return /[=+\-±∓×·⋅*/<>≤≥≠≈;,]/.test(text);
 }
 
 /**
