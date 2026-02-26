@@ -443,17 +443,15 @@ function AppContent() {
         >
           {isGenerating ? t.buttons.downloading : t.buttons.download}
         </button>
+
+        <a className="feedback-cta" href={FEEDBACK_URL}>
+          {t.footer.feedback}
+        </a>
       </main>
 
       {/* Footer */}
       <footer className="footer-simple">
         <p>{t.footer.tagline}</p>
-        <a
-          className="footer-feedback"
-          href={FEEDBACK_URL}
-        >
-          {t.footer.feedback}
-        </a>
         <p className="version">v{__APP_VERSION__}</p>
       </footer>
 

@@ -500,6 +500,32 @@ body {
   cursor: not-allowed;
 }
 
+.feedback-cta {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+  background: var(--surface);
+  border: 1px solid rgba(26, 115, 232, 0.35);
+  border-radius: 10px;
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    color 0.2s;
+}
+
+.feedback-cta:hover {
+  border-color: var(--primary);
+  background: rgba(26, 115, 232, 0.06);
+  color: var(--primary-hover);
+}
+
 /* Footer */
 .footer-simple {
   text-align: center;
