@@ -1,11 +1,4 @@
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type CSSProperties,
-} from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { TemplateStrip } from './components/TemplateStrip';
@@ -23,7 +16,6 @@ import { detectInitialLanguage } from './lib/language-detection';
 import { examples } from './i18n';
 import type { Language } from './i18n';
 import { unescapeLatex } from './lib/math/latex-to-docx';
-import { getTemplatesByCategory } from './lib/styles/templates';
 import type { StyleKey, TemplateCategory, TemplateName, TextStyle } from './types/styles';
 import './styles/app.css';
 
@@ -58,91 +50,64 @@ const PREVIEW_BLOCK_LIMIT = 10;
 
 const PAGE_COPY = {
   cn: {
-    brandTag: 'FormalDoc 公文工作台',
-    heroTitle: '内置规范公文模板，一键生成正式 Word 文档',
-    heroSubtitle:
-      '把 AI 输出或现有稿件直接整理成符合标准的公文、报告与正式材料。桌面端同时展示输入、预览和模板规范，让格式价值看得见。',
-    valueProps: [
-      'GB/T 9704-2012 公文模板',
-      '完整公文结构骨架',
-      '样式可选并可微调',
-      '浏览器本地生成不上传',
-    ],
-    railLabel: '模板速选',
-    proofTitle: '当前推荐模板',
-    proofBadge: '规范模板',
-    inputTitle: '文稿输入',
-    inputDescription: '支持 AI 富文本粘贴、Markdown 编辑、文字清理与智能文件名。',
-    previewTitle: '版式预览',
-    previewDescription: '预览当前模板的版式气质、标题层级与页码风格。',
-    previewEmpty: '当前未输入内容，预览展示模板默认骨架。',
-    templateTitle: '模板与规范',
-    templateDescription: '把模板规格、适用场景与快速切换都放在同一面板里。',
-    specTitle: '关键规格',
-    quickSwitchTitle: '快速切换模板',
-    scenarioTitle: '常用场景快速开始',
-    scenarioDescription: '一键填入完整结构骨架，再补正文内容即可导出。',
-    applyScenario: '套用骨架',
-    replaceScenarioConfirm: '当前内容将被完整公文模板覆盖，是否继续？',
-    actionTitle: '先套模板，再导出',
-    actionDescription: '如果你要快速起草规范公文，先选择场景骨架；如果已有内容，直接导出即可。',
-    createSkeleton: '生成完整公文模板',
-    exportWord: '导出 Word 文档',
-    customize: '自定义样式',
-    chooseTemplate: '查看全部模板',
-    audience: '适用场景',
-    standard: '规范依据',
-    body: '正文',
-    heading: '标题',
-    lineSpacing: '行距',
-    indent: '缩进',
-    pageNumber: '页码',
-    livePreview: '实时预览',
-    localOnly: '本地生成',
+    compactTitle: '粘贴内容，直接生成规范 Word',
+    compactSubtitle: '把模板说明收在旁边，把正文输入放到首屏中央。用户进入页面后，先粘贴，再导出。',
+    infoPills: ['GB/T 9704-2012 模板', '支持完整公文骨架', '浏览器本地生成'],
+    editorTitle: '文稿输入',
+    editorDescription: '从豆包、ChatGPT 等复制内容后，直接粘贴到这里。',
+    currentTemplateTitle: '当前模板',
+    currentTemplateDescription: '保留最关键的规格说明，避免首屏重复堆信息。',
+    quickStartTitle: '快速骨架',
+    quickStartDescription: '需要起草完整公文时，先选一个场景，再一键插入。',
+    previewTitle: '成品预览',
+    previewDescription: '视觉预览当前模板的大致版式，不追求与 Word 像素级一致。',
+    previewEmpty: '未输入正文时，预览展示当前场景骨架。',
+    detailsSummary: '展开查看模板详情与适用场景',
+    generateLabel: '生成 Word',
+    generatingLabel: '生成中...',
+    skeletonLabel: '插入完整骨架',
+    styleLabel: '自定义样式',
+    templatesLabel: '全部模板',
+    standardLabel: '规范',
+    audienceLabel: '适用',
+    bodyLabel: '正文',
+    headingLabel: '标题',
+    spacingLabel: '行距',
+    indentLabel: '缩进',
+    pageNumberLabel: '页码',
+    localLabel: '本地生成',
+    replaceScenarioConfirm: '当前内容将被所选骨架覆盖，是否继续？',
+    footer: '无需登录 · 支持 AI 富文本粘贴 · 支持离线使用',
   },
   en: {
-    brandTag: 'FormalDoc Workspace',
-    heroTitle: 'Preset official document templates, exported as polished Word files',
-    heroSubtitle:
-      'Turn AI output or drafts into formal documents with template guidance visible on desktop: input, paper preview, and formatting rules side by side.',
-    valueProps: [
-      'GB/T 9704-2012 preset',
-      'Full document skeletons',
-      'Adjustable template styles',
-      'Local generation, no upload',
-    ],
-    railLabel: 'Template Rail',
-    proofTitle: 'Current Recommended Preset',
-    proofBadge: 'Preset',
-    inputTitle: 'Document Input',
-    inputDescription: 'Paste AI rich text, edit Markdown, clean formatting, and set filename.',
-    previewTitle: 'Layout Preview',
-    previewDescription: 'See hierarchy, page rhythm, and footer style before export.',
-    previewEmpty: 'No content yet. The preview is showing the template skeleton.',
-    templateTitle: 'Template Details',
-    templateDescription: 'Keep template rules, switching, and quick starts in one place.',
-    specTitle: 'Key Specs',
-    quickSwitchTitle: 'Quick Switch',
-    scenarioTitle: 'Quick Starts',
-    scenarioDescription: 'Insert a full structure first, then fill the real content.',
-    applyScenario: 'Use Skeleton',
+    compactTitle: 'Paste content and export a polished Word document',
+    compactSubtitle: 'Keep the document input in the first screen. Templates, preview, and quick starts stay nearby instead of blocking the main flow.',
+    infoPills: ['GB/T 9704-2012 preset', 'Complete document skeletons', 'Local export'],
+    editorTitle: 'Document Input',
+    editorDescription: 'Paste content from AI tools or your draft, then export directly.',
+    currentTemplateTitle: 'Current Template',
+    currentTemplateDescription: 'Show only the essential specs first, and keep the rest compact.',
+    quickStartTitle: 'Quick Skeletons',
+    quickStartDescription: 'Choose a structure first when you need a complete formal draft.',
+    previewTitle: 'Preview',
+    previewDescription: 'A visual approximation of the final layout, not a pixel-perfect Word renderer.',
+    previewEmpty: 'When the editor is empty, the preview falls back to the selected skeleton.',
+    detailsSummary: 'Show template details and supported use cases',
+    generateLabel: 'Generate Word',
+    generatingLabel: 'Generating...',
+    skeletonLabel: 'Insert Skeleton',
+    styleLabel: 'Customize Styles',
+    templatesLabel: 'Browse Templates',
+    standardLabel: 'Standard',
+    audienceLabel: 'Use Cases',
+    bodyLabel: 'Body',
+    headingLabel: 'Heading',
+    spacingLabel: 'Spacing',
+    indentLabel: 'Indent',
+    pageNumberLabel: 'Page Number',
+    localLabel: 'Local Export',
     replaceScenarioConfirm: 'Replace the current content with the selected skeleton?',
-    actionTitle: 'Start with structure, then export',
-    actionDescription:
-      'Use a skeleton for fast drafting, or export immediately if your content is ready.',
-    createSkeleton: 'Insert Full Document Skeleton',
-    exportWord: 'Export Word Document',
-    customize: 'Customize Styles',
-    chooseTemplate: 'Browse Templates',
-    audience: 'Use Cases',
-    standard: 'Standard',
-    body: 'Body',
-    heading: 'Heading',
-    lineSpacing: 'Spacing',
-    indent: 'Indent',
-    pageNumber: 'Page Number',
-    livePreview: 'Live Preview',
-    localOnly: 'Local Only',
+    footer: 'No login · Rich AI paste support · Works offline',
   },
 } as const;
 
@@ -312,7 +277,7 @@ const SCENARIO_PRESETS: Record<TemplateCategory, ScenarioPreset[]> = {
 
 发文单位
 
-2026年3月7日`,
+2026年3月8日`,
     },
     {
       id: 'request',
@@ -342,7 +307,7 @@ const SCENARIO_PRESETS: Record<TemplateCategory, ScenarioPreset[]> = {
 
 请示单位
 
-2026年3月7日`,
+2026年3月8日`,
     },
     {
       id: 'report',
@@ -372,7 +337,7 @@ const SCENARIO_PRESETS: Record<TemplateCategory, ScenarioPreset[]> = {
 
 报送单位
 
-2026年3月7日`,
+2026年3月8日`,
     },
     {
       id: 'letter',
@@ -398,7 +363,7 @@ const SCENARIO_PRESETS: Record<TemplateCategory, ScenarioPreset[]> = {
 
 发函单位
 
-2026年3月7日`,
+2026年3月8日`,
     },
     {
       id: 'minutes',
@@ -430,7 +395,7 @@ const SCENARIO_PRESETS: Record<TemplateCategory, ScenarioPreset[]> = {
 
 办公室
 
-2026年3月7日`,
+2026年3月8日`,
     },
   ],
   english: [
@@ -678,7 +643,7 @@ function buildPreviewBlocks(text: string, fallbackBlocks: PreviewBlock[]): Previ
 function getPreviewStyle(style: TextStyle): CSSProperties {
   return {
     fontFamily: style.englishFont ? `"${style.font}", "${style.englishFont}"` : `"${style.font}"`,
-    fontSize: `${Math.max(style.size * 0.86, 10)}px`,
+    fontSize: `${Math.max(style.size * 0.82, 10)}px`,
     fontWeight: style.bold ? 700 : 400,
     fontStyle: style.italic ? 'italic' : 'normal',
     textAlign: style.center ? 'center' : 'left',
@@ -724,10 +689,6 @@ function AppContent() {
   const copy = PAGE_COPY[language];
   const metadata = PAGE_METADATA[language];
   const templateInsight = TEMPLATE_INSIGHTS[template];
-  const templatesInCategory = useMemo(
-    () => getTemplatesByCategory(currentTemplate.category),
-    [currentTemplate.category]
-  );
   const scenarioPresets = SCENARIO_PRESETS[currentTemplate.category];
   const [selectedScenarioId, setSelectedScenarioId] = useState(() => scenarioPresets[0]?.id ?? '');
   const selectedScenario = useMemo(
@@ -761,13 +722,13 @@ function AppContent() {
     updateMeta('meta[name="twitter:description"]', metadata.twitterDescription);
   }, [metadata]);
 
-  const fallbackPreviewBlocks = useMemo(
+  const previewFallback = useMemo(
     () => buildPreviewBlocks(selectedScenario?.content ?? '', []),
     [selectedScenario]
   );
   const previewBlocks = useMemo(
-    () => buildPreviewBlocks(text, fallbackPreviewBlocks),
-    [fallbackPreviewBlocks, text]
+    () => buildPreviewBlocks(text, previewFallback),
+    [previewFallback, text]
   );
   const pageNumberSample = getPageNumberSample(currentTemplate.documentSettings.pageNumberFormat);
   const previewLineHeight = getLineHeightValue(
@@ -780,10 +741,6 @@ function AppContent() {
     const title = extractTitle(text);
     return title ? sanitizeFilename(title) : '';
   }, [text]);
-
-  const handleTemplateSelect = (templateId: TemplateName) => {
-    setTemplate(templateId);
-  };
 
   const markdownPatterns = [
     /^#{1,6}\s+.+$/m,
@@ -803,9 +760,7 @@ function AppContent() {
 
   const containsMarkdown = (content: string): boolean => {
     const trimmed = content.trim();
-    if (!trimmed) {
-      return false;
-    }
+    if (!trimmed) return false;
     return markdownPatterns.some((pattern) => pattern.test(trimmed));
   };
 
@@ -815,9 +770,7 @@ function AppContent() {
       setShowHeadingHint(false);
       return;
     }
-
-    const hasMarkdown = containsMarkdown(trimmed);
-    setShowHeadingHint(!hasMarkdown);
+    setShowHeadingHint(!containsMarkdown(trimmed));
   };
 
   const detectEscapedLatex = (content: string): boolean => {
@@ -869,6 +822,7 @@ function AppContent() {
     setShowPasteUndoHint(false);
     setPasteUndoState(null);
     const plainHasMarkdown = containsMarkdown(plainText);
+
     if (pasteMode === 'plain' || !html || plainHasMarkdown) {
       checkForMarkdown(plainText);
       if (detectEscapedLatex(plainText)) {
@@ -900,17 +854,16 @@ function AppContent() {
   };
 
   const handleUndoPaste = () => {
-    if (pasteUndoState !== null) {
-      const { prePasteContent, selection, plainText } = pasteUndoState;
-      const restoredText =
-        prePasteContent.substring(0, selection.start) +
-        plainText +
-        prePasteContent.substring(selection.end);
-      setText(restoredText);
-      setShowPasteUndoHint(false);
-      setPasteUndoState(null);
-      checkForMarkdown(restoredText);
-    }
+    if (pasteUndoState === null) return;
+    const { prePasteContent, selection, plainText } = pasteUndoState;
+    const restoredText =
+      prePasteContent.substring(0, selection.start) +
+      plainText +
+      prePasteContent.substring(selection.end);
+    setText(restoredText);
+    setShowPasteUndoHint(false);
+    setPasteUndoState(null);
+    checkForMarkdown(restoredText);
   };
 
   const handleTextChange = (value: string) => {
@@ -939,24 +892,26 @@ function AppContent() {
     });
   };
 
-  const handleCreateSkeleton = () => {
-    if (selectedScenario) {
-      applyScenario(selectedScenario);
-    }
-  };
-
   return (
     <div className="app-shell">
-      <header className="hero-shell">
-        <div className="hero-topbar">
-          <div className="hero-branding">
-            <img src="/logo.png" alt="FormalDoc Logo" className="logo" />
-            <div>
-              <div className="brand-tag">{copy.brandTag}</div>
-              <div className="brand-name">FormalDoc</div>
-            </div>
+      <header className="topbar-shell">
+        <div className="topbar-brand">
+          <img src="/logo.png" alt="FormalDoc Logo" className="logo" />
+          <div className="topbar-copy">
+            <div className="brand-kicker">FormalDoc</div>
+            <h1>{copy.compactTitle}</h1>
+            <p>{copy.compactSubtitle}</p>
           </div>
-          <div className="hero-topbar-actions">
+        </div>
+        <div className="topbar-tools">
+          <div className="info-pill-row">
+            {copy.infoPills.map((item) => (
+              <span key={item} className="info-pill">
+                {item}
+              </span>
+            ))}
+          </div>
+          <div className="topbar-actions">
             <a
               href="https://github.com/shrektan/formaldoc"
               target="_blank"
@@ -964,188 +919,145 @@ function AppContent() {
               className="github-link"
               title="GitHub"
             >
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
               </svg>
+              GitHub
             </a>
             <LanguageSwitch />
-          </div>
-        </div>
-
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <h1>{copy.heroTitle}</h1>
-            <p className="hero-subtitle">{copy.heroSubtitle}</p>
-            <div className="value-props">
-              {copy.valueProps.map((item) => (
-                <span key={item} className="value-pill">
-                  {item}
-                </span>
-              ))}
-            </div>
-
-            <div className="template-rail-panel">
-              <div className="section-eyebrow">{copy.railLabel}</div>
-              <TemplateStrip
-                currentTemplate={template}
-                onSelect={handleTemplateSelect}
-                onOpenSettings={() => setIsTemplateGalleryOpen(true)}
-              />
-            </div>
-          </div>
-
-          <div className="hero-proof-card">
-            <div className="hero-proof-top">
-              <span className="proof-badge">{copy.proofBadge}</span>
-              <span className="proof-standard">{templateInsight.standard}</span>
-            </div>
-            <div className="section-eyebrow">{copy.proofTitle}</div>
-            <h2>{formatDisplayName(currentTemplate.name, currentTemplate.nameEn, language)}</h2>
-            <p>
-              {formatDisplayName(
-                currentTemplate.description,
-                currentTemplate.descriptionEn,
-                language
-              )}
-            </p>
-            <div className="hero-proof-metrics">
-              <div className="metric-card">
-                <span>{copy.body}</span>
-                <strong>{currentTemplate.specs.bodyFont}</strong>
-              </div>
-              <div className="metric-card">
-                <span>{copy.lineSpacing}</span>
-                <strong>{currentTemplate.specs.lineSpacing}</strong>
-              </div>
-              <div className="metric-card">
-                <span>{copy.pageNumber}</span>
-                <strong>{pageNumberSample}</strong>
-              </div>
-              <div className="metric-card">
-                <span>{copy.localOnly}</span>
-                <strong>DOCX</strong>
-              </div>
-            </div>
-            <p className="hero-proof-note">{templateInsight.promise[language]}</p>
           </div>
         </div>
       </header>
 
       <main className="workspace-shell">
-        <div className="workspace-grid">
-          <section className="panel editor-panel">
-            <div className="panel-header">
-              <div>
-                <div className="section-eyebrow">{copy.livePreview}</div>
-                <h2>{copy.inputTitle}</h2>
-              </div>
-              <p>{copy.inputDescription}</p>
+        <section className="composer-shell">
+          <div className="composer-topbar">
+            <div className="composer-heading">
+              <span className="section-kicker">{copy.editorTitle}</span>
+              <h2>{copy.editorTitle}</h2>
+              <p>{copy.editorDescription}</p>
             </div>
-
-            <div className="input-actions">
-              <div className="input-actions-left">
-                <div className="paste-mode">
-                  <label htmlFor="paste-mode">{t.input.pasteModeLabel}</label>
-                  <select
-                    id="paste-mode"
-                    value={pasteMode}
-                    onChange={(e) => {
-                      const nextMode = e.target.value as PasteMode;
-                      setPasteMode(nextMode);
-                      savePasteMode(nextMode);
-                    }}
-                  >
-                    <option value="auto">{t.input.pasteModeAuto}</option>
-                    <option value="plain">{t.input.pasteModePlain}</option>
-                  </select>
-                </div>
-                <TextProcessingMenu
-                  text={text}
-                  onTextChange={handleTextProcessingChange}
-                  disabled={!text.trim()}
-                />
-              </div>
-              <div className="input-actions-right">
-                <button
-                  className="action-btn"
-                  onClick={() => setIsSettingsOpen(true)}
-                  type="button"
-                >
-                  {copy.customize}
-                </button>
-                <button className="action-btn" onClick={handleLoadExample} type="button">
-                  {t.buttons.example}
-                </button>
-                <button
-                  className="action-btn action-btn-secondary"
-                  onClick={handleClear}
-                  type="button"
-                  disabled={!text.trim()}
-                >
-                  {t.buttons.clear}
-                </button>
-              </div>
+            <div className="composer-meta">
+              <span className="meta-chip">{templateInsight.standard}</span>
+              <span className="meta-chip">{copy.localLabel}</span>
             </div>
+          </div>
 
-            <MarkdownEditor
-              value={text}
-              onChange={handleTextChange}
-              onPaste={handlePaste}
-              placeholder={t.input.placeholder}
+          <div className="template-strip-row">
+            <TemplateStrip
+              currentTemplate={template}
+              onSelect={setTemplate}
+              onOpenSettings={() => setIsTemplateGalleryOpen(true)}
             />
+          </div>
 
-            {showHeadingHint && (
-              <div className="heading-hint">
-                <span>{t.hints.noHeadings}</span>
-                <button
-                  type="button"
-                  className="hint-close"
-                  onClick={() => setShowHeadingHint(false)}
-                  aria-label={t.hints.closeHint}
-                >
-                  ×
-                </button>
-              </div>
-            )}
-
-            {showEscapedLatexHint && (
-              <div className="heading-hint">
-                <span>{t.hints.escapedLatex}</span>
-                <button type="button" className="fix-btn" onClick={handleFixEscapedLatex}>
-                  {t.hints.fixEscapedLatex}
-                </button>
-                <button
-                  type="button"
-                  className="hint-close"
-                  onClick={() => setShowEscapedLatexHint(false)}
-                  aria-label={t.hints.closeHint}
-                >
-                  ×
-                </button>
-              </div>
-            )}
-
-            {showPasteUndoHint && (
-              <div className="heading-hint">
-                <span>{t.hints.pasteConverted}</span>
-                <button type="button" className="fix-btn" onClick={handleUndoPaste}>
-                  {t.hints.undoPaste}
-                </button>
-                <button
-                  type="button"
-                  className="hint-close"
-                  onClick={() => {
-                    setShowPasteUndoHint(false);
-                    setPasteUndoState(null);
+          <div className="composer-toolbar">
+            <div className="toolbar-group">
+              <div className="paste-mode">
+                <label htmlFor="paste-mode">{t.input.pasteModeLabel}</label>
+                <select
+                  id="paste-mode"
+                  value={pasteMode}
+                  onChange={(e) => {
+                    const nextMode = e.target.value as PasteMode;
+                    setPasteMode(nextMode);
+                    savePasteMode(nextMode);
                   }}
-                  aria-label={t.hints.closeHint}
                 >
-                  ×
-                </button>
+                  <option value="auto">{t.input.pasteModeAuto}</option>
+                  <option value="plain">{t.input.pasteModePlain}</option>
+                </select>
               </div>
-            )}
+              <TextProcessingMenu
+                text={text}
+                onTextChange={handleTextProcessingChange}
+                disabled={!text.trim()}
+              />
+            </div>
+            <div className="toolbar-group">
+              <button
+                className="action-btn"
+                onClick={() => setIsSettingsOpen(true)}
+                type="button"
+              >
+                {copy.styleLabel}
+              </button>
+              <button className="action-btn" onClick={handleLoadExample} type="button">
+                {t.buttons.example}
+              </button>
+              <button
+                className="action-btn action-btn-secondary"
+                onClick={handleClear}
+                type="button"
+                disabled={!text.trim()}
+              >
+                {t.buttons.clear}
+              </button>
+            </div>
+          </div>
 
-            <div className="filename-row">
+          <MarkdownEditor
+            value={text}
+            onChange={handleTextChange}
+            onPaste={handlePaste}
+            placeholder={t.input.placeholder}
+          />
+
+          {showHeadingHint && (
+            <div className="hint-row">
+              <span>{t.hints.noHeadings}</span>
+              <button
+                type="button"
+                className="hint-close"
+                onClick={() => setShowHeadingHint(false)}
+                aria-label={t.hints.closeHint}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {showEscapedLatexHint && (
+            <div className="hint-row">
+              <span>{t.hints.escapedLatex}</span>
+              <button type="button" className="fix-btn" onClick={handleFixEscapedLatex}>
+                {t.hints.fixEscapedLatex}
+              </button>
+              <button
+                type="button"
+                className="hint-close"
+                onClick={() => setShowEscapedLatexHint(false)}
+                aria-label={t.hints.closeHint}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {showPasteUndoHint && (
+            <div className="hint-row">
+              <span>{t.hints.pasteConverted}</span>
+              <button type="button" className="fix-btn" onClick={handleUndoPaste}>
+                {t.hints.undoPaste}
+              </button>
+              <button
+                type="button"
+                className="hint-close"
+                onClick={() => {
+                  setShowPasteUndoHint(false);
+                  setPasteUndoState(null);
+                }}
+                aria-label={t.hints.closeHint}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {error && <div className="error-msg">{error}</div>}
+
+          <div className="composer-footer">
+            <div className="filename-field">
               <label htmlFor="filename">{t.filename.label}</label>
               <div className="filename-input-wrapper">
                 <input
@@ -1169,19 +1081,121 @@ function AppContent() {
                 )}
               </div>
             </div>
+
+            <div className="primary-actions">
+              <button
+                type="button"
+                className="secondary-cta"
+                onClick={() => selectedScenario && applyScenario(selectedScenario)}
+              >
+                {copy.skeletonLabel}
+              </button>
+              <button
+                type="button"
+                className="primary-cta"
+                onClick={handleGenerate}
+                disabled={!text.trim() || isGenerating}
+              >
+                {isGenerating ? copy.generatingLabel : copy.generateLabel}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <aside className="support-shell">
+          <section className="support-card">
+            <div className="support-card-header">
+              <div>
+                <span className="section-kicker">{copy.currentTemplateTitle}</span>
+                <h3>{formatDisplayName(currentTemplate.name, currentTemplate.nameEn, language)}</h3>
+              </div>
+              <span className="meta-chip strong">{templateInsight.standard}</span>
+            </div>
+            <p className="support-copy">{copy.currentTemplateDescription}</p>
+            <div className="spec-grid">
+              <div className="spec-item">
+                <span>{copy.bodyLabel}</span>
+                <strong>{currentTemplate.specs.bodyFont}</strong>
+              </div>
+              <div className="spec-item">
+                <span>{copy.headingLabel}</span>
+                <strong>{currentTemplate.specs.headingFont}</strong>
+              </div>
+              <div className="spec-item">
+                <span>{copy.spacingLabel}</span>
+                <strong>{currentTemplate.specs.lineSpacing}</strong>
+              </div>
+              <div className="spec-item">
+                <span>{copy.pageNumberLabel}</span>
+                <strong>{pageNumberSample}</strong>
+              </div>
+            </div>
+            <div className="support-actions">
+              <button
+                type="button"
+                className="action-btn"
+                onClick={() => setIsTemplateGalleryOpen(true)}
+              >
+                {copy.templatesLabel}
+              </button>
+              <button type="button" className="action-btn" onClick={() => setIsSettingsOpen(true)}>
+                {copy.styleLabel}
+              </button>
+            </div>
+            <details className="template-details">
+              <summary>{copy.detailsSummary}</summary>
+              <div className="details-body">
+                <p>{templateInsight.promise[language]}</p>
+                <div className="details-line">
+                  <span>{copy.standardLabel}</span>
+                  <strong>{templateInsight.standard}</strong>
+                </div>
+                <div className="details-line">
+                  <span>{copy.audienceLabel}</span>
+                  <strong>{templateInsight.audience[language].join(' / ')}</strong>
+                </div>
+                <div className="details-line">
+                  <span>{copy.indentLabel}</span>
+                  <strong>{currentTemplate.specs.indent}</strong>
+                </div>
+              </div>
+            </details>
           </section>
 
-          <section className="panel preview-panel">
-            <div className="panel-header">
+          <section className="support-card">
+            <div className="support-card-header">
               <div>
-                <div className="section-eyebrow">{copy.livePreview}</div>
-                <h2>{copy.previewTitle}</h2>
+                <span className="section-kicker">{copy.quickStartTitle}</span>
+                <h3>{copy.quickStartTitle}</h3>
               </div>
-              <p>{copy.previewDescription}</p>
             </div>
+            <p className="support-copy">{copy.quickStartDescription}</p>
+            <div className="scenario-grid">
+              {scenarioPresets.map((scenario) => (
+                <button
+                  key={scenario.id}
+                  type="button"
+                  className={`scenario-card ${selectedScenario?.id === scenario.id ? 'active' : ''}`}
+                  onClick={() => setSelectedScenarioId(scenario.id)}
+                  aria-pressed={selectedScenario?.id === scenario.id}
+                >
+                  <span className="scenario-card-title">{scenario.title}</span>
+                  <span className="scenario-card-description">{scenario.description}</span>
+                </button>
+              ))}
+            </div>
+          </section>
 
-            {!text.trim() && <div className="panel-note">{copy.previewEmpty}</div>}
-
+          <section className="support-card preview-card">
+            <div className="support-card-header">
+              <div>
+                <span className="section-kicker">{copy.previewTitle}</span>
+                <h3>{copy.previewTitle}</h3>
+              </div>
+            </div>
+            <p className="support-copy">
+              {text.trim() ? copy.previewDescription : copy.previewEmpty}
+            </p>
             <div className="preview-paper-shell">
               <div className="preview-paper" style={{ lineHeight: previewLineHeight }}>
                 {previewBlocks.map((block, index) => (
@@ -1200,161 +1214,25 @@ function AppContent() {
               </div>
             </div>
           </section>
-
-          <aside className="panel insights-panel">
-            <div className="panel-header">
-              <div>
-                <div className="section-eyebrow">{templateInsight.standard}</div>
-                <h2>{copy.templateTitle}</h2>
-              </div>
-              <p>{copy.templateDescription}</p>
-            </div>
-
-            <div className="insight-card">
-              <div className="insight-card-head">
-                <h3>{formatDisplayName(currentTemplate.name, currentTemplate.nameEn, language)}</h3>
-                <span className="insight-standard">{templateInsight.standard}</span>
-              </div>
-              <p className="insight-description">
-                {formatDisplayName(
-                  currentTemplate.description,
-                  currentTemplate.descriptionEn,
-                  language
-                )}
-              </p>
-              <div className="tag-list">
-                {templateInsight.audience[language].map((item) => (
-                  <span key={item} className="tag-chip">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="insight-section">
-              <h3>{copy.specTitle}</h3>
-              <div className="spec-list">
-                <div className="spec-item">
-                  <span>{copy.standard}</span>
-                  <strong>{templateInsight.standard}</strong>
-                </div>
-                <div className="spec-item">
-                  <span>{copy.body}</span>
-                  <strong>{currentTemplate.specs.bodyFont}</strong>
-                </div>
-                <div className="spec-item">
-                  <span>{copy.heading}</span>
-                  <strong>{currentTemplate.specs.headingFont}</strong>
-                </div>
-                <div className="spec-item">
-                  <span>{copy.lineSpacing}</span>
-                  <strong>{currentTemplate.specs.lineSpacing}</strong>
-                </div>
-                <div className="spec-item">
-                  <span>{copy.indent}</span>
-                  <strong>{currentTemplate.specs.indent}</strong>
-                </div>
-                <div className="spec-item">
-                  <span>{copy.pageNumber}</span>
-                  <strong>{pageNumberSample}</strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="insight-section">
-              <h3>{copy.quickSwitchTitle}</h3>
-              <div className="template-switch-grid">
-                {templatesInCategory.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`template-switch-card ${item.id === template ? 'active' : ''}`}
-                    onClick={() => handleTemplateSelect(item.id)}
-                  >
-                    <span className="template-switch-name">
-                      {formatDisplayName(item.name, item.nameEn, language)}
-                    </span>
-                    <span className="template-switch-spec">
-                      {item.specs.bodyFont} · {item.specs.lineSpacing}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="insight-section">
-              <h3>{copy.scenarioTitle}</h3>
-              <p className="insight-section-copy">{copy.scenarioDescription}</p>
-              <div className="scenario-grid">
-                {scenarioPresets.map((scenario) => (
-                  <button
-                    key={scenario.id}
-                    type="button"
-                    className={`scenario-card ${selectedScenario?.id === scenario.id ? 'active' : ''}`}
-                    onClick={() => setSelectedScenarioId(scenario.id)}
-                    aria-pressed={selectedScenario?.id === scenario.id}
-                  >
-                    <span className="scenario-card-title">{scenario.title}</span>
-                    <span className="scenario-card-description">{scenario.description}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </aside>
-        </div>
-
-        {error && <div className="error-msg">{error}</div>}
-
-        <section className="action-bar">
-          <div className="action-copy">
-            <div className="section-eyebrow">{copy.actionTitle}</div>
-            <h2>{copy.exportWord}</h2>
-            <p>{copy.actionDescription}</p>
-          </div>
-          <div className="action-buttons">
-            <button className="outline-button" onClick={handleCreateSkeleton} type="button">
-              {copy.createSkeleton}
-            </button>
-            <button
-              className="generate-btn"
-              onClick={handleGenerate}
-              disabled={!text.trim() || isGenerating}
-              type="button"
-            >
-              {isGenerating ? t.buttons.downloading : copy.exportWord}
-            </button>
-            <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
-              {copy.customize}
-            </button>
-            <button
-              className="action-btn action-btn-secondary"
-              onClick={() => setIsTemplateGalleryOpen(true)}
-              type="button"
-            >
-              {copy.chooseTemplate}
-            </button>
-          </div>
-        </section>
-
-        <a className="feedback-cta" href={FEEDBACK_URL}>
-          {t.footer.feedback}
-        </a>
+        </aside>
       </main>
 
+      <a className="feedback-cta" href={FEEDBACK_URL}>
+        {t.footer.feedback}
+      </a>
+
       <footer className="footer-simple">
-        <p>{t.footer.tagline}</p>
+        <p>{copy.footer}</p>
         <p className="version">v{__APP_VERSION__}</p>
       </footer>
 
       <StyleDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-
       <TemplateGallery
         isOpen={isTemplateGalleryOpen}
         currentTemplate={template}
-        onSelect={handleTemplateSelect}
+        onSelect={setTemplate}
         onClose={() => setIsTemplateGalleryOpen(false)}
       />
-
       <LoadingOverlay isVisible={isGenerating} message={t.loading.generating} />
     </div>
   );
