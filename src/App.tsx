@@ -1,4 +1,11 @@
-import { startTransition, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { TemplateStrip } from './components/TemplateStrip';
@@ -81,7 +88,8 @@ const PAGE_COPY = {
   },
   en: {
     compactTitle: 'Paste content and export a polished Word document',
-    compactSubtitle: 'Keep the document input in the first screen. Templates, preview, and quick starts stay nearby instead of blocking the main flow.',
+    compactSubtitle:
+      'Keep the document input in the first screen. Templates, preview, and quick starts stay nearby instead of blocking the main flow.',
     infoPills: ['GB/T 9704-2012 preset', 'Complete document skeletons', 'Local export'],
     editorTitle: 'Document Input',
     editorDescription: 'Paste content from AI tools or your draft, then export directly.',
@@ -90,7 +98,8 @@ const PAGE_COPY = {
     quickStartTitle: 'Quick Skeletons',
     quickStartDescription: 'Choose a structure first when you need a complete formal draft.',
     previewTitle: 'Preview',
-    previewDescription: 'A visual approximation of the final layout, not a pixel-perfect Word renderer.',
+    previewDescription:
+      'A visual approximation of the final layout, not a pixel-perfect Word renderer.',
     previewEmpty: 'When the editor is empty, the preview falls back to the selected skeleton.',
     detailsSummary: 'Show template details and supported use cases',
     generateLabel: 'Generate Word',
@@ -975,11 +984,7 @@ function AppContent() {
               />
             </div>
             <div className="toolbar-group">
-              <button
-                className="action-btn"
-                onClick={() => setIsSettingsOpen(true)}
-                type="button"
-              >
+              <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
                 {copy.styleLabel}
               </button>
               <button className="action-btn" onClick={handleLoadExample} type="button">
