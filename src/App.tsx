@@ -1,6 +1,7 @@
-import { useState, useCallback, useMemo, useEffect, type CSSProperties } from 'react';
+import { startTransition, useCallback, useMemo, useState, type CSSProperties } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
+import { TemplateStrip } from './components/TemplateStrip';
 import { TemplateGallery } from './components/TemplateGallery';
 import { MarkdownEditor, type PasteSelection } from './components/Editor/MarkdownEditor';
 import { LoadingOverlay } from './components/LoadingOverlay';
@@ -11,16 +12,26 @@ import { useStyles } from './contexts/useStyles';
 import { useLanguage } from './hooks/useTranslation';
 import { useDocxGenerator, extractTitle, sanitizeFilename } from './hooks/useDocxGenerator';
 import { htmlToMarkdown } from './lib/html-to-markdown';
-import { unescapeLatex } from './lib/math/latex-to-docx';
 import { detectInitialLanguage } from './lib/language-detection';
 import { examples } from './i18n';
 import type { Language } from './i18n';
+import { unescapeLatex } from './lib/math/latex-to-docx';
 import { getTemplatesByCategory } from './lib/styles/templates';
-import type { Template, TemplateName, TextStyle } from './types/styles';
+import type { StyleKey, TemplateCategory, TemplateName, TextStyle } from './types/styles';
 import './styles/app.css';
 
 type PasteMode = 'auto' | 'plain';
-type PreviewBlockType = 'title' | 'heading1' | 'heading2' | 'heading3' | 'heading4' | 'body';
+type PreviewBlockType = Extract<
+  StyleKey,
+  | 'title'
+  | 'heading1'
+  | 'heading2'
+  | 'heading3'
+  | 'heading4'
+  | 'bodyText'
+  | 'listItem'
+  | 'blockquote'
+>;
 
 interface PreviewBlock {
   type: PreviewBlockType;
@@ -28,187 +39,453 @@ interface PreviewBlock {
 }
 
 interface ScenarioPreset {
-  key: string;
-  label: string;
+  id: string;
+  title: string;
   description: string;
   content: string;
 }
 
-interface WorkbenchCopy {
-  eyebrow: string;
-  title: string;
-  description: string;
-  pillars: string[];
-  heroCardTitle: string;
-  heroCardBody: string;
-  heroCardPrimary: string;
-  heroCardSecondary: string;
-  editorEyebrow: string;
-  editorTitle: string;
-  editorHint: string;
-  previewEyebrow: string;
-  previewTitle: string;
-  previewHint: string;
-  previewEmpty: string;
-  sidebarEyebrow: string;
-  sidebarTitle: string;
-  sidebarHint: string;
-  standardsLabel: string;
-  scenarioTitle: string;
-  scenarioHint: string;
-  scenarioAction: string;
-  scenarioReplaceConfirm: string;
-  scenarioSummaryLabel: string;
-  exportLabel: string;
-  exportLoadingLabel: string;
-  styleLabel: string;
-  templatesLabel: string;
-  footerLead: string;
-  footerPoints: string[];
-  specLabels: {
-    body: string;
-    heading: string;
-    spacing: string;
-    indent: string;
-    pageNumber: string;
-  };
-  standards: {
-    govt: string;
-    chinese: string;
-    english: string;
-  };
-  pageNumber: {
-    dash: string;
-    plain: string;
-  };
-}
-
 const PASTE_MODE_STORAGE_KEY = 'formaldoc.pasteMode';
 const FEEDBACK_URL = 'mailto:support@formaldoc.app?subject=FormalDoc%20Feedback';
+const PREVIEW_BLOCK_LIMIT = 10;
 
-const WORKBENCH_COPY: Record<Language, WorkbenchCopy> = {
+const PAGE_COPY = {
   cn: {
-    eyebrow: 'FormalDoc 公文工作台',
-    title: '内置规范公文模板，一键生成正式 Word 文档',
-    description:
-      '把 “AI 转 Word” 升级成真正可交付的办文结果。模板、层级、行距、页码和正文样式都已经预置好，尤其适合机关单位、国企和行政文稿场景。',
-    pillars: [
+    brandTag: 'FormalDoc 公文工作台',
+    heroTitle: '内置规范公文模板，一键生成正式 Word 文档',
+    heroSubtitle:
+      '把 AI 输出或现有稿件直接整理成符合标准的公文、报告与正式材料。桌面端同时展示输入、预览和模板规范，让格式价值看得见。',
+    valueProps: [
       'GB/T 9704-2012 公文模板',
-      '样式可选，可继续细调',
-      '可插入完整公文骨架',
-      '浏览器本地生成，不上传内容',
+      '完整公文结构骨架',
+      '样式可选并可微调',
+      '浏览器本地生成不上传',
     ],
-    heroCardTitle: '当前模板策略',
-    heroCardBody:
-      '优先用模板和规范说明建立信任感，再进入编辑和导出，避免产品被理解成普通文本转换工具。',
-    heroCardPrimary: '查看全部模板',
-    heroCardSecondary: '自定义样式',
-    editorEyebrow: '内容输入',
-    editorTitle: '录入或粘贴待办文内容',
-    editorHint: '保留现有 Markdown、富文本粘贴和文字处理能力，但以更专业的工作区形态展示。',
-    previewEyebrow: 'A4 视觉预览',
-    previewTitle: '当前模板的版式与层级感',
-    previewHint:
-      '这是视觉预览，不是与 Word 完全一致的精确渲染。它用于帮助你判断模板风格、层级和页码效果。',
-    previewEmpty: '尚未输入正文，预览展示的是当前模板的示例骨架。',
-    sidebarEyebrow: '模板与规范',
-    sidebarTitle: '把模板能力做成产品主功能',
-    sidebarHint:
-      '右侧集中展示模板身份、规范摘要、场景选择和主操作，让用户理解“为什么这个模板值得信任”。',
-    standardsLabel: '适用标准',
+    railLabel: '模板速选',
+    proofTitle: '当前推荐模板',
+    proofBadge: '规范模板',
+    inputTitle: '文稿输入',
+    inputDescription: '支持 AI 富文本粘贴、Markdown 编辑、文字清理与智能文件名。',
+    previewTitle: '版式预览',
+    previewDescription: '预览当前模板的版式气质、标题层级与页码风格。',
+    previewEmpty: '当前未输入内容，预览展示模板默认骨架。',
+    templateTitle: '模板与规范',
+    templateDescription: '把模板规格、适用场景与快速切换都放在同一面板里。',
+    specTitle: '关键规格',
+    quickSwitchTitle: '快速切换模板',
     scenarioTitle: '常用场景快速开始',
-    scenarioHint: '先选择一个场景，再一键插入完整公文骨架；导出 Word 仍保留为单独动作。',
-    scenarioAction: '一键生成完整公文骨架',
-    scenarioReplaceConfirm: '当前编辑器内容将被所选场景骨架替换，是否继续？',
-    scenarioSummaryLabel: '当前场景说明',
-    exportLabel: '导出 Word 文档',
-    exportLoadingLabel: '生成中...',
-    styleLabel: '自定义样式',
-    templatesLabel: '查看全部模板',
-    footerLead: 'FormalDoc 的核心卖点不是“能导出”，而是“导出来就是规范格式”。',
-    footerPoints: ['无需登录', '支持 AI 富文本粘贴', '支持模板预设与调整', '支持离线使用'],
-    specLabels: {
-      body: '正文',
-      heading: '标题',
-      spacing: '行距',
-      indent: '缩进',
-      pageNumber: '页码',
-    },
-    standards: {
-      govt: 'GB/T 9704-2012',
-      chinese: 'FormalDoc 中文模板',
-      english: 'FormalDoc 英文模板',
-    },
-    pageNumber: {
-      dash: '- 1 -',
-      plain: '1',
-    },
+    scenarioDescription: '一键填入完整结构骨架，再补正文内容即可导出。',
+    applyScenario: '套用骨架',
+    replaceScenarioConfirm: '当前内容将被完整公文模板覆盖，是否继续？',
+    actionTitle: '先套模板，再导出',
+    actionDescription: '如果你要快速起草规范公文，先选择场景骨架；如果已有内容，直接导出即可。',
+    createSkeleton: '生成完整公文模板',
+    exportWord: '导出 Word 文档',
+    customize: '自定义样式',
+    chooseTemplate: '查看全部模板',
+    audience: '适用场景',
+    standard: '规范依据',
+    body: '正文',
+    heading: '标题',
+    lineSpacing: '行距',
+    indent: '缩进',
+    pageNumber: '页码',
+    livePreview: '实时预览',
+    localOnly: '本地生成',
   },
   en: {
-    eyebrow: 'FormalDoc Workbench',
-    title: 'Built-in formal templates for polished Word documents',
-    description:
-      'Move beyond plain AI-to-Word export. FormalDoc turns generated content into structured, professional output with template logic, hierarchy, spacing, and document-ready presentation already in place.',
-    pillars: [
-      'GB/T 9704-2012 template support',
-      'Switchable styles with fine tuning',
-      'Complete document skeletons',
-      'Local generation, content stays on device',
+    brandTag: 'FormalDoc Workspace',
+    heroTitle: 'Preset official document templates, exported as polished Word files',
+    heroSubtitle:
+      'Turn AI output or drafts into formal documents with template guidance visible on desktop: input, paper preview, and formatting rules side by side.',
+    valueProps: [
+      'GB/T 9704-2012 preset',
+      'Full document skeletons',
+      'Adjustable template styles',
+      'Local generation, no upload',
     ],
-    heroCardTitle: 'Current positioning',
-    heroCardBody:
-      'Lead with formal templates and trusted formatting rules first, then let editing and export follow as execution steps.',
-    heroCardPrimary: 'Browse templates',
-    heroCardSecondary: 'Customize styles',
-    editorEyebrow: 'Content Input',
-    editorTitle: 'Paste or draft your source content',
-    editorHint:
-      'Keep the current Markdown, rich text paste, and cleanup features, but present them in a richer desktop workbench.',
-    previewEyebrow: 'A4 Visual Preview',
-    previewTitle: 'See the template tone before export',
-    previewHint:
-      'This is a visual preview, not a pixel-perfect Word renderer. It helps users understand tone, hierarchy, and page numbering.',
-    previewEmpty: 'No content yet. The preview is showing a template skeleton.',
-    sidebarEyebrow: 'Template Intelligence',
-    sidebarTitle: 'Make template value impossible to miss',
-    sidebarHint:
-      'Use the sidebar to explain the active template, show its standards and specs, and promote complete-document workflows.',
-    standardsLabel: 'Standard',
+    railLabel: 'Template Rail',
+    proofTitle: 'Current Recommended Preset',
+    proofBadge: 'Preset',
+    inputTitle: 'Document Input',
+    inputDescription: 'Paste AI rich text, edit Markdown, clean formatting, and set filename.',
+    previewTitle: 'Layout Preview',
+    previewDescription: 'See hierarchy, page rhythm, and footer style before export.',
+    previewEmpty: 'No content yet. The preview is showing the template skeleton.',
+    templateTitle: 'Template Details',
+    templateDescription: 'Keep template rules, switching, and quick starts in one place.',
+    specTitle: 'Key Specs',
+    quickSwitchTitle: 'Quick Switch',
     scenarioTitle: 'Quick Starts',
-    scenarioHint:
-      'Choose a scenario first, then insert a complete document skeleton. Export stays as a separate action.',
-    scenarioAction: 'Insert complete document skeleton',
-    scenarioReplaceConfirm: 'Replace the current editor content with the selected skeleton?',
-    scenarioSummaryLabel: 'Scenario notes',
-    exportLabel: 'Export Word document',
-    exportLoadingLabel: 'Generating...',
-    styleLabel: 'Customize styles',
-    templatesLabel: 'Browse all templates',
-    footerLead:
-      'The point is not only exporting Word, but exporting something already formal and usable.',
-    footerPoints: [
-      'No login',
-      'Rich AI paste support',
-      'Template presets and tuning',
-      'Works offline',
-    ],
-    specLabels: {
-      body: 'Body',
-      heading: 'Headings',
-      spacing: 'Spacing',
-      indent: 'Indent',
-      pageNumber: 'Page number',
+    scenarioDescription: 'Insert a full structure first, then fill the real content.',
+    applyScenario: 'Use Skeleton',
+    replaceScenarioConfirm: 'Replace the current content with the selected skeleton?',
+    actionTitle: 'Start with structure, then export',
+    actionDescription:
+      'Use a skeleton for fast drafting, or export immediately if your content is ready.',
+    createSkeleton: 'Insert Full Document Skeleton',
+    exportWord: 'Export Word Document',
+    customize: 'Customize Styles',
+    chooseTemplate: 'Browse Templates',
+    audience: 'Use Cases',
+    standard: 'Standard',
+    body: 'Body',
+    heading: 'Heading',
+    lineSpacing: 'Spacing',
+    indent: 'Indent',
+    pageNumber: 'Page Number',
+    livePreview: 'Live Preview',
+    localOnly: 'Local Only',
+  },
+} as const;
+
+const TEMPLATE_INSIGHTS: Record<
+  TemplateName,
+  {
+    standard: string;
+    audience: { cn: string[]; en: string[] };
+    promise: { cn: string; en: string };
+  }
+> = {
+  'cn-gov': {
+    standard: 'GB/T 9704-2012',
+    audience: {
+      cn: ['通知', '请示', '报告', '函'],
+      en: ['Notice', 'Request', 'Report', 'Letter'],
     },
-    standards: {
-      govt: 'GB/T 9704-2012',
-      chinese: 'FormalDoc CN Template',
-      english: 'FormalDoc EN Template',
-    },
-    pageNumber: {
-      dash: '- 1 -',
-      plain: '1',
+    promise: {
+      cn: '针对正式公文场景预置字号、行距、页码与首行缩进。',
+      en: 'Preset for official Chinese documents with formal spacing, pagination, and indentation.',
     },
   },
+  'cn-general': {
+    standard: 'FormalDoc 通用模板',
+    audience: {
+      cn: ['制度文件', '内部通报', '商务材料'],
+      en: ['Internal docs', 'Business notes', 'General papers'],
+    },
+    promise: {
+      cn: '更适合企业行政和通用正式文稿，兼顾规范与现代可读性。',
+      en: 'Balanced for business and general formal writing with a modern readable rhythm.',
+    },
+  },
+  'cn-academic': {
+    standard: 'FormalDoc 学术模板',
+    audience: {
+      cn: ['论文', '调研材料', '学术报告'],
+      en: ['Papers', 'Research notes', 'Academic reports'],
+    },
+    promise: {
+      cn: '突出章节层级与装订留白，适合论文和研究性材料。',
+      en: 'Structured for academic hierarchy and binding-friendly margins.',
+    },
+  },
+  'cn-report': {
+    standard: 'FormalDoc 报告模板',
+    audience: {
+      cn: ['工作汇报', '复盘材料', '经营报告'],
+      en: ['Work reports', 'Business reviews', 'Operational summaries'],
+    },
+    promise: {
+      cn: '强调汇报结构和阅读效率，适合企业与组织内部使用。',
+      en: 'Optimized for business reporting with stronger hierarchy and readability.',
+    },
+  },
+  'en-standard': {
+    standard: 'FormalDoc Standard',
+    audience: {
+      cn: ['英文正式文档', '国际沟通', '标准材料'],
+      en: ['Formal docs', 'International communication', 'Standard reports'],
+    },
+    promise: {
+      cn: '经典西文层级和 1.5 倍行距，适合大多数英文正式材料。',
+      en: 'Classic western document hierarchy with 1.5 spacing for general formal writing.',
+    },
+  },
+  'en-business': {
+    standard: 'FormalDoc Business',
+    audience: {
+      cn: ['商务备忘', '提案', '会议材料'],
+      en: ['Memos', 'Business proposals', 'Meeting docs'],
+    },
+    promise: {
+      cn: '更现代的商务文风，适合团队沟通和商业文稿。',
+      en: 'A modern business preset for internal team communication and proposals.',
+    },
+  },
+  'en-academic': {
+    standard: 'FormalDoc Academic',
+    audience: {
+      cn: ['论文', '摘要', '课程作业'],
+      en: ['Academic papers', 'Abstracts', 'Assignments'],
+    },
+    promise: {
+      cn: '双倍行距与学术层级更适合论文和课程提交。',
+      en: 'Double spacing and academic hierarchy for papers and coursework.',
+    },
+  },
+  'en-legal': {
+    standard: 'FormalDoc Legal',
+    audience: {
+      cn: ['合同草稿', '法律函件', '规范文本'],
+      en: ['Contracts', 'Legal letters', 'Policy text'],
+    },
+    promise: {
+      cn: '更强调密度、编号与正式语气，适合法律文书。',
+      en: 'Designed for denser structure, numbering, and legal-formal tone.',
+    },
+  },
+};
+
+const SCENARIO_PRESETS: Record<TemplateCategory, ScenarioPreset[]> = {
+  chinese: [
+    {
+      id: 'notice',
+      title: '通知',
+      description: '适合发布安排、制度与执行要求。',
+      content: `# 关于开展专项工作的通知
+
+主送单位：
+
+## 一、工作背景
+
+为进一步推进相关工作，现就有关事项通知如下。
+
+## 二、重点安排
+
+### （一）任务分工
+
+请各单位结合职责抓好落实。
+
+### （二）时间要求
+
+请于规定时间前完成并反馈结果。
+
+## 三、有关要求
+
+请高度重视，做好组织实施。
+
+发文单位
+
+2026年3月7日`,
+    },
+    {
+      id: 'request',
+      title: '请示',
+      description: '适合向上级提交事项申请与审批请求。',
+      content: `# 关于申请开展专项工作的请示
+
+主送机关：
+
+## 一、请示事项
+
+因工作需要，拟申请开展相关专项工作。
+
+## 二、主要理由
+
+### （一）现实背景
+
+现有工作基础与需求如下。
+
+### （二）实施必要性
+
+开展该项工作有助于提升整体成效。
+
+## 三、拟请示内容
+
+妥否，请批示。
+
+请示单位
+
+2026年3月7日`,
+    },
+    {
+      id: 'report',
+      title: '报告',
+      description: '适合阶段性工作汇报与情况说明。',
+      content: `# 关于近期重点工作进展情况的报告
+
+报送单位：
+
+## 一、总体进展
+
+目前各项重点任务总体推进平稳。
+
+## 二、主要成效
+
+### （一）任务完成情况
+
+已完成既定阶段目标。
+
+### （二）经验做法
+
+通过机制协同提升执行效率。
+
+## 三、下一步安排
+
+将继续推进重点事项并强化复盘。
+
+报送单位
+
+2026年3月7日`,
+    },
+    {
+      id: 'letter',
+      title: '函',
+      description: '适合跨部门沟通、协商与函复。',
+      content: `# 关于协助提供相关材料的函
+
+致：
+
+因工作需要，现请贵单位协助提供以下材料。
+
+## 一、所需材料
+
+- 材料一
+- 材料二
+- 材料三
+
+## 二、时间安排
+
+请于指定日期前反馈。
+
+此函。
+
+发函单位
+
+2026年3月7日`,
+    },
+    {
+      id: 'minutes',
+      title: '会议纪要',
+      description: '适合整理会议结论与任务分工。',
+      content: `# 重点工作推进会会议纪要
+
+会议时间：
+会议地点：
+参会人员：
+
+## 一、会议情况
+
+会议围绕近期重点工作进行了专题研究。
+
+## 二、形成意见
+
+### （一）工作目标
+
+明确阶段性目标与节点安排。
+
+### （二）责任分工
+
+各责任单位按照分工推进落实。
+
+## 三、后续要求
+
+按会议议定事项抓好执行并及时反馈。
+
+办公室
+
+2026年3月7日`,
+    },
+  ],
+  english: [
+    {
+      id: 'memo',
+      title: 'Memo',
+      description: 'A fast structure for internal briefings and decisions.',
+      content: `# Project Memo
+
+To:
+From:
+Date:
+Subject:
+
+## Summary
+
+State the key decision or update in one short paragraph.
+
+## Context
+
+Explain the background and current situation.
+
+## Recommendation
+
+List the proposed next steps and owners.
+
+## Notes
+
+- Item one
+- Item two
+- Item three`,
+    },
+    {
+      id: 'briefing',
+      title: 'Briefing',
+      description: 'Useful for executive updates and meeting prep.',
+      content: `# Executive Briefing
+
+## Situation
+
+Describe the current status and why it matters.
+
+## Key Signals
+
+- Signal one
+- Signal two
+- Signal three
+
+## Recommended Actions
+
+1. Action one
+2. Action two
+3. Action three`,
+    },
+    {
+      id: 'report',
+      title: 'Report',
+      description: 'For periodic status and operational summaries.',
+      content: `# Monthly Operations Report
+
+## Highlights
+
+Summarize the most important outcomes for this period.
+
+## Performance Review
+
+### Delivery
+
+Explain what was delivered and what is at risk.
+
+### Metrics
+
+Include the most relevant numbers and trends.
+
+## Next Steps
+
+List the next actions with owners and timing.`,
+    },
+    {
+      id: 'letter',
+      title: 'Letter',
+      description: 'For formal correspondence and requests.',
+      content: `# Formal Letter
+
+Date:
+Recipient:
+
+Dear Recipient,
+
+State the purpose of the letter clearly and formally.
+
+## Details
+
+Provide the necessary context and supporting information.
+
+Sincerely,
+
+Sender Name`,
+    },
+  ],
 };
 
 const isPasteMode = (value: string): value is PasteMode => value === 'auto' || value === 'plain';
@@ -235,203 +512,6 @@ const savePasteMode = (mode: PasteMode) => {
   }
 };
 
-const cleanPreviewText = (raw: string): string => {
-  return raw
-    .replace(/^#{1,6}\s+/, '')
-    .replace(/^\s*[-*+]\s+/, '')
-    .replace(/^\s*\d+\.\s+/, '')
-    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
-    .replace(/[*_`>#]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
-
-const buildPreviewBlocks = (content: string, fallbackTitle: string): PreviewBlock[] => {
-  const meaningfulLines = content
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  const blocks: PreviewBlock[] = [];
-
-  for (const line of meaningfulLines) {
-    if (line.startsWith('# ')) {
-      blocks.push({ type: 'title', text: cleanPreviewText(line) });
-    } else if (line.startsWith('## ')) {
-      blocks.push({ type: 'heading1', text: cleanPreviewText(line) });
-    } else if (line.startsWith('### ')) {
-      blocks.push({ type: 'heading2', text: cleanPreviewText(line) });
-    } else if (line.startsWith('#### ')) {
-      blocks.push({ type: 'heading3', text: cleanPreviewText(line) });
-    } else if (line.startsWith('##### ')) {
-      blocks.push({ type: 'heading4', text: cleanPreviewText(line) });
-    } else {
-      const text = cleanPreviewText(line);
-      if (text) {
-        blocks.push({ type: 'body', text });
-      }
-    }
-
-    if (blocks.length >= 9) {
-      break;
-    }
-  }
-
-  if (!blocks.length || blocks[0]?.type !== 'title') {
-    blocks.unshift({ type: 'title', text: fallbackTitle });
-  }
-
-  return blocks.slice(0, 9);
-};
-
-const getPreviewLineHeight = (
-  lineSpacingValue: number,
-  lineSpacingType: 'auto' | 'exact',
-  bodySize: number
-) => {
-  if (lineSpacingType === 'auto') {
-    return Math.max(lineSpacingValue / 240, 1.35);
-  }
-  return Math.max(lineSpacingValue / (bodySize * 20), 1.5);
-};
-
-const getFontFamily = (style: TextStyle) => {
-  const families: string[] = [style.font];
-  if (style.englishFont) {
-    families.push(style.englishFont);
-  }
-  families.push('PingFang SC', 'Microsoft YaHei', 'serif');
-  return families.map((font) => (font.includes(' ') ? `"${font}"` : font)).join(', ');
-};
-
-const getPreviewTextStyle = (style: TextStyle, lineHeight: number): CSSProperties => ({
-  fontFamily: getFontFamily(style),
-  fontSize: `${Math.max(style.size * 1.18, 12)}px`,
-  fontWeight: style.bold ? 700 : 400,
-  fontStyle: style.italic ? 'italic' : 'normal',
-  textAlign: style.center ? 'center' : 'left',
-  textIndent: style.indent ? '2em' : undefined,
-  lineHeight,
-  color: style.color ?? 'var(--ink-900)',
-  letterSpacing: style.characterSpacing ? `${style.characterSpacing / 20}px` : undefined,
-  marginTop: style.spacingBefore ? `${style.spacingBefore / 20}px` : undefined,
-});
-
-const getTemplateDisplayName = (template: Template, language: Language) => {
-  if (template.category === 'english') {
-    return template.nameEn;
-  }
-  return language === 'cn' ? template.name : template.nameEn;
-};
-
-const getTemplateDescription = (template: Template, language: Language) => {
-  if (template.category === 'english') {
-    return template.descriptionEn;
-  }
-  return language === 'cn' ? template.description : template.descriptionEn;
-};
-
-const getTemplateStandard = (template: Template, copy: WorkbenchCopy) => {
-  if (template.id === 'cn-gov') {
-    return copy.standards.govt;
-  }
-  return template.category === 'chinese' ? copy.standards.chinese : copy.standards.english;
-};
-
-const getScenarioPresets = (
-  language: Language,
-  category: Template['category']
-): ScenarioPreset[] => {
-  if (category === 'english') {
-    return [
-      {
-        key: 'memo',
-        label: language === 'cn' ? '备忘录' : 'Memo',
-        description:
-          language === 'cn'
-            ? '适合内部同步、执行提醒和简短决策记录。'
-            : 'Best for internal updates, short decisions, and operational notes.',
-        content: `# Weekly Operations Memo\n\nTo: All Team Leads\n\nThis memo summarizes the current priorities and expected actions for the coming week.\n\n## 1. Key Focus Areas\n\nMaintain delivery rhythm, close open risks, and improve reporting consistency.\n\n## 2. Immediate Actions\n\n### 2.1 Documentation\n\nUpdate shared status notes before Friday.\n\n### 2.2 Review Cadence\n\nConfirm owners for each active workstream.\n\n## 3. Next Checkpoint\n\nPlease share blockers by end of day Thursday.\n\nOperations Office\n\nMarch 7, 2026`,
-      },
-      {
-        key: 'report',
-        label: language === 'cn' ? '报告' : 'Report',
-        description:
-          language === 'cn'
-            ? '适合阶段总结、项目复盘和对外说明。'
-            : 'Useful for project summaries, reviews, and formal reporting.',
-        content: `# Quarterly Progress Report\n\nThis report outlines the key outcomes, current risks, and next-step recommendations for the quarter.\n\n## 1. Progress Overview\n\nThe team delivered the planned milestones with stable execution quality.\n\n## 2. Risks and Dependencies\n\n### 2.1 Delivery Risk\n\nA small number of issues remain dependent on external review.\n\n### 2.2 Resource Planning\n\nCapacity allocation should be confirmed for the next phase.\n\n## 3. Recommendations\n\nAlign timelines, document owners, and finalize the next milestone plan.`,
-      },
-      {
-        key: 'briefing',
-        label: language === 'cn' ? '简报' : 'Briefing',
-        description:
-          language === 'cn'
-            ? '适合领导汇报、会前简报和快速摘要。'
-            : 'Best for executive updates, pre-read packets, and concise summaries.',
-        content: `# Executive Briefing\n\nThis briefing provides a concise view of current status, decisions needed, and immediate next steps.\n\n## 1. Current Status\n\nOverall execution remains on track with manageable risk.\n\n## 2. Decisions Required\n\n### 2.1 Scope Alignment\n\nConfirm scope boundaries for the next release.\n\n### 2.2 Timeline Review\n\nApprove milestone sequencing for April.\n\n## 3. Recommended Next Step\n\nProceed with the reviewed plan and assign final decision owners.`,
-      },
-      {
-        key: 'letter',
-        label: language === 'cn' ? '正式函件' : 'Letter',
-        description:
-          language === 'cn'
-            ? '适合正式说明、对外沟通和回复函件。'
-            : 'Use for formal correspondence and response letters.',
-        content: `# Formal Letter\n\nDear [Recipient],\n\nThank you for your continued support and collaboration.\n\n## 1. Purpose\n\nThis letter is to confirm the current arrangement and outline the next expected actions.\n\n## 2. Follow-up\n\nPlease review the proposed timeline and share your feedback.\n\nSincerely,\n\n[Organization Name]\n\nMarch 7, 2026`,
-      },
-    ];
-  }
-
-  return [
-    {
-      key: 'notice',
-      label: language === 'cn' ? '通知' : 'Notice',
-      description:
-        language === 'cn'
-          ? '适合事项传达、工作部署和统一要求。'
-          : 'Useful for announcements, work assignments, and unified instructions.',
-      content: `# 关于开展年度材料归档工作的通知\n\n各有关单位：\n\n为进一步规范年度材料归档和日常管理工作，现将有关事项通知如下。\n\n## 一、总体要求\n\n请各单位结合实际，认真组织落实，确保相关工作按时完成。\n\n## 二、重点任务\n\n### （一）全面梳理材料\n\n对本年度形成的文件材料进行系统梳理，做到应归尽归。\n\n### （二）按时报送清单\n\n请于4月15日前完成整理并报送材料清单。\n\n## 三、工作要求\n\n请明确责任人，加强审核把关，确保材料真实、完整、规范。\n\n附件：材料清单\n\n示例单位\n\n2026年3月7日`,
-    },
-    {
-      key: 'request',
-      label: language === 'cn' ? '请示' : 'Request',
-      description:
-        language === 'cn'
-          ? '适合需要上级审批、请示事项或申请资源。'
-          : 'For approval requests, escalations, and resource applications.',
-      content: `# 关于申请开展专项培训的请示\n\n上级主管部门：\n\n为进一步提升业务能力和执行规范，拟于近期组织开展专项培训。现将有关情况请示如下。\n\n## 一、基本情况\n\n当前相关岗位对规范化办文和材料整理的要求持续提升，培训需求较为迫切。\n\n## 二、拟开展事项\n\n### （一）培训对象\n\n拟覆盖综合、行政及业务支撑岗位人员。\n\n### （二）培训内容\n\n重点围绕公文写作、格式规范和材料整理开展。\n\n## 三、有关请求\n\n妥否，请批示。\n\n示例单位\n\n2026年3月7日`,
-    },
-    {
-      key: 'report',
-      label: language === 'cn' ? '报告' : 'Report',
-      description:
-        language === 'cn'
-          ? '适合阶段总结、情况汇报和工作复盘。'
-          : 'For progress updates, summaries, and formal reporting.',
-      content: `# 关于一季度重点工作推进情况的报告\n\n现将一季度重点工作推进情况报告如下。\n\n## 一、总体进展\n\n各项重点工作稳步推进，整体进度符合预期。\n\n## 二、主要成效\n\n### （一）机制进一步完善\n\n围绕流程规范和责任落实，相关机制进一步优化。\n\n### （二）执行效率有所提升\n\n通过统一模板和集中组织，材料质量和效率有所提升。\n\n## 三、下一步安排\n\n下一阶段将继续强化执行闭环，确保各项任务落实到位。`,
-    },
-    {
-      key: 'letter',
-      label: language === 'cn' ? '函' : 'Letter',
-      description:
-        language === 'cn'
-          ? '适合平行单位之间沟通、征求意见和正式回复。'
-          : 'For formal communication and replies between peer organizations.',
-      content: `# 关于征求有关事项意见的函\n\n有关单位：\n\n现就相关工作安排征求意见，请结合实际提出建议。\n\n## 一、征求事项\n\n请重点围绕工作安排、时间节点和职责分工提出意见建议。\n\n## 二、反馈时间\n\n请于4月10日前书面反馈。\n\n特此函询。\n\n示例单位\n\n2026年3月7日`,
-    },
-    {
-      key: 'minutes',
-      label: language === 'cn' ? '会议纪要' : 'Minutes',
-      description:
-        language === 'cn'
-          ? '适合会议结论沉淀、责任分工和事项跟踪。'
-          : 'For meeting summaries, responsibility tracking, and action items.',
-      content: `# 会议纪要\n\n时间：2026年3月7日\n\n地点：第一会议室\n\n主持人：示例负责人\n\n## 一、会议情况\n\n会议围绕近期重点工作安排进行了研究讨论。\n\n## 二、形成意见\n\n### （一）统一工作节奏\n\n各部门按照既定节点推进相关事项。\n\n### （二）明确责任分工\n\n对重点任务逐项明确牵头人和完成时限。\n\n## 三、后续要求\n\n请各责任单位根据会议要求抓紧落实，并按时反馈进展。`,
-    },
-  ];
-};
-
 function LanguageSwitch() {
   const { language, setLanguage } = useLanguage();
 
@@ -456,6 +536,128 @@ function LanguageSwitch() {
   );
 }
 
+function formatDisplayName(templateName: string, nameEn: string, language: Language) {
+  return language === 'cn' ? templateName : nameEn;
+}
+
+function sanitizePreviewText(text: string): string {
+  return text
+    .replace(/[*_`>#-]/g, ' ')
+    .replace(/\[[^\]]+\]\(([^)]+)\)/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function buildPreviewBlocks(text: string, fallbackBlocks: PreviewBlock[]): PreviewBlock[] {
+  if (!text.trim()) {
+    return fallbackBlocks;
+  }
+
+  const blocks: PreviewBlock[] = [];
+  const paragraphBuffer: string[] = [];
+  const lines = text.split(/\r?\n/);
+
+  const flushParagraph = () => {
+    if (paragraphBuffer.length === 0) return;
+    const paragraphText = sanitizePreviewText(paragraphBuffer.join(' '));
+    if (paragraphText) {
+      blocks.push({ type: 'bodyText', text: paragraphText });
+    }
+    paragraphBuffer.length = 0;
+  };
+
+  for (const line of lines) {
+    if (blocks.length >= PREVIEW_BLOCK_LIMIT) break;
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      continue;
+    }
+
+    if (/^#\s+/.test(trimmed)) {
+      flushParagraph();
+      blocks.push({ type: 'title', text: sanitizePreviewText(trimmed.replace(/^#\s+/, '')) });
+      continue;
+    }
+
+    if (/^##\s+/.test(trimmed)) {
+      flushParagraph();
+      blocks.push({ type: 'heading1', text: sanitizePreviewText(trimmed.replace(/^##\s+/, '')) });
+      continue;
+    }
+
+    if (/^###\s+/.test(trimmed)) {
+      flushParagraph();
+      blocks.push({ type: 'heading2', text: sanitizePreviewText(trimmed.replace(/^###\s+/, '')) });
+      continue;
+    }
+
+    if (/^####\s+/.test(trimmed)) {
+      flushParagraph();
+      blocks.push({ type: 'heading3', text: sanitizePreviewText(trimmed.replace(/^####\s+/, '')) });
+      continue;
+    }
+
+    if (/^#####\s+/.test(trimmed)) {
+      flushParagraph();
+      blocks.push({
+        type: 'heading4',
+        text: sanitizePreviewText(trimmed.replace(/^#####\s+/, '')),
+      });
+      continue;
+    }
+
+    if (/^>\s+/.test(trimmed)) {
+      flushParagraph();
+      blocks.push({ type: 'blockquote', text: sanitizePreviewText(trimmed.replace(/^>\s+/, '')) });
+      continue;
+    }
+
+    if (/^([-*+]|\d+\.)\s+/.test(trimmed)) {
+      flushParagraph();
+      blocks.push({
+        type: 'listItem',
+        text: sanitizePreviewText(trimmed.replace(/^([-*+]|\d+\.)\s+/, '')),
+      });
+      continue;
+    }
+
+    paragraphBuffer.push(trimmed);
+  }
+
+  flushParagraph();
+
+  return blocks.length > 0 ? blocks.slice(0, PREVIEW_BLOCK_LIMIT) : fallbackBlocks;
+}
+
+function getPreviewStyle(style: TextStyle): CSSProperties {
+  return {
+    fontFamily: style.englishFont ? `"${style.font}", "${style.englishFont}"` : `"${style.font}"`,
+    fontSize: `${Math.max(style.size * 0.86, 10)}px`,
+    fontWeight: style.bold ? 700 : 400,
+    fontStyle: style.italic ? 'italic' : 'normal',
+    textAlign: style.center ? 'center' : 'left',
+    textIndent: style.indent ? '2em' : undefined,
+    color: style.color ?? undefined,
+    letterSpacing: style.characterSpacing ? `${style.characterSpacing / 20}px` : undefined,
+    marginTop: style.spacingBefore ? `${Math.round(style.spacingBefore / 20)}px` : undefined,
+  };
+}
+
+function getLineHeightValue(category: TemplateCategory, value: number, type: 'exact' | 'auto') {
+  if (type === 'exact') {
+    return `${Math.max(Math.round(value / 20), 24)}px`;
+  }
+  if (category === 'chinese') {
+    return `${Math.max(value / 240, 1.45)}`;
+  }
+  return `${Math.max(value / 240, 1.35)}`;
+}
+
+function getPageNumberSample(format: 'dash' | 'plain') {
+  return format === 'dash' ? '- 1 -' : '1';
+}
+
 function AppContent() {
   const [text, setText] = useState('');
   const [customFilename, setCustomFilename] = useState('');
@@ -473,58 +675,33 @@ function AppContent() {
   const { styles, currentTemplate, template, setTemplate } = useStyles();
   const { language, t } = useLanguage();
   const { generate, isGenerating, error } = useDocxGenerator();
-  const copy = WORKBENCH_COPY[language];
-  const isChineseTemplate = currentTemplate.category === 'chinese';
 
-  const scenarioPresets = useMemo(
-    () => getScenarioPresets(language, currentTemplate.category),
-    [language, currentTemplate.category]
-  );
-  const [selectedScenario, setSelectedScenario] = useState<string>(
-    isChineseTemplate ? 'notice' : 'memo'
-  );
-
-  useEffect(() => {
-    if (!scenarioPresets.some((preset) => preset.key === selectedScenario)) {
-      setSelectedScenario(scenarioPresets[0]?.key ?? '');
-    }
-  }, [scenarioPresets, selectedScenario]);
-
-  const selectedPreset =
-    scenarioPresets.find((preset) => preset.key === selectedScenario) ?? scenarioPresets[0];
-
-  const templateOptions = useMemo(
+  const copy = PAGE_COPY[language];
+  const templateInsight = TEMPLATE_INSIGHTS[template];
+  const templatesInCategory = useMemo(
     () => getTemplatesByCategory(currentTemplate.category),
     [currentTemplate.category]
+  );
+  const scenarioPresets = SCENARIO_PRESETS[currentTemplate.category];
+  const fallbackPreviewBlocks = useMemo(
+    () => buildPreviewBlocks(scenarioPresets[0]?.content ?? '', []),
+    [scenarioPresets]
+  );
+  const previewBlocks = useMemo(
+    () => buildPreviewBlocks(text, fallbackPreviewBlocks),
+    [fallbackPreviewBlocks, text]
+  );
+  const pageNumberSample = getPageNumberSample(currentTemplate.documentSettings.pageNumberFormat);
+  const previewLineHeight = getLineHeightValue(
+    currentTemplate.category,
+    currentTemplate.documentSettings.lineSpacing.value,
+    currentTemplate.documentSettings.lineSpacing.type
   );
 
   const detectedFilename = useMemo(() => {
     const title = extractTitle(text);
     return title ? sanitizeFilename(title) : '';
   }, [text]);
-
-  const templateDisplayName = getTemplateDisplayName(currentTemplate, language);
-  const templateDescription = getTemplateDescription(currentTemplate, language);
-  const templateStandard = getTemplateStandard(currentTemplate, copy);
-
-  const previewSource = text.trim() || selectedPreset?.content || '';
-  const previewTitle = text.trim()
-    ? templateDisplayName
-    : `${templateDisplayName} · ${selectedPreset?.label ?? ''}`;
-  const previewBlocks = useMemo(
-    () => buildPreviewBlocks(previewSource, previewTitle),
-    [previewSource, previewTitle]
-  );
-
-  const previewLineHeight = useMemo(
-    () =>
-      getPreviewLineHeight(
-        currentTemplate.documentSettings.lineSpacing.value,
-        currentTemplate.documentSettings.lineSpacing.type,
-        styles.bodyText.size
-      ),
-    [currentTemplate.documentSettings.lineSpacing, styles.bodyText.size]
-  );
 
   const handleTemplateSelect = (templateId: TemplateName) => {
     setTemplate(templateId);
@@ -561,7 +738,8 @@ function AppContent() {
       return;
     }
 
-    setShowHeadingHint(!containsMarkdown(trimmed));
+    const hasMarkdown = containsMarkdown(trimmed);
+    setShowHeadingHint(!hasMarkdown);
   };
 
   const detectEscapedLatex = (content: string): boolean => {
@@ -667,39 +845,39 @@ function AppContent() {
     }
   };
 
-  const handleInsertScenario = () => {
-    if (!selectedPreset) return;
-    if (text.trim() && !window.confirm(copy.scenarioReplaceConfirm)) {
+  const applyScenario = (scenario: ScenarioPreset) => {
+    if (text.trim() && !window.confirm(copy.replaceScenarioConfirm)) {
       return;
     }
 
-    setText(selectedPreset.content);
-    setCustomFilename('');
-    setShowHeadingHint(false);
-    setShowEscapedLatexHint(false);
-    setShowPasteUndoHint(false);
-    setPasteUndoState(null);
+    startTransition(() => {
+      setText(scenario.content);
+      setCustomFilename('');
+      setShowHeadingHint(false);
+      setShowEscapedLatexHint(false);
+      setShowPasteUndoHint(false);
+      setPasteUndoState(null);
+    });
+  };
+
+  const handleCreateSkeleton = () => {
+    if (scenarioPresets[0]) {
+      applyScenario(scenarioPresets[0]);
+    }
   };
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <div className="app-topbar">
-          <div className="brand-block">
-            <div className="brand-mark">
-              <img src="/logo.png" alt="FormalDoc Logo" className="brand-logo" />
-            </div>
-            <div className="brand-copy">
-              <div className="brand-row">
-                <span className="brand-eyebrow">{copy.eyebrow}</span>
-                <span className="brand-standard-pill">{templateStandard}</span>
-              </div>
-              <h1>{copy.title}</h1>
-              <p>{copy.description}</p>
+      <header className="hero-shell">
+        <div className="hero-topbar">
+          <div className="hero-branding">
+            <img src="/logo.png" alt="FormalDoc Logo" className="logo" />
+            <div>
+              <div className="brand-tag">{copy.brandTag}</div>
+              <div className="brand-name">FormalDoc</div>
             </div>
           </div>
-
-          <div className="topbar-actions">
+          <div className="hero-topbar-actions">
             <a
               href="https://github.com/shrektan/formaldoc"
               target="_blank"
@@ -707,373 +885,388 @@ function AppContent() {
               className="github-link"
               title="GitHub"
             >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
               </svg>
-              GitHub
             </a>
             <LanguageSwitch />
           </div>
         </div>
 
-        <div className="hero-layout">
-          <div className="hero-pillar-grid">
-            {copy.pillars.map((pillar) => (
-              <span key={pillar} className="hero-pillar">
-                {pillar}
-              </span>
-            ))}
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <h1>{copy.heroTitle}</h1>
+            <p className="hero-subtitle">{copy.heroSubtitle}</p>
+            <div className="value-props">
+              {copy.valueProps.map((item) => (
+                <span key={item} className="value-pill">
+                  {item}
+                </span>
+              ))}
+            </div>
+
+            <div className="template-rail-panel">
+              <div className="section-eyebrow">{copy.railLabel}</div>
+              <TemplateStrip
+                currentTemplate={template}
+                onSelect={handleTemplateSelect}
+                onOpenSettings={() => setIsTemplateGalleryOpen(true)}
+              />
+            </div>
           </div>
 
-          <div className="hero-card">
-            <div className="hero-card-header">
-              <div>
-                <span className="section-eyebrow">{copy.sidebarEyebrow}</span>
-                <h2>{copy.heroCardTitle}</h2>
+          <div className="hero-proof-card">
+            <div className="hero-proof-top">
+              <span className="proof-badge">{copy.proofBadge}</span>
+              <span className="proof-standard">{templateInsight.standard}</span>
+            </div>
+            <div className="section-eyebrow">{copy.proofTitle}</div>
+            <h2>{formatDisplayName(currentTemplate.name, currentTemplate.nameEn, language)}</h2>
+            <p>
+              {formatDisplayName(
+                currentTemplate.description,
+                currentTemplate.descriptionEn,
+                language
+              )}
+            </p>
+            <div className="hero-proof-metrics">
+              <div className="metric-card">
+                <span>{copy.body}</span>
+                <strong>{currentTemplate.specs.bodyFont}</strong>
               </div>
-              <span className="hero-card-template">{templateDisplayName}</span>
+              <div className="metric-card">
+                <span>{copy.lineSpacing}</span>
+                <strong>{currentTemplate.specs.lineSpacing}</strong>
+              </div>
+              <div className="metric-card">
+                <span>{copy.pageNumber}</span>
+                <strong>{pageNumberSample}</strong>
+              </div>
+              <div className="metric-card">
+                <span>{copy.localOnly}</span>
+                <strong>DOCX</strong>
+              </div>
             </div>
-            <p>{copy.heroCardBody}</p>
-            <div className="hero-card-actions">
-              <button
-                type="button"
-                className="hero-secondary-btn"
-                onClick={() => setIsTemplateGalleryOpen(true)}
-              >
-                {copy.heroCardPrimary}
-              </button>
-              <button
-                type="button"
-                className="hero-secondary-btn"
-                onClick={() => setIsSettingsOpen(true)}
-              >
-                {copy.heroCardSecondary}
-              </button>
-            </div>
+            <p className="hero-proof-note">{templateInsight.promise[language]}</p>
           </div>
         </div>
       </header>
 
-      <main className="workbench-grid">
-        <section className="workbench-panel editor-panel">
-          <div className="panel-header">
-            <div>
-              <span className="section-eyebrow">{copy.editorEyebrow}</span>
-              <h2>{copy.editorTitle}</h2>
-            </div>
-            <p>{copy.editorHint}</p>
-          </div>
-
-          <div className="input-actions-card">
-            <div className="input-actions-left">
-              <div className="paste-mode">
-                <label htmlFor="paste-mode">{t.input.pasteModeLabel}</label>
-                <select
-                  id="paste-mode"
-                  value={pasteMode}
-                  onChange={(e) => {
-                    const nextMode = e.target.value as PasteMode;
-                    setPasteMode(nextMode);
-                    savePasteMode(nextMode);
-                  }}
-                >
-                  <option value="auto">{t.input.pasteModeAuto}</option>
-                  <option value="plain">{t.input.pasteModePlain}</option>
-                </select>
+      <main className="workspace-shell">
+        <div className="workspace-grid">
+          <section className="panel editor-panel">
+            <div className="panel-header">
+              <div>
+                <div className="section-eyebrow">{copy.livePreview}</div>
+                <h2>{copy.inputTitle}</h2>
               </div>
-              <TextProcessingMenu
-                text={text}
-                onTextChange={handleTextProcessingChange}
-                disabled={!text.trim()}
-              />
+              <p>{copy.inputDescription}</p>
             </div>
-            <div className="input-actions-right">
-              <button className="action-btn" onClick={handleLoadExample} type="button">
-                {t.buttons.example}
-              </button>
-              <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
-                {copy.styleLabel}
-              </button>
-              <button
-                className="action-btn action-btn-secondary"
-                onClick={handleClear}
-                type="button"
-                disabled={!text.trim()}
-              >
-                {t.buttons.clear}
-              </button>
+
+            <div className="input-actions">
+              <div className="input-actions-left">
+                <div className="paste-mode">
+                  <label htmlFor="paste-mode">{t.input.pasteModeLabel}</label>
+                  <select
+                    id="paste-mode"
+                    value={pasteMode}
+                    onChange={(e) => {
+                      const nextMode = e.target.value as PasteMode;
+                      setPasteMode(nextMode);
+                      savePasteMode(nextMode);
+                    }}
+                  >
+                    <option value="auto">{t.input.pasteModeAuto}</option>
+                    <option value="plain">{t.input.pasteModePlain}</option>
+                  </select>
+                </div>
+                <TextProcessingMenu
+                  text={text}
+                  onTextChange={handleTextProcessingChange}
+                  disabled={!text.trim()}
+                />
+              </div>
+              <div className="input-actions-right">
+                <button
+                  className="action-btn"
+                  onClick={() => setIsSettingsOpen(true)}
+                  type="button"
+                >
+                  {copy.customize}
+                </button>
+                <button className="action-btn" onClick={handleLoadExample} type="button">
+                  {t.buttons.example}
+                </button>
+                <button
+                  className="action-btn action-btn-secondary"
+                  onClick={handleClear}
+                  type="button"
+                  disabled={!text.trim()}
+                >
+                  {t.buttons.clear}
+                </button>
+              </div>
             </div>
-          </div>
 
-          <MarkdownEditor
-            value={text}
-            onChange={handleTextChange}
-            onPaste={handlePaste}
-            placeholder={t.input.placeholder}
-          />
+            <MarkdownEditor
+              value={text}
+              onChange={handleTextChange}
+              onPaste={handlePaste}
+              placeholder={t.input.placeholder}
+            />
 
-          {showHeadingHint && (
-            <div className="heading-hint">
-              <span>{t.hints.noHeadings}</span>
-              <button
-                type="button"
-                className="hint-close"
-                onClick={() => setShowHeadingHint(false)}
-                aria-label={t.hints.closeHint}
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          {showEscapedLatexHint && (
-            <div className="heading-hint">
-              <span>{t.hints.escapedLatex}</span>
-              <button type="button" className="fix-btn" onClick={handleFixEscapedLatex}>
-                {t.hints.fixEscapedLatex}
-              </button>
-              <button
-                type="button"
-                className="hint-close"
-                onClick={() => setShowEscapedLatexHint(false)}
-                aria-label={t.hints.closeHint}
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          {showPasteUndoHint && (
-            <div className="heading-hint">
-              <span>{t.hints.pasteConverted}</span>
-              <button type="button" className="fix-btn" onClick={handleUndoPaste}>
-                {t.hints.undoPaste}
-              </button>
-              <button
-                type="button"
-                className="hint-close"
-                onClick={() => {
-                  setShowPasteUndoHint(false);
-                  setPasteUndoState(null);
-                }}
-                aria-label={t.hints.closeHint}
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          <div className="filename-row">
-            <label htmlFor="filename">{t.filename.label}</label>
-            <div className="filename-input-wrapper">
-              <input
-                type="text"
-                id="filename"
-                className="filename-input"
-                value={customFilename || detectedFilename}
-                onChange={(e) => setCustomFilename(e.target.value)}
-                placeholder={t.filename.placeholder}
-              />
-              <span className="filename-ext">.docx</span>
-              {customFilename && (
+            {showHeadingHint && (
+              <div className="heading-hint">
+                <span>{t.hints.noHeadings}</span>
                 <button
                   type="button"
-                  className="filename-reset"
-                  onClick={() => setCustomFilename('')}
-                  title={t.filename.reset}
+                  className="hint-close"
+                  onClick={() => setShowHeadingHint(false)}
+                  aria-label={t.hints.closeHint}
                 >
                   ×
                 </button>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <section className="workbench-panel preview-panel">
-          <div className="panel-header">
-            <div>
-              <span className="section-eyebrow">{copy.previewEyebrow}</span>
-              <h2>{copy.previewTitle}</h2>
-            </div>
-            <p>{text.trim() ? copy.previewHint : copy.previewEmpty}</p>
-          </div>
-
-          <div className="paper-frame">
-            <div className="paper-sheet">
-              <div className="paper-sheet-inner">
-                {previewBlocks.map((block, index) => {
-                  const styleMap: Record<PreviewBlockType, TextStyle> = {
-                    title: styles.title,
-                    heading1: styles.heading1,
-                    heading2: styles.heading2,
-                    heading3: styles.heading3,
-                    heading4: styles.heading4,
-                    body: styles.bodyText,
-                  };
-
-                  return (
-                    <p
-                      key={`${block.type}-${index}-${block.text}`}
-                      className={`preview-block preview-block-${block.type}`}
-                      style={getPreviewTextStyle(styleMap[block.type], previewLineHeight)}
-                    >
-                      {block.text}
-                    </p>
-                  );
-                })}
-              </div>
-              <div className="paper-page-number">
-                {currentTemplate.documentSettings.pageNumberFormat === 'dash'
-                  ? copy.pageNumber.dash
-                  : copy.pageNumber.plain}
-              </div>
-            </div>
-          </div>
-
-          <p className="preview-footnote">{copy.previewHint}</p>
-        </section>
-
-        <aside className="workbench-panel sidebar-panel">
-          <div className="panel-header">
-            <div>
-              <span className="section-eyebrow">{copy.sidebarEyebrow}</span>
-              <h2>{copy.sidebarTitle}</h2>
-            </div>
-            <p>{copy.sidebarHint}</p>
-          </div>
-
-          <div className="sidebar-card template-identity-card">
-            <div className="template-identity-header">
-              <div>
-                <span className="template-standard-badge">{templateStandard}</span>
-                <h3>{templateDisplayName}</h3>
-              </div>
-            </div>
-            <p>{templateDescription}</p>
-
-            <dl className="template-spec-list">
-              <div>
-                <dt>{copy.specLabels.body}</dt>
-                <dd>{currentTemplate.specs.bodyFont}</dd>
-              </div>
-              <div>
-                <dt>{copy.specLabels.heading}</dt>
-                <dd>{currentTemplate.specs.headingFont}</dd>
-              </div>
-              <div>
-                <dt>{copy.specLabels.spacing}</dt>
-                <dd>{currentTemplate.specs.lineSpacing}</dd>
-              </div>
-              <div>
-                <dt>{copy.specLabels.indent}</dt>
-                <dd>{currentTemplate.specs.indent}</dd>
-              </div>
-              <div>
-                <dt>{copy.specLabels.pageNumber}</dt>
-                <dd>
-                  {currentTemplate.documentSettings.pageNumberFormat === 'dash'
-                    ? copy.pageNumber.dash
-                    : copy.pageNumber.plain}
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          <div className="sidebar-card">
-            <div className="sidebar-card-header">
-              <h3>{copy.templatesLabel}</h3>
-              <button
-                type="button"
-                className="text-link-btn"
-                onClick={() => setIsTemplateGalleryOpen(true)}
-              >
-                {copy.templatesLabel}
-              </button>
-            </div>
-            <div className="template-switch-grid">
-              {templateOptions.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={`template-switch-card ${option.id === template ? 'active' : ''}`}
-                  onClick={() => handleTemplateSelect(option.id)}
-                >
-                  <span className="template-switch-name">
-                    {getTemplateDisplayName(option, language)}
-                  </span>
-                  <span className="template-switch-meta">
-                    {option.specs.bodyFont} · {option.specs.lineSpacing}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="sidebar-card">
-            <div className="sidebar-card-header">
-              <h3>{copy.scenarioTitle}</h3>
-            </div>
-            <p className="sidebar-note">{copy.scenarioHint}</p>
-
-            <div className="scenario-grid">
-              {scenarioPresets.map((preset) => (
-                <button
-                  key={preset.key}
-                  type="button"
-                  className={`scenario-card ${preset.key === selectedScenario ? 'active' : ''}`}
-                  onClick={() => setSelectedScenario(preset.key)}
-                >
-                  <span className="scenario-card-title">{preset.label}</span>
-                  <span className="scenario-card-desc">{preset.description}</span>
-                </button>
-              ))}
-            </div>
-
-            {selectedPreset && (
-              <div className="scenario-summary">
-                <span className="scenario-summary-label">{copy.scenarioSummaryLabel}</span>
-                <p>{selectedPreset.description}</p>
               </div>
             )}
 
-            <div className="sidebar-action-stack">
-              <button type="button" className="primary-cta-btn" onClick={handleInsertScenario}>
-                {copy.scenarioAction}
-              </button>
-              <button
-                type="button"
-                className="secondary-cta-btn"
-                onClick={handleGenerate}
-                disabled={!text.trim() || isGenerating}
-              >
-                {isGenerating ? copy.exportLoadingLabel : copy.exportLabel}
-              </button>
-              <button
-                type="button"
-                className="ghost-cta-btn"
-                onClick={() => setIsSettingsOpen(true)}
-              >
-                {copy.styleLabel}
-              </button>
+            {showEscapedLatexHint && (
+              <div className="heading-hint">
+                <span>{t.hints.escapedLatex}</span>
+                <button type="button" className="fix-btn" onClick={handleFixEscapedLatex}>
+                  {t.hints.fixEscapedLatex}
+                </button>
+                <button
+                  type="button"
+                  className="hint-close"
+                  onClick={() => setShowEscapedLatexHint(false)}
+                  aria-label={t.hints.closeHint}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            {showPasteUndoHint && (
+              <div className="heading-hint">
+                <span>{t.hints.pasteConverted}</span>
+                <button type="button" className="fix-btn" onClick={handleUndoPaste}>
+                  {t.hints.undoPaste}
+                </button>
+                <button
+                  type="button"
+                  className="hint-close"
+                  onClick={() => {
+                    setShowPasteUndoHint(false);
+                    setPasteUndoState(null);
+                  }}
+                  aria-label={t.hints.closeHint}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            <div className="filename-row">
+              <label htmlFor="filename">{t.filename.label}</label>
+              <div className="filename-input-wrapper">
+                <input
+                  type="text"
+                  id="filename"
+                  className="filename-input"
+                  value={customFilename || detectedFilename}
+                  onChange={(e) => setCustomFilename(e.target.value)}
+                  placeholder={t.filename.placeholder}
+                />
+                <span className="filename-ext">.docx</span>
+                {customFilename && (
+                  <button
+                    type="button"
+                    className="filename-reset"
+                    onClick={() => setCustomFilename('')}
+                    title={t.filename.reset}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             </div>
+          </section>
+
+          <section className="panel preview-panel">
+            <div className="panel-header">
+              <div>
+                <div className="section-eyebrow">{copy.livePreview}</div>
+                <h2>{copy.previewTitle}</h2>
+              </div>
+              <p>{copy.previewDescription}</p>
+            </div>
+
+            {!text.trim() && <div className="panel-note">{copy.previewEmpty}</div>}
+
+            <div className="preview-paper-shell">
+              <div className="preview-paper" style={{ lineHeight: previewLineHeight }}>
+                {previewBlocks.map((block, index) => (
+                  <div
+                    key={`${block.type}-${index}`}
+                    className={`preview-block preview-${block.type}`}
+                    style={getPreviewStyle(styles[block.type])}
+                  >
+                    {block.type === 'listItem' ? <span className="preview-bullet">•</span> : null}
+                    <span>{block.text}</span>
+                  </div>
+                ))}
+                <div className="preview-footer" style={getPreviewStyle(styles.pageFooter)}>
+                  {pageNumberSample}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside className="panel insights-panel">
+            <div className="panel-header">
+              <div>
+                <div className="section-eyebrow">{templateInsight.standard}</div>
+                <h2>{copy.templateTitle}</h2>
+              </div>
+              <p>{copy.templateDescription}</p>
+            </div>
+
+            <div className="insight-card">
+              <div className="insight-card-head">
+                <h3>{formatDisplayName(currentTemplate.name, currentTemplate.nameEn, language)}</h3>
+                <span className="insight-standard">{templateInsight.standard}</span>
+              </div>
+              <p className="insight-description">
+                {formatDisplayName(
+                  currentTemplate.description,
+                  currentTemplate.descriptionEn,
+                  language
+                )}
+              </p>
+              <div className="tag-list">
+                {templateInsight.audience[language].map((item) => (
+                  <span key={item} className="tag-chip">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="insight-section">
+              <h3>{copy.specTitle}</h3>
+              <div className="spec-list">
+                <div className="spec-item">
+                  <span>{copy.standard}</span>
+                  <strong>{templateInsight.standard}</strong>
+                </div>
+                <div className="spec-item">
+                  <span>{copy.body}</span>
+                  <strong>{currentTemplate.specs.bodyFont}</strong>
+                </div>
+                <div className="spec-item">
+                  <span>{copy.heading}</span>
+                  <strong>{currentTemplate.specs.headingFont}</strong>
+                </div>
+                <div className="spec-item">
+                  <span>{copy.lineSpacing}</span>
+                  <strong>{currentTemplate.specs.lineSpacing}</strong>
+                </div>
+                <div className="spec-item">
+                  <span>{copy.indent}</span>
+                  <strong>{currentTemplate.specs.indent}</strong>
+                </div>
+                <div className="spec-item">
+                  <span>{copy.pageNumber}</span>
+                  <strong>{pageNumberSample}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="insight-section">
+              <h3>{copy.quickSwitchTitle}</h3>
+              <div className="template-switch-grid">
+                {templatesInCategory.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`template-switch-card ${item.id === template ? 'active' : ''}`}
+                    onClick={() => handleTemplateSelect(item.id)}
+                  >
+                    <span className="template-switch-name">
+                      {formatDisplayName(item.name, item.nameEn, language)}
+                    </span>
+                    <span className="template-switch-spec">
+                      {item.specs.bodyFont} · {item.specs.lineSpacing}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="insight-section">
+              <h3>{copy.scenarioTitle}</h3>
+              <p className="insight-section-copy">{copy.scenarioDescription}</p>
+              <div className="scenario-grid">
+                {scenarioPresets.map((scenario) => (
+                  <div key={scenario.id} className="scenario-card">
+                    <div>
+                      <h4>{scenario.title}</h4>
+                      <p>{scenario.description}</p>
+                    </div>
+                    <button
+                      type="button"
+                      className="scenario-button"
+                      onClick={() => applyScenario(scenario)}
+                    >
+                      {copy.applyScenario}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {error && <div className="error-msg">{error}</div>}
+
+        <section className="action-bar">
+          <div className="action-copy">
+            <div className="section-eyebrow">{copy.actionTitle}</div>
+            <h2>{copy.exportWord}</h2>
+            <p>{copy.actionDescription}</p>
           </div>
-        </aside>
+          <div className="action-buttons">
+            <button className="outline-button" onClick={handleCreateSkeleton} type="button">
+              {copy.createSkeleton}
+            </button>
+            <button
+              className="generate-btn"
+              onClick={handleGenerate}
+              disabled={!text.trim() || isGenerating}
+              type="button"
+            >
+              {isGenerating ? t.buttons.downloading : copy.exportWord}
+            </button>
+            <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
+              {copy.customize}
+            </button>
+            <button
+              className="action-btn action-btn-secondary"
+              onClick={() => setIsTemplateGalleryOpen(true)}
+              type="button"
+            >
+              {copy.chooseTemplate}
+            </button>
+          </div>
+        </section>
+
+        <a className="feedback-cta" href={FEEDBACK_URL}>
+          {t.footer.feedback}
+        </a>
       </main>
 
-      {error && <div className="error-msg">{error}</div>}
-
-      <footer className="app-footer">
-        <p className="footer-lead">{copy.footerLead}</p>
-        <div className="footer-tags">
-          {copy.footerPoints.map((point) => (
-            <span key={point} className="footer-tag">
-              {point}
-            </span>
-          ))}
-          <a className="feedback-cta" href={FEEDBACK_URL}>
-            {t.footer.feedback}
-          </a>
-        </div>
+      <footer className="footer-simple">
+        <p>{t.footer.tagline}</p>
         <p className="version">v{__APP_VERSION__}</p>
       </footer>
 
