@@ -36,7 +36,7 @@
 .gallery-header h2 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .gallery-close {
@@ -48,13 +48,13 @@
   background: transparent;
   border: none;
   font-size: 24px;
-  color: var(--text-secondary);
+  color: var(--ink-muted);
   cursor: pointer;
   border-radius: 50%;
 }
 
 .gallery-close:hover {
-  background: var(--bg);
+  background: var(--surface-muted);
 }
 
 .gallery-content {
@@ -67,7 +67,7 @@
 .gallery-hint {
   margin: 0 0 16px;
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--ink-muted);
 }
 
 /* ===== Template Category ===== */
@@ -82,7 +82,7 @@
 .category-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--ink-muted);
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -99,7 +99,7 @@
 .template-card {
   position: relative;
   padding: 14px;
-  background: var(--bg);
+  background: var(--surface-muted);
   border: 2px solid transparent;
   border-radius: 12px;
   cursor: pointer;
@@ -147,7 +147,7 @@
   border-radius: 999px;
   padding: 2px 8px;
   background: rgba(255, 255, 255, 0.92);
-  color: var(--text);
+  color: var(--ink);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -172,7 +172,7 @@
 
 .template-thumb-label {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--ink-muted);
 }
 
 .thumb-lightbox-overlay {
@@ -207,7 +207,7 @@
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .thumb-lightbox-close {
@@ -218,12 +218,12 @@
   background: transparent;
   font-size: 22px;
   line-height: 1;
-  color: var(--text-secondary);
+  color: var(--ink-muted);
   cursor: pointer;
 }
 
 .thumb-lightbox-close:hover {
-  background: var(--bg);
+  background: var(--surface-muted);
 }
 
 .thumb-lightbox-img {
@@ -254,14 +254,14 @@
 .template-card-name {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
   margin-bottom: 4px;
   padding-right: 24px;
 }
 
 .template-card-desc {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--ink-muted);
   margin-bottom: 10px;
 }
 
@@ -279,17 +279,17 @@
 }
 
 .spec-label {
-  color: var(--text-secondary);
+  color: var(--ink-muted);
   flex-shrink: 0;
 }
 
 .spec-value {
-  color: var(--text);
+  color: var(--ink);
   font-weight: 500;
 }
 
 .spec-english-font {
-  color: var(--text-secondary);
+  color: var(--ink-muted);
   font-weight: 400;
 }
 

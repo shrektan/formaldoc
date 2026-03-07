@@ -62,7 +62,7 @@
   width: 100%;
   padding: 10px 14px;
   font-size: 13px;
-  color: var(--text);
+  color: var(--ink);
   background: none;
   border: none;
   text-align: left;
@@ -71,7 +71,7 @@
 }
 
 .text-processing-item:hover:not(:disabled) {
-  background: var(--bg);
+  background: var(--surface-muted);
 }
 
 .text-processing-item:disabled {

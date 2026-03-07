@@ -58,8 +58,8 @@ const PREVIEW_BLOCK_LIMIT = 10;
 const PAGE_COPY = {
   cn: {
     compactTitle: '粘贴内容，直接生成规范 Word',
-    compactSubtitle: '把模板说明收在旁边，把正文输入放到首屏中央。用户进入页面后，先粘贴，再导出。',
-    infoPills: ['GB/T 9704-2012 模板', '支持完整公文骨架', '浏览器本地生成'],
+    heroSubtitle: '严格遵循 GB/T 9704 公文样式，预设一到四级标题等 Word 样式，粘贴即用，离线可用',
+    heroBadges: ['公文样式', '样式预设', '离线可用'],
     editorTitle: '文稿输入',
     editorDescription: '从豆包、ChatGPT 等复制内容后，直接粘贴到这里。',
     currentTemplateTitle: '当前模板',
@@ -88,9 +88,9 @@ const PAGE_COPY = {
   },
   en: {
     compactTitle: 'Paste content and export a polished Word document',
-    compactSubtitle:
-      'Keep the document input in the first screen. Templates, preview, and quick starts stay nearby instead of blocking the main flow.',
-    infoPills: ['GB/T 9704-2012 preset', 'Complete document skeletons', 'Local export'],
+    heroSubtitle:
+      'Strictly follows GB/T 9704 government styling with pre-set Word heading styles — paste, export, done. Works offline.',
+    heroBadges: ['Gov Styling', 'Word Styles', 'Works Offline'],
     editorTitle: 'Document Input',
     editorDescription: 'Paste content from AI tools or your draft, then export directly.',
     currentTemplateTitle: 'Current Template',
@@ -700,17 +700,10 @@ function AppContent() {
   const templateInsight = TEMPLATE_INSIGHTS[template];
   const scenarioPresets = SCENARIO_PRESETS[currentTemplate.category];
   const [selectedScenarioId, setSelectedScenarioId] = useState(() => scenarioPresets[0]?.id ?? '');
-  const selectedScenario = useMemo(
-    () =>
-      scenarioPresets.find((scenario) => scenario.id === selectedScenarioId) ?? scenarioPresets[0],
-    [scenarioPresets, selectedScenarioId]
-  );
-
-  useEffect(() => {
-    if (!scenarioPresets.some((scenario) => scenario.id === selectedScenarioId)) {
-      setSelectedScenarioId(scenarioPresets[0]?.id ?? '');
-    }
-  }, [scenarioPresets, selectedScenarioId]);
+  const validatedScenarioId = scenarioPresets.some((s) => s.id === selectedScenarioId)
+    ? selectedScenarioId
+    : (scenarioPresets[0]?.id ?? '');
+  const selectedScenario = scenarioPresets.find((s) => s.id === validatedScenarioId);
 
   useEffect(() => {
     document.documentElement.lang = metadata.htmlLang;
@@ -903,46 +896,44 @@ function AppContent() {
 
   return (
     <div className="app-shell">
-      <header className="topbar-shell">
-        <div className="topbar-brand">
+      <nav className="navbar">
+        <div className="navbar-brand">
           <img src="/logo.png" alt="FormalDoc Logo" className="logo" />
-          <div className="topbar-copy">
-            <div className="brand-kicker">FormalDoc</div>
-            <h1>{copy.compactTitle}</h1>
-            <p>{copy.compactSubtitle}</p>
-          </div>
+          <span className="navbar-title">FormalDoc</span>
         </div>
-        <div className="topbar-tools">
-          <div className="info-pill-row">
-            {copy.infoPills.map((item) => (
-              <span key={item} className="info-pill">
-                {item}
-              </span>
-            ))}
-          </div>
-          <div className="topbar-actions">
-            <a
-              href="https://github.com/shrektan/formaldoc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="github-link"
-              title="GitHub"
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-              </svg>
-              GitHub
-            </a>
-            <LanguageSwitch />
-          </div>
+        <div className="navbar-actions">
+          <a
+            href="https://github.com/shrektan/formaldoc"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="github-link"
+            title="GitHub"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+            GitHub
+          </a>
+          <LanguageSwitch />
         </div>
-      </header>
+      </nav>
+
+      <section className="hero-section">
+        <h1 className="hero-title">{copy.compactTitle}</h1>
+        <p className="hero-subtitle">{copy.heroSubtitle}</p>
+        <div className="hero-badges">
+          {copy.heroBadges.map((badge) => (
+            <span key={badge} className="hero-badge">
+              {badge}
+            </span>
+          ))}
+        </div>
+      </section>
 
       <main className="workspace-shell">
         <section className="composer-shell">
           <div className="composer-topbar">
             <div className="composer-heading">
-              <span className="section-kicker">{copy.editorTitle}</span>
               <h2>{copy.editorTitle}</h2>
               <p>{copy.editorDescription}</p>
             </div>
@@ -1111,7 +1102,6 @@ function AppContent() {
           <section className="support-card">
             <div className="support-card-header">
               <div>
-                <span className="section-kicker">{copy.currentTemplateTitle}</span>
                 <h3>{formatDisplayName(currentTemplate.name, currentTemplate.nameEn, language)}</h3>
               </div>
               <span className="meta-chip strong">{templateInsight.standard}</span>
@@ -1170,7 +1160,6 @@ function AppContent() {
           <section className="support-card">
             <div className="support-card-header">
               <div>
-                <span className="section-kicker">{copy.quickStartTitle}</span>
                 <h3>{copy.quickStartTitle}</h3>
               </div>
             </div>
@@ -1194,7 +1183,6 @@ function AppContent() {
           <section className="support-card preview-card">
             <div className="support-card-header">
               <div>
-                <span className="section-kicker">{copy.previewTitle}</span>
                 <h3>{copy.previewTitle}</h3>
               </div>
             </div>

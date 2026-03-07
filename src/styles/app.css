@@ -62,7 +62,6 @@ a {
   padding: 16px 0 20px;
 }
 
-.topbar-shell,
 .composer-shell,
 .support-card,
 .footer-simple {
@@ -72,42 +71,92 @@ a {
   backdrop-filter: blur(18px);
 }
 
-.topbar-shell {
+/* ===== Navbar ===== */
+.navbar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  padding: 18px 20px;
+  gap: 16px;
+  height: 56px;
+  padding: 0 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 24px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px);
 }
 
-.topbar-brand {
+.navbar-brand {
   display: flex;
-  gap: 14px;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.18);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.18);
   flex-shrink: 0;
 }
 
-.topbar-copy h1 {
+.navbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-strong);
+  letter-spacing: -0.01em;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ===== Hero Section ===== */
+.hero-section {
+  max-height: min(180px, 22vh);
+  overflow: hidden;
+  padding: 16px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hero-title {
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3vw, 2.7rem);
-  line-height: 1.08;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   color: var(--ink-strong);
 }
 
-.topbar-copy p {
-  margin-top: 8px;
-  max-width: 720px;
-  font-size: 14px;
+.hero-subtitle {
+  font-size: clamp(13px, 1.4vw, 15px);
   color: var(--ink-muted);
+  line-height: 1.5;
+  max-width: 760px;
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 78, 216, 0.18);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .brand-kicker,
@@ -122,22 +171,6 @@ a {
   color: var(--primary);
 }
 
-.topbar-tools {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: flex-end;
-  flex-shrink: 0;
-}
-
-.info-pill-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.info-pill,
 .meta-chip {
   display: inline-flex;
   align-items: center;
@@ -155,12 +188,6 @@ a {
   background: var(--primary-soft);
   border-color: var(--primary-strong);
   color: var(--primary-hover);
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .github-link {
@@ -227,7 +254,7 @@ a {
 .workspace-shell {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) 360px;
+  grid-template-columns: minmax(0, 1.6fr) 400px;
   gap: 14px;
   align-items: start;
 }
@@ -492,7 +519,7 @@ a {
 }
 
 .primary-actions {
-  width: 320px;
+  width: min(320px, 100%);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -938,53 +965,56 @@ a {
     padding: 8px 0 16px;
   }
 
-  .topbar-shell,
+  .navbar,
   .composer-shell,
   .support-card,
   .footer-simple {
     border-radius: 18px;
   }
 
-  .topbar-shell,
+  .navbar {
+    height: 48px;
+    padding: 0 14px;
+  }
+
+  .logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  .navbar-title {
+    font-size: 14px;
+  }
+
+  .hero-section {
+    padding: 10px 14px 8px;
+    gap: 4px;
+  }
+
+  .hero-title {
+    font-size: 1.3rem;
+  }
+
+  .hero-subtitle {
+    font-size: 12px;
+  }
+
+  .hero-badges {
+    gap: 6px;
+  }
+
+  .hero-badge {
+    font-size: 11px;
+    padding: 3px 9px;
+  }
+
   .composer-topbar,
   .composer-toolbar,
   .composer-footer,
   .support-card-header {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .topbar-shell {
-    padding: 14px;
-  }
-
-  .topbar-brand {
-    flex-direction: row;
-  }
-
-  .logo {
-    width: 40px;
-    height: 40px;
-  }
-
-  .topbar-copy h1 {
-    font-size: 1.4rem;
-  }
-
-  .topbar-copy p {
-    display: none;
-  }
-
-  .topbar-tools {
-    align-items: stretch;
-  }
-
-  .info-pill-row {
-    display: none;
-  }
-
-  .topbar-actions {
-    justify-content: space-between;
   }
 
   .composer-shell {
