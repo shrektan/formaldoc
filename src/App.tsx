@@ -1,4 +1,11 @@
-import { startTransition, useCallback, useMemo, useState, type CSSProperties } from 'react';
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { StyleDrawer } from './components/StyleSettings';
 import { TemplateStrip } from './components/TemplateStrip';
@@ -138,6 +145,44 @@ const PAGE_COPY = {
     localOnly: 'Local Only',
   },
 } as const;
+
+const PAGE_METADATA: Record<
+  Language,
+  {
+    htmlLang: string;
+    title: string;
+    description: string;
+    ogTitle: string;
+    ogDescription: string;
+    twitterTitle: string;
+    twitterDescription: string;
+  }
+> = {
+  cn: {
+    htmlLang: 'zh-CN',
+    title: 'FormalDoc - 内置规范公文模板的一键 Word 生成工具',
+    description:
+      'FormalDoc 提供内置公文模板和完整文稿骨架，一键将 AI 生成内容整理成规范 Word 文档。支持 GB/T 9704-2012 公文格式、学术论文、商务报告，本地生成，不上传内容。',
+    ogTitle: 'FormalDoc - 内置规范公文模板的一键 Word 生成工具',
+    ogDescription:
+      '把 AI 内容直接整理成规范 Word 文档，内置 GB/T 9704-2012 公文模板、完整文稿骨架和样式切换能力。',
+    twitterTitle: 'FormalDoc - Built-in formal templates for Word documents',
+    twitterDescription:
+      'Generate polished Word documents with built-in public document templates, complete skeletons, and local export.',
+  },
+  en: {
+    htmlLang: 'en',
+    title: 'FormalDoc - Built-in formal templates for polished Word documents',
+    description:
+      'FormalDoc turns drafts and AI output into polished Word documents with built-in public document templates, complete document skeletons, and local export.',
+    ogTitle: 'FormalDoc - Built-in formal templates for polished Word documents',
+    ogDescription:
+      'Turn AI output into polished Word files with built-in formal templates, complete document skeletons, and local export.',
+    twitterTitle: 'FormalDoc - Built-in formal templates for polished Word documents',
+    twitterDescription:
+      'Turn drafts and AI output into polished Word documents with built-in formal templates and complete document skeletons.',
+  },
+};
 
 const TEMPLATE_INSIGHTS: Record<
   TemplateName,
@@ -543,7 +588,7 @@ function formatDisplayName(templateName: string, nameEn: string, language: Langu
 function sanitizePreviewText(text: string): string {
   return text
     .replace(/[*_`>#-]/g, ' ')
-    .replace(/\[[^\]]+\]\(([^)]+)\)/g, '$1')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -677,15 +722,48 @@ function AppContent() {
   const { generate, isGenerating, error } = useDocxGenerator();
 
   const copy = PAGE_COPY[language];
+  const metadata = PAGE_METADATA[language];
   const templateInsight = TEMPLATE_INSIGHTS[template];
   const templatesInCategory = useMemo(
     () => getTemplatesByCategory(currentTemplate.category),
     [currentTemplate.category]
   );
   const scenarioPresets = SCENARIO_PRESETS[currentTemplate.category];
+  const [selectedScenarioId, setSelectedScenarioId] = useState(() => scenarioPresets[0]?.id ?? '');
+  const selectedScenario = useMemo(
+    () =>
+      scenarioPresets.find((scenario) => scenario.id === selectedScenarioId) ?? scenarioPresets[0],
+    [scenarioPresets, selectedScenarioId]
+  );
+
+  useEffect(() => {
+    if (!scenarioPresets.some((scenario) => scenario.id === selectedScenarioId)) {
+      setSelectedScenarioId(scenarioPresets[0]?.id ?? '');
+    }
+  }, [scenarioPresets, selectedScenarioId]);
+
+  useEffect(() => {
+    document.documentElement.lang = metadata.htmlLang;
+    document.title = metadata.title;
+
+    const updateMeta = (selector: string, content: string) => {
+      const element = document.head.querySelector<HTMLMetaElement>(selector);
+      if (element) {
+        element.content = content;
+      }
+    };
+
+    updateMeta('meta[name="title"]', metadata.title);
+    updateMeta('meta[name="description"]', metadata.description);
+    updateMeta('meta[property="og:title"]', metadata.ogTitle);
+    updateMeta('meta[property="og:description"]', metadata.ogDescription);
+    updateMeta('meta[name="twitter:title"]', metadata.twitterTitle);
+    updateMeta('meta[name="twitter:description"]', metadata.twitterDescription);
+  }, [metadata]);
+
   const fallbackPreviewBlocks = useMemo(
-    () => buildPreviewBlocks(scenarioPresets[0]?.content ?? '', []),
-    [scenarioPresets]
+    () => buildPreviewBlocks(selectedScenario?.content ?? '', []),
+    [selectedScenario]
   );
   const previewBlocks = useMemo(
     () => buildPreviewBlocks(text, fallbackPreviewBlocks),
@@ -851,6 +929,7 @@ function AppContent() {
     }
 
     startTransition(() => {
+      setSelectedScenarioId(scenario.id);
       setText(scenario.content);
       setCustomFilename('');
       setShowHeadingHint(false);
@@ -861,8 +940,8 @@ function AppContent() {
   };
 
   const handleCreateSkeleton = () => {
-    if (scenarioPresets[0]) {
-      applyScenario(scenarioPresets[0]);
+    if (selectedScenario) {
+      applyScenario(selectedScenario);
     }
   };
 
@@ -1208,19 +1287,16 @@ function AppContent() {
               <p className="insight-section-copy">{copy.scenarioDescription}</p>
               <div className="scenario-grid">
                 {scenarioPresets.map((scenario) => (
-                  <div key={scenario.id} className="scenario-card">
-                    <div>
-                      <h4>{scenario.title}</h4>
-                      <p>{scenario.description}</p>
-                    </div>
-                    <button
-                      type="button"
-                      className="scenario-button"
-                      onClick={() => applyScenario(scenario)}
-                    >
-                      {copy.applyScenario}
-                    </button>
-                  </div>
+                  <button
+                    key={scenario.id}
+                    type="button"
+                    className={`scenario-card ${selectedScenario?.id === scenario.id ? 'active' : ''}`}
+                    onClick={() => setSelectedScenarioId(scenario.id)}
+                    aria-pressed={selectedScenario?.id === scenario.id}
+                  >
+                    <span className="scenario-card-title">{scenario.title}</span>
+                    <span className="scenario-card-description">{scenario.description}</span>
+                  </button>
                 ))}
               </div>
             </div>
