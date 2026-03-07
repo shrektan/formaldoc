@@ -92,9 +92,15 @@ const WORKBENCH_COPY: Record<Language, WorkbenchCopy> = {
     title: '内置规范公文模板，一键生成正式 Word 文档',
     description:
       '把 “AI 转 Word” 升级成真正可交付的办文结果。模板、层级、行距、页码和正文样式都已经预置好，尤其适合机关单位、国企和行政文稿场景。',
-    pillars: ['GB/T 9704-2012 公文模板', '样式可选，可继续细调', '可插入完整公文骨架', '浏览器本地生成，不上传内容'],
+    pillars: [
+      'GB/T 9704-2012 公文模板',
+      '样式可选，可继续细调',
+      '可插入完整公文骨架',
+      '浏览器本地生成，不上传内容',
+    ],
     heroCardTitle: '当前模板策略',
-    heroCardBody: '优先用模板和规范说明建立信任感，再进入编辑和导出，避免产品被理解成普通文本转换工具。',
+    heroCardBody:
+      '优先用模板和规范说明建立信任感，再进入编辑和导出，避免产品被理解成普通文本转换工具。',
     heroCardPrimary: '查看全部模板',
     heroCardSecondary: '自定义样式',
     editorEyebrow: '内容输入',
@@ -102,11 +108,13 @@ const WORKBENCH_COPY: Record<Language, WorkbenchCopy> = {
     editorHint: '保留现有 Markdown、富文本粘贴和文字处理能力，但以更专业的工作区形态展示。',
     previewEyebrow: 'A4 视觉预览',
     previewTitle: '当前模板的版式与层级感',
-    previewHint: '这是视觉预览，不是与 Word 完全一致的精确渲染。它用于帮助你判断模板风格、层级和页码效果。',
+    previewHint:
+      '这是视觉预览，不是与 Word 完全一致的精确渲染。它用于帮助你判断模板风格、层级和页码效果。',
     previewEmpty: '尚未输入正文，预览展示的是当前模板的示例骨架。',
     sidebarEyebrow: '模板与规范',
     sidebarTitle: '把模板能力做成产品主功能',
-    sidebarHint: '右侧集中展示模板身份、规范摘要、场景选择和主操作，让用户理解“为什么这个模板值得信任”。',
+    sidebarHint:
+      '右侧集中展示模板身份、规范摘要、场景选择和主操作，让用户理解“为什么这个模板值得信任”。',
     standardsLabel: '适用标准',
     scenarioTitle: '常用场景快速开始',
     scenarioHint: '先选择一个场景，再一键插入完整公文骨架；导出 Word 仍保留为单独动作。',
@@ -176,8 +184,14 @@ const WORKBENCH_COPY: Record<Language, WorkbenchCopy> = {
     exportLoadingLabel: 'Generating...',
     styleLabel: 'Customize styles',
     templatesLabel: 'Browse all templates',
-    footerLead: 'The point is not only exporting Word, but exporting something already formal and usable.',
-    footerPoints: ['No login', 'Rich AI paste support', 'Template presets and tuning', 'Works offline'],
+    footerLead:
+      'The point is not only exporting Word, but exporting something already formal and usable.',
+    footerPoints: [
+      'No login',
+      'Rich AI paste support',
+      'Template presets and tuning',
+      'Works offline',
+    ],
     specLabels: {
       body: 'Body',
       heading: 'Headings',
@@ -270,7 +284,11 @@ const buildPreviewBlocks = (content: string, fallbackTitle: string): PreviewBloc
   return blocks.slice(0, 9);
 };
 
-const getPreviewLineHeight = (lineSpacingValue: number, lineSpacingType: 'auto' | 'exact', bodySize: number) => {
+const getPreviewLineHeight = (
+  lineSpacingValue: number,
+  lineSpacingType: 'auto' | 'exact',
+  bodySize: number
+) => {
   if (lineSpacingType === 'auto') {
     return Math.max(lineSpacingValue / 240, 1.35);
   }
@@ -278,7 +296,7 @@ const getPreviewLineHeight = (lineSpacingValue: number, lineSpacingType: 'auto' 
 };
 
 const getFontFamily = (style: TextStyle) => {
-  const families = [style.font];
+  const families: string[] = [style.font];
   if (style.englishFont) {
     families.push(style.englishFont);
   }
@@ -320,7 +338,10 @@ const getTemplateStandard = (template: Template, copy: WorkbenchCopy) => {
   return template.category === 'chinese' ? copy.standards.chinese : copy.standards.english;
 };
 
-const getScenarioPresets = (language: Language, category: Template['category']): ScenarioPreset[] => {
+const getScenarioPresets = (
+  language: Language,
+  category: Template['category']
+): ScenarioPreset[] => {
   if (category === 'english') {
     return [
       {
@@ -469,7 +490,8 @@ function AppContent() {
     }
   }, [scenarioPresets, selectedScenario]);
 
-  const selectedPreset = scenarioPresets.find((preset) => preset.key === selectedScenario) ?? scenarioPresets[0];
+  const selectedPreset =
+    scenarioPresets.find((preset) => preset.key === selectedScenario) ?? scenarioPresets[0];
 
   const templateOptions = useMemo(
     () => getTemplatesByCategory(currentTemplate.category),
@@ -486,7 +508,9 @@ function AppContent() {
   const templateStandard = getTemplateStandard(currentTemplate, copy);
 
   const previewSource = text.trim() || selectedPreset?.content || '';
-  const previewTitle = text.trim() ? templateDisplayName : `${templateDisplayName} · ${selectedPreset?.label ?? ''}`;
+  const previewTitle = text.trim()
+    ? templateDisplayName
+    : `${templateDisplayName} · ${selectedPreset?.label ?? ''}`;
   const previewBlocks = useMemo(
     () => buildPreviewBlocks(previewSource, previewTitle),
     [previewSource, previewTitle]

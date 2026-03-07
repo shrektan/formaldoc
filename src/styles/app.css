@@ -38,7 +38,11 @@ body,
 
 body {
   font-family:
-    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont,
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    -apple-system,
+    BlinkMacSystemFont,
     sans-serif;
   background:
     radial-gradient(circle at top left, rgba(179, 58, 36, 0.08), transparent 34%),
@@ -469,7 +473,11 @@ a {
   font-size: 15px;
   line-height: 1.7;
   font-family:
-    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont,
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    -apple-system,
+    BlinkMacSystemFont,
     sans-serif;
 }
 
@@ -604,7 +612,13 @@ a {
   border-radius: inherit;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.6), transparent 18%),
-    linear-gradient(90deg, rgba(215, 209, 197, 0.08), transparent 14%, transparent 86%, rgba(215, 209, 197, 0.08));
+    linear-gradient(
+      90deg,
+      rgba(215, 209, 197, 0.08),
+      transparent 14%,
+      transparent 86%,
+      rgba(215, 209, 197, 0.08)
+    );
   pointer-events: none;
 }
 
