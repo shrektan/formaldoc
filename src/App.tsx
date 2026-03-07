@@ -896,7 +896,7 @@ function AppContent() {
 
   return (
     <div className="app-shell">
-      <nav className="navbar">
+      <nav className="navbar" aria-label={language === 'cn' ? '主导航' : 'Main navigation'}>
         <div className="navbar-brand">
           <img src="/logo.png" alt="FormalDoc Logo" className="logo" />
           <span className="navbar-title">FormalDoc</span>

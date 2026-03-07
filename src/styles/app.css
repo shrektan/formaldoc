@@ -159,18 +159,6 @@ a {
   font-weight: 600;
 }
 
-.brand-kicker,
-.section-kicker {
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--primary);
-}
-
 .meta-chip {
   display: inline-flex;
   align-items: center;
@@ -937,6 +925,20 @@ a {
   to {
     transform: rotate(360deg);
   }
+}
+
+.action-btn:focus-visible,
+.primary-cta:focus-visible,
+.secondary-cta:focus-visible,
+.fix-btn:focus-visible,
+.github-link:focus-visible,
+.lang-btn:focus-visible,
+.scenario-card:focus-visible,
+.hero-badge:focus-visible,
+.mini-card:focus-visible,
+.strip-settings-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 @media (max-width: 1180px) {
