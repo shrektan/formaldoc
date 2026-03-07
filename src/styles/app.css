@@ -962,12 +962,17 @@ a {
     flex-direction: row;
   }
 
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+
   .topbar-copy h1 {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
 
   .topbar-copy p {
-    font-size: 13px;
+    display: none;
   }
 
   .topbar-tools {
@@ -975,7 +980,7 @@ a {
   }
 
   .info-pill-row {
-    justify-content: flex-start;
+    display: none;
   }
 
   .topbar-actions {
@@ -986,9 +991,52 @@ a {
     padding: 14px;
   }
 
+  .composer-topbar {
+    order: 1;
+  }
+
   .composer-heading h2,
   .support-card-header h3 {
     font-size: 20px;
+  }
+
+  .composer-heading p,
+  .support-copy {
+    font-size: 12px;
+  }
+
+  .composer-meta {
+    justify-content: flex-start;
+  }
+
+  .editor-container {
+    order: 2;
+    min-height: 0;
+  }
+
+  .hint-row,
+  .error-msg {
+    order: 3;
+  }
+
+  .composer-footer {
+    order: 4;
+    position: sticky;
+    bottom: 8px;
+    z-index: 4;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .template-strip-row {
+    order: 5;
+  }
+
+  .composer-toolbar {
+    order: 6;
   }
 
   .toolbar-group,
@@ -1002,12 +1050,8 @@ a {
     width: 100%;
   }
 
-  .editor-container {
-    min-height: 0;
-  }
-
   .content-textarea {
-    min-height: 300px;
+    min-height: 260px;
   }
 
   .primary-actions {
