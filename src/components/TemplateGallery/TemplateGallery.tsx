@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../../hooks/useTranslation';
 import type { Template, TemplateName } from '../../types/styles';
 import { getTemplatesByCategory } from '../../lib/styles/templates';
@@ -38,6 +38,7 @@ function TemplateCard({
       role="button"
       tabIndex={0}
       className={`template-card ${isSelected ? 'selected' : ''}`}
+      aria-selected={isSelected}
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -122,6 +123,25 @@ export function TemplateGallery({
   const { language, t } = useLanguage();
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
 
+  // Handle Escape: close lightbox first, then gallery
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        if (previewTemplate) {
+          setPreviewTemplate(null);
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, previewTemplate, onClose]);
+
   if (!isOpen) return null;
 
   const chineseTemplates = getTemplatesByCategory('chinese');
@@ -136,11 +156,21 @@ export function TemplateGallery({
 
   return (
     <>
-      <div className="gallery-overlay" onClick={onClose} />
-      <div className="template-gallery">
+      <div className="gallery-overlay" aria-hidden="true" onClick={onClose} />
+      <div
+        className="template-gallery"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gallery-title"
+      >
         <div className="gallery-header">
-          <h2>{t.templateGallery.title}</h2>
-          <button className="gallery-close" onClick={onClose} aria-label="Close" type="button">
+          <h2 id="gallery-title">{t.templateGallery.title}</h2>
+          <button
+            className="gallery-close"
+            onClick={onClose}
+            aria-label={t.hints.closeHint}
+            type="button"
+          >
             ×
           </button>
         </div>

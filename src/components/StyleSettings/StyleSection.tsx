@@ -41,20 +41,29 @@ export function StyleSection({ styleKey, label, style, template, onChange }: Sty
     return found ? found.name : `${pt}pt`;
   };
 
+  const sectionId = `style-section-${styleKey}`;
+
   return (
     <div className="style-section">
-      <button className="style-section-header" onClick={() => setIsOpen(!isOpen)}>
+      <button
+        className="style-section-header"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls={sectionId}
+      >
         <span className="style-section-title">{label}</span>
         <span className="style-section-preview">
           {style.font}
           {isCnTemplate && <span className="preview-english"> + {effectiveEnglishFont}</span>}{' '}
           {getSizeName(style.size)}
         </span>
-        <span className={`style-section-arrow ${isOpen ? 'open' : ''}`}>▶</span>
+        <span className={`style-section-arrow ${isOpen ? 'open' : ''}`} aria-hidden="true">
+          ▶
+        </span>
       </button>
 
       {isOpen && (
-        <div className="style-section-content">
+        <div id={sectionId} className="style-section-content">
           <div className="style-row">
             <label>
               {isCnTemplate ? t.styleLabels.chineseFont : t.styleLabels.font}

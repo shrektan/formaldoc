@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useStyles } from '../../contexts/useStyles';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { StyleKey } from '../../types/styles';
@@ -25,6 +26,33 @@ const STYLE_ORDER: StyleKey[] = [
 export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
   const { styles, currentTemplate, updateStyle, resetStyles } = useStyles();
   const t = useTranslation();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousActiveRef = useRef<Element | null>(null);
+
+  // Trap focus and handle Escape key while drawer is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Save the element that had focus before the drawer opened
+    previousActiveRef.current = document.activeElement;
+
+    // Focus the close button on open
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Return focus to the previously focused element on close
+      (previousActiveRef.current as HTMLElement | null)?.focus();
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -41,11 +69,16 @@ export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
 
   return (
     <>
-      <div className="drawer-overlay" onClick={onClose} />
-      <div className="style-drawer">
+      <div className="drawer-overlay" aria-hidden="true" onClick={onClose} />
+      <div className="style-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
         <div className="drawer-header">
-          <h2>{t.styleDrawer.title}</h2>
-          <button className="drawer-close" onClick={onClose} aria-label="Close">
+          <h2 id="drawer-title">{t.styleDrawer.title}</h2>
+          <button
+            ref={closeButtonRef}
+            className="drawer-close"
+            onClick={onClose}
+            aria-label={t.hints.closeHint}
+          >
             ×
           </button>
         </div>
