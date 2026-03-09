@@ -1182,6 +1182,15 @@ a {
     width: 100%;
   }
 
+  .composer-toolbar {
+    gap: 10px;
+  }
+
+  .composer-toolbar .toolbar-group:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .template-strip-row,
   .composer-toolbar,
   .preview-paper-shell,
@@ -1192,7 +1201,7 @@ a {
   .action-btn,
   .primary-cta,
   .secondary-cta {
-    width: 100%;
+    width: auto;
   }
 
   .content-textarea {
