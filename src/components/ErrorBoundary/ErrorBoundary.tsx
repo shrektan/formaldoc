@@ -26,7 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return this.props.children;
     }
 
-    const isChinese = document.documentElement.lang === 'zh';
+    const isChinese = document.documentElement.lang.startsWith('zh');
 
     return (
       <div

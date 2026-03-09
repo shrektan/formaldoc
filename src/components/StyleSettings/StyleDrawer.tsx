@@ -29,7 +29,7 @@ export function StyleDrawer({ isOpen, onClose }: StyleDrawerProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveRef = useRef<Element | null>(null);
 
-  // Trap focus and handle Escape key while drawer is open
+  // Handle Escape key and manage focus while drawer is open
   useEffect(() => {
     if (!isOpen) return;
 

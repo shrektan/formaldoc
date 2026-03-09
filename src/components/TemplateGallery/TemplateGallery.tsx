@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../hooks/useTranslation';
 import type { Template, TemplateName } from '../../types/styles';
 import { getTemplatesByCategory } from '../../lib/styles/templates';
@@ -38,7 +38,7 @@ function TemplateCard({
       role="button"
       tabIndex={0}
       className={`template-card ${isSelected ? 'selected' : ''}`}
-      aria-selected={isSelected}
+      aria-current={isSelected ? 'true' : undefined}
       onClick={onSelect}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -122,10 +122,16 @@ export function TemplateGallery({
 }: TemplateGalleryProps) {
   const { language, t } = useLanguage();
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+  const previousActiveRef = useRef<Element | null>(null);
 
-  // Handle Escape: close lightbox first, then gallery
+  // Handle Escape key and manage focus while gallery is open
   useEffect(() => {
     if (!isOpen) return;
+
+    previousActiveRef.current = document.activeElement;
+
+    const closeBtn = document.querySelector('.gallery-close') as HTMLElement | null;
+    closeBtn?.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -139,7 +145,10 @@ export function TemplateGallery({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      (previousActiveRef.current as HTMLElement)?.focus?.();
+    };
   }, [isOpen, previewTemplate, onClose]);
 
   if (!isOpen) return null;

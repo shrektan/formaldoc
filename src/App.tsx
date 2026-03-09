@@ -1006,11 +1006,9 @@ function AppContent() {
         onClose={() => setIsTemplateGalleryOpen(false)}
       />
       <LoadingOverlay isVisible={isGenerating} message={t.loading.generating} />
-      {toastMsg && (
-        <div className="toast-container" role="status" aria-live="polite">
-          <div className="toast-message">{toastMsg}</div>
-        </div>
-      )}
+      <div className="toast-container" role="status" aria-live="polite">
+        {toastMsg && <div className="toast-message">{toastMsg}</div>}
+      </div>
     </div>
   );
 }
