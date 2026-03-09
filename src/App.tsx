@@ -455,6 +455,7 @@ function AppContent() {
     plainText: string;
   } | null>(null);
   const [pasteMode, setPasteMode] = useState<PasteMode>(loadPasteMode);
+  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pasteTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -700,7 +701,41 @@ function AppContent() {
       </section>
 
       <main id="main-content" className="workspace-shell">
-        <section className="composer-shell">
+        {/* === Mobile Tab Bar === */}
+        <div
+          className="mobile-tab-bar"
+          role="tablist"
+          aria-label={language === 'cn' ? '编辑与预览' : 'Edit and preview'}
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'edit'}
+            aria-controls="panel-edit"
+            className={`mobile-tab ${activeTab === 'edit' ? 'active' : ''}`}
+            onClick={() => setActiveTab('edit')}
+          >
+            {t.tabs.edit}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'preview'}
+            aria-controls="panel-preview"
+            className={`mobile-tab ${activeTab === 'preview' ? 'active' : ''}`}
+            onClick={() => setActiveTab('preview')}
+          >
+            {t.tabs.preview}
+          </button>
+        </div>
+
+        {/* === Composer (Edit panel) === */}
+        <section
+          id="panel-edit"
+          role="tabpanel"
+          aria-labelledby="tab-edit"
+          className={`composer-shell tab-panel-edit ${activeTab !== 'edit' ? 'hidden' : ''}`}
+        >
           <div className="composer-topbar">
             <div className="composer-heading">
               <h2>{copy.editorTitle}</h2>
@@ -717,7 +752,34 @@ function AppContent() {
               currentTemplate={template}
               onSelect={setTemplate}
               onOpenSettings={() => setIsTemplateGalleryOpen(true)}
-            />
+            >
+              <details className="strip-specs-details">
+                <summary>{copy.detailsSummary}</summary>
+                <div className="strip-specs-body">
+                  <div className="spec-grid">
+                    <div className="spec-item">
+                      <span>{copy.bodyLabel}</span>
+                      <strong>{currentTemplate.specs.bodyFont}</strong>
+                    </div>
+                    <div className="spec-item">
+                      <span>{copy.headingLabel}</span>
+                      <strong>{currentTemplate.specs.headingFont}</strong>
+                    </div>
+                    <div className="spec-item">
+                      <span>{copy.spacingLabel}</span>
+                      <strong>{currentTemplate.specs.lineSpacing}</strong>
+                    </div>
+                    <div className="spec-item">
+                      <span>{copy.pageNumberLabel}</span>
+                      <strong>{pageNumberSample}</strong>
+                    </div>
+                  </div>
+                  <p style={{ marginTop: 10, fontSize: 13, color: 'var(--ink-muted)' }}>
+                    {templateInsight.promise[language]}
+                  </p>
+                </div>
+              </details>
+            </TemplateStrip>
           </div>
 
           <div className="composer-toolbar">
@@ -747,6 +809,13 @@ function AppContent() {
             <div className="toolbar-group">
               <button className="action-btn" onClick={() => setIsSettingsOpen(true)} type="button">
                 {copy.styleLabel}
+              </button>
+              <button
+                className="action-btn"
+                onClick={() => setIsTemplateGalleryOpen(true)}
+                type="button"
+              >
+                {copy.templatesLabel}
               </button>
               <button className="action-btn" onClick={handleLoadExample} type="button">
                 {t.buttons.example}
@@ -826,6 +895,27 @@ function AppContent() {
             </div>
           )}
 
+          {/* Skeleton chips */}
+          <div
+            className="skeleton-chips"
+            role="radiogroup"
+            aria-label={language === 'cn' ? '文稿骨架' : 'Document skeletons'}
+          >
+            {scenarioPresets.map((scenario) => (
+              <button
+                key={scenario.id}
+                type="button"
+                role="radio"
+                aria-checked={selectedScenario?.id === scenario.id}
+                className={`skeleton-chip ${selectedScenario?.id === scenario.id ? 'active' : ''}`}
+                onClick={() => setSelectedScenarioId(scenario.id)}
+                title={scenario.description}
+              >
+                {scenario.title}
+              </button>
+            ))}
+          </div>
+
           <div className="composer-footer">
             <div className="filename-field">
               <label htmlFor="filename">{t.filename.label}</label>
@@ -837,6 +927,7 @@ function AppContent() {
                   value={customFilename || detectedFilename}
                   onChange={(e) => setCustomFilename(e.target.value)}
                   placeholder={t.filename.placeholder}
+                  autoComplete="off"
                 />
                 <span className="filename-ext">.docx</span>
                 {customFilename && (
@@ -872,98 +963,21 @@ function AppContent() {
           </div>
         </section>
 
-        <aside className="support-shell">
-          <section className="support-card">
-            <div className="support-card-header">
-              <div>
-                <h3>{formatDisplayName(currentTemplate.name, currentTemplate.nameEn, language)}</h3>
-              </div>
-              <span className="meta-chip strong">{templateInsight.standard}</span>
-            </div>
-            <p className="support-copy">{copy.currentTemplateDescription}</p>
-            <div className="spec-grid">
-              <div className="spec-item">
-                <span>{copy.bodyLabel}</span>
-                <strong>{currentTemplate.specs.bodyFont}</strong>
-              </div>
-              <div className="spec-item">
-                <span>{copy.headingLabel}</span>
-                <strong>{currentTemplate.specs.headingFont}</strong>
-              </div>
-              <div className="spec-item">
-                <span>{copy.spacingLabel}</span>
-                <strong>{currentTemplate.specs.lineSpacing}</strong>
-              </div>
-              <div className="spec-item">
-                <span>{copy.pageNumberLabel}</span>
-                <strong>{pageNumberSample}</strong>
-              </div>
-            </div>
-            <div className="support-actions">
-              <button
-                type="button"
-                className="action-btn"
-                onClick={() => setIsTemplateGalleryOpen(true)}
-              >
-                {copy.templatesLabel}
-              </button>
-              <button type="button" className="action-btn" onClick={() => setIsSettingsOpen(true)}>
-                {copy.styleLabel}
-              </button>
-            </div>
-            <details className="template-details">
-              <summary>{copy.detailsSummary}</summary>
-              <div className="details-body">
-                <p>{templateInsight.promise[language]}</p>
-                <div className="details-line">
-                  <span>{copy.standardLabel}</span>
-                  <strong>{templateInsight.standard}</strong>
-                </div>
-                <div className="details-line">
-                  <span>{copy.audienceLabel}</span>
-                  <strong>{templateInsight.audience[language].join(' / ')}</strong>
-                </div>
-                <div className="details-line">
-                  <span>{copy.indentLabel}</span>
-                  <strong>{currentTemplate.specs.indent}</strong>
-                </div>
-              </div>
-            </details>
-          </section>
-
-          <section className="support-card">
-            <div className="support-card-header">
-              <div>
-                <h3>{copy.quickStartTitle}</h3>
-              </div>
-            </div>
-            <p className="support-copy">{copy.quickStartDescription}</p>
-            <div
-              className="scenario-grid"
-              role="radiogroup"
-              aria-label={language === 'cn' ? '文稿骨架' : 'Document skeletons'}
-            >
-              {scenarioPresets.map((scenario) => (
-                <button
-                  key={scenario.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={selectedScenario?.id === scenario.id}
-                  className={`scenario-card ${selectedScenario?.id === scenario.id ? 'active' : ''}`}
-                  onClick={() => setSelectedScenarioId(scenario.id)}
-                >
-                  <span className="scenario-card-title">{scenario.title}</span>
-                  <span className="scenario-card-description">{scenario.description}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
+        {/* === Preview Sidebar === */}
+        <aside
+          id="panel-preview"
+          role="tabpanel"
+          aria-labelledby="tab-preview"
+          className={`preview-sidebar tab-panel-preview ${activeTab !== 'preview' ? 'hidden' : ''}`}
+        >
           <section className="support-card preview-card">
             <div className="support-card-header">
               <div>
                 <h3>{copy.previewTitle}</h3>
               </div>
+              <span className="meta-chip strong">
+                {formatDisplayName(currentTemplate.name, currentTemplate.nameEn, language)}
+              </span>
             </div>
             <p className="support-copy">
               {text.trim() ? copy.previewDescription : copy.previewEmpty}
