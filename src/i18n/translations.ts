@@ -54,6 +54,10 @@ export interface Translations {
     tagline: string;
     feedback: string;
   };
+  tabs: {
+    edit: string;
+    preview: string;
+  };
   templateGallery: {
     title: string;
     chinese: string;
@@ -218,6 +222,10 @@ $$\\frac{a}{b}$$（独立公式）`,
       placeholder: '自动检测标题',
       reset: '重置',
     },
+    tabs: {
+      edit: '编辑',
+      preview: '预览',
+    },
   },
   en: {
     header: {
@@ -332,6 +340,10 @@ $$\\frac{a}{b}$$ (block formula)`,
       label: 'Filename',
       placeholder: 'Auto-detect from title',
       reset: 'Reset',
+    },
+    tabs: {
+      edit: 'Edit',
+      preview: 'Preview',
     },
   },
 };
