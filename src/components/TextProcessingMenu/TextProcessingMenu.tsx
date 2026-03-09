@@ -12,9 +12,15 @@ interface TextProcessingMenuProps {
   text: string;
   onTextChange: (newText: string) => void;
   disabled?: boolean;
+  onNotify?: (message: string) => void;
 }
 
-export function TextProcessingMenu({ text, onTextChange, disabled }: TextProcessingMenuProps) {
+export function TextProcessingMenu({
+  text,
+  onTextChange,
+  disabled,
+  onNotify,
+}: TextProcessingMenuProps) {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -36,24 +42,32 @@ export function TextProcessingMenu({ text, onTextChange, disabled }: TextProcess
     };
   }, [isOpen]);
 
+  const notify = (message: string) => {
+    if (onNotify) {
+      onNotify(message);
+    } else {
+      alert(message);
+    }
+  };
+
   const handleConvertQuotes = () => {
     const result = convertQuotes(text);
     onTextChange(result.text);
-    alert(result.count > 0 ? t.alerts.quotesConverted(result.count) : t.alerts.noQuotesFound);
+    notify(result.count > 0 ? t.alerts.quotesConverted(result.count) : t.alerts.noQuotesFound);
     setIsOpen(false);
   };
 
   const handleRemoveEmphasis = () => {
     const result = removeMarkdownEmphasis(text);
     onTextChange(result.text);
-    alert(result.count > 0 ? t.alerts.emphasisRemoved(result.count) : t.alerts.noEmphasisFound);
+    notify(result.count > 0 ? t.alerts.emphasisRemoved(result.count) : t.alerts.noEmphasisFound);
     setIsOpen(false);
   };
 
   const handleRemoveChineseSpaces = () => {
     const result = removeChineseSpaces(text);
     onTextChange(result.text);
-    alert(result.count > 0 ? t.alerts.spacesRemoved(result.count) : t.alerts.noSpacesFound);
+    notify(result.count > 0 ? t.alerts.spacesRemoved(result.count) : t.alerts.noSpacesFound);
     setIsOpen(false);
   };
 
@@ -61,7 +75,7 @@ export function TextProcessingMenu({ text, onTextChange, disabled }: TextProcess
     const result = cleanAllAiText(text);
     onTextChange(result.text);
     const total = result.quotes + result.emphasis + result.spaces;
-    alert(
+    notify(
       total > 0
         ? t.alerts.cleanedAll(result.quotes, result.emphasis, result.spaces)
         : t.alerts.nothingToClean
