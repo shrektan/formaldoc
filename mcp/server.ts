@@ -153,6 +153,11 @@ async function resolveTemplateSelection(params: {
   }
 
   const fallbackSelection = chooseFallbackTemplate(await loadMarkdownSample(params));
+  const clientCapabilities = server.server.getClientCapabilities();
+  if (!clientCapabilities?.elicitation?.form) {
+    return fallbackSelection;
+  }
+
   const templates = getAvailableTemplateSummaries();
 
   try {
