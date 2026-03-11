@@ -24,6 +24,7 @@ This creates:
 ## What the extension provides
 
 - `list_docx_templates`
-- `convert_to_docx`
+- `convert_markdown_text_to_docx`
+- `convert_markdown_file_to_docx`
 
 If `outputPath` is omitted, FormalDoc saves files to `~/Documents/FormalDoc Exports` by default.

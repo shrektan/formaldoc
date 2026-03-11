@@ -90,8 +90,12 @@ async function writeManifest(rootPackageJson) {
         description: 'List the available FormalDoc export templates.',
       },
       {
-        name: 'convert_to_docx',
-        description: 'Convert Markdown content into a formatted DOCX file on the local machine.',
+        name: 'convert_markdown_text_to_docx',
+        description: 'Convert Markdown text into a formatted DOCX file on the local machine.',
+      },
+      {
+        name: 'convert_markdown_file_to_docx',
+        description: 'Convert a local Markdown file into a formatted DOCX file on the local machine.',
       },
     ],
     keywords: ['markdown', 'docx', 'word', 'formal-documents', 'mcp'],

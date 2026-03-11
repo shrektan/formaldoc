@@ -23,6 +23,54 @@ const server = new McpServer(
   }
 );
 
+const convertOutputSchema = {
+  outputPath: z.string(),
+  template: z.string(),
+  fileSize: z.number(),
+  title: z.string().nullable(),
+  sourcePath: z.string().nullable(),
+};
+
+async function createDocxResult(params: {
+  markdown?: string;
+  inputPath?: string;
+  template?: string;
+  outputPath?: string;
+  fileName?: string;
+}) {
+  const result = await convertMarkdownToDocxFile({
+    markdown: params.markdown,
+    inputPath: params.inputPath,
+    templateName: params.template,
+    outputPath: params.outputPath ? ensureDocxExtension(params.outputPath) : undefined,
+    fileName: params.fileName,
+  });
+
+  return {
+    content: [
+      {
+        type: 'text' as const,
+        text: `Created DOCX at ${result.outputPath} using template ${result.templateName}.`,
+      },
+      {
+        type: 'resource' as const,
+        resource: {
+          uri: toFileUri(result.outputPath),
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          blob: result.buffer.toString('base64'),
+        },
+      },
+    ],
+    structuredContent: {
+      outputPath: result.outputPath,
+      template: result.templateName,
+      fileSize: result.fileSize,
+      title: result.title,
+      sourcePath: result.sourcePath,
+    },
+  };
+}
+
 server.registerTool(
   'list_docx_templates',
   {
@@ -63,88 +111,103 @@ server.registerTool(
 );
 
 server.registerTool(
-  'convert_to_docx',
+  'convert_markdown_text_to_docx',
   {
-    title: 'Convert Markdown to DOCX',
+    title: 'Convert Markdown Text to DOCX',
     description:
-      'Convert Markdown content or an existing Markdown file into a formatted .docx file using a FormalDoc template. The generated document is written locally and also returned as an embedded resource when the client supports it.',
-    inputSchema: z
-      .object({
-        content: z
-          .string()
-          .min(1)
-          .optional()
-          .describe('Markdown content to convert into a Word document.'),
-        inputPath: z
-          .string()
-          .optional()
-          .describe(
-            'Path to an existing Markdown or text file. Prefer this when the content already exists as a file to avoid sending large text through the chat.'
-          ),
-        template: z
-          .string()
-          .optional()
-          .describe('Optional template name such as cn-gov, cn-general, en-standard, or en-legal.'),
-        outputPath: z
-          .string()
-          .optional()
-          .describe('Optional absolute or relative output path for the generated .docx file.'),
-        fileName: z
-          .string()
-          .optional()
-          .describe(
-            'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
-          ),
-      })
-      .refine((value) => Boolean(value.content?.trim() || value.inputPath?.trim()), {
-        message: 'Provide either content or inputPath.',
-      }),
-    outputSchema: {
-      outputPath: z.string(),
-      template: z.string(),
-      fileSize: z.number(),
-      title: z.string().nullable(),
-      sourcePath: z.string().nullable(),
+      'Convert Markdown text passed directly in the tool call into a formatted .docx file. Use this only when the markdown is not already stored in a local file.',
+    inputSchema: {
+      content: z
+        .string()
+        .min(1)
+        .describe('Markdown content to convert into a Word document.'),
+      template: z
+        .string()
+        .optional()
+        .describe('Optional template name such as cn-gov, cn-general, en-standard, or en-legal.'),
+      outputPath: z
+        .string()
+        .optional()
+        .describe('Optional absolute or relative output path for the generated .docx file.'),
+      fileName: z
+        .string()
+        .optional()
+        .describe(
+          'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
+        ),
     },
+    outputSchema: convertOutputSchema,
     annotations: {
       destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
   },
-  async ({ content, inputPath, template, outputPath, fileName }) => {
+  async ({ content, template, outputPath, fileName }) => {
     try {
-      const result = await convertMarkdownToDocxFile({
+      return await createDocxResult({
         markdown: content,
-        inputPath,
-        templateName: template,
-        outputPath: outputPath ? ensureDocxExtension(outputPath) : undefined,
+        template,
+        outputPath,
         fileName,
       });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown conversion error.';
 
       return {
+        isError: true,
         content: [
           {
             type: 'text',
-            text: `Created DOCX at ${result.outputPath} using template ${result.templateName}.`,
-          },
-          {
-            type: 'resource',
-            resource: {
-              uri: toFileUri(result.outputPath),
-              mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              blob: result.buffer.toString('base64'),
-            },
+            text: `Failed to create DOCX: ${message}`,
           },
         ],
-        structuredContent: {
-          outputPath: result.outputPath,
-          template: result.templateName,
-          fileSize: result.fileSize,
-          title: result.title,
-          sourcePath: result.sourcePath,
-        },
       };
+    }
+  }
+);
+
+server.registerTool(
+  'convert_markdown_file_to_docx',
+  {
+    title: 'Convert Markdown File to DOCX',
+    description:
+      'Convert an existing local Markdown or text file into a formatted .docx file. Prefer this tool when the markdown already exists on disk to avoid sending large text through the chat.',
+    inputSchema: {
+      inputPath: z
+        .string()
+        .min(1)
+        .describe('Path to an existing Markdown or text file on the local machine.'),
+      template: z
+        .string()
+        .optional()
+        .describe('Optional template name such as cn-gov, cn-general, en-standard, or en-legal.'),
+      outputPath: z
+        .string()
+        .optional()
+        .describe('Optional absolute or relative output path for the generated .docx file.'),
+      fileName: z
+        .string()
+        .optional()
+        .describe(
+          'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
+        ),
+    },
+    outputSchema: convertOutputSchema,
+    annotations: {
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
+  },
+  async ({ inputPath, template, outputPath, fileName }) => {
+    try {
+      return await createDocxResult({
+        inputPath,
+        template,
+        outputPath,
+        fileName,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown conversion error.';
 
