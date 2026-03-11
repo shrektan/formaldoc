@@ -7,8 +7,8 @@ import type {
   EnglishFont,
   DocumentSettings,
   LineSpacingConfig,
-} from '../../types/styles';
-import { CHINESE_FONTS, FONT_PAIRING } from '../../types/styles';
+} from '../../types/styles.js';
+import { CHINESE_FONTS, FONT_PAIRING } from '../../types/styles.js';
 
 /**
  * GB/T 9704-2012 Chinese Government Document Format Specifications

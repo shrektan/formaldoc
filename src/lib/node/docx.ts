@@ -1,15 +1,15 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, extname, resolve } from 'node:path';
-import { extractTitle, sanitizeFilename } from '../filename';
-import { generateDocxBuffer } from '../docx/generator';
+import { extractTitle, sanitizeFilename } from '../filename.js';
+import { generateDocxBuffer } from '../docx/generator.js';
 import {
   DEFAULT_TEMPLATE,
   getTemplate,
   getTemplateNames,
   isValidTemplateName,
-} from '../styles/templates';
-import { initDomPolyfill } from './dom-polyfill';
-import type { StyleSettings, TemplateName } from '../../types/styles';
+} from '../styles/templates.js';
+import { initDomPolyfill } from './dom-polyfill.js';
+import type { StyleSettings, TemplateName } from '../../types/styles.js';
 
 initDomPolyfill();
 

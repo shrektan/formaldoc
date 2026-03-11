@@ -6,7 +6,7 @@ import {
   convertMarkdownToDocxFile,
   ensureDocxExtension,
   getAvailableTemplateSummaries,
-} from '../src/lib/node/docx';
+} from '../src/lib/node/docx.js';
 
 const SERVER_VERSION = '1.14.6';
 

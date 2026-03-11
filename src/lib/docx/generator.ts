@@ -1,8 +1,8 @@
 import { Document, Packer, Footer, Paragraph, TextRun, PageNumber, AlignmentType } from 'docx';
-import { parseMarkdown } from '../markdown/parser';
-import { convertMdastToDocx } from './converter';
-import { createDocumentStyles, createFooterFont, getFooterSize, GB_PAGE } from './styles';
-import type { StyleSettings, DocumentSettings, PageNumberFormat } from '../../types/styles';
+import { parseMarkdown } from '../markdown/parser.js';
+import { convertMdastToDocx } from './converter.js';
+import { createDocumentStyles, createFooterFont, getFooterSize, GB_PAGE } from './styles.js';
+import type { StyleSettings, DocumentSettings, PageNumberFormat } from '../../types/styles.js';
 
 /**
  * Creates footer with centered page number using custom styles

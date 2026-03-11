@@ -13,7 +13,7 @@ import {
   ExternalHyperlink,
   type ParagraphChild,
 } from 'docx';
-import { latexToDocxMath } from '../math/latex-to-docx';
+import { latexToDocxMath } from '../math/latex-to-docx.js';
 import type {
   Root,
   Content,
