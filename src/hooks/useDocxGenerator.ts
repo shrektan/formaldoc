@@ -4,6 +4,8 @@ import { generateDocx } from '../lib/docx/generator';
 import { extractTitle, sanitizeFilename } from '../lib/filename';
 import type { StyleSettings, DocumentSettings } from '../types/styles';
 
+export { extractTitle, sanitizeFilename } from '../lib/filename';
+
 interface UseDocxGeneratorResult {
   generate: (
     markdown: string,
