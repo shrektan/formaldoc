@@ -54,9 +54,10 @@ function describeTemplateChoice(templateId: string): string {
   }
 }
 
-function formatTemplateTitle(item: ReturnType<typeof getAvailableTemplateSummaries>[number]): string {
-  const recommended =
-    item.id === 'cn-gov' || item.id === 'en-standard' ? ' (Recommended)' : '';
+function formatTemplateTitle(
+  item: ReturnType<typeof getAvailableTemplateSummaries>[number]
+): string {
+  const recommended = item.id === 'cn-gov' || item.id === 'en-standard' ? ' (Recommended)' : '';
   const displayName = item.category === 'chinese' ? item.name : item.nameEn;
 
   return `${displayName}${recommended}`;
