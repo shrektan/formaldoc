@@ -251,7 +251,7 @@ server.registerTool(
   {
     title: 'Export Reply to DOCX',
     description:
-      'Use this automatically when the user wants to turn the current reply, current markdown draft, or an existing markdown artifact into a .docx file. Prefer inputPath when a local markdown file already exists; otherwise pass the markdown reply as content.',
+      'Use this automatically when the user wants to turn the current reply, current markdown draft, or an existing markdown artifact into a .docx file. Before calling this tool without a template, first ask the user which FormalDoc template they want. If the user does not answer or says to use the default, call the tool without template and FormalDoc will choose a sensible default automatically. Prefer inputPath when a local markdown file already exists; otherwise pass the markdown reply as content.',
     inputSchema: autoExportInputSchema,
     outputSchema: convertOutputSchema,
     annotations: {
@@ -329,13 +329,15 @@ server.registerTool(
   {
     title: 'Convert Markdown Text to DOCX',
     description:
-      'Low-level text export tool. Convert Markdown text passed directly in the tool call into a formatted .docx file. Use this when you intentionally want text-based export and the markdown is not already stored in a local file.',
+      'Low-level text export tool. Convert Markdown text passed directly in the tool call into a formatted .docx file. If template is missing, first ask the user which template they want. If they do not answer or tell you to use the default, omit template and FormalDoc will auto-select one. Use this when you intentionally want text-based export and the markdown is not already stored in a local file.',
     inputSchema: {
       content: z.string().min(1).describe('Markdown content to convert into a Word document.'),
       template: z
         .string()
         .optional()
-        .describe('Optional template name such as cn-gov, cn-general, en-standard, or en-legal.'),
+        .describe(
+          'Optional template name such as cn-gov, cn-general, en-standard, or en-legal. Ask the user first when feasible; omit this field if they want the default.'
+        ),
       outputPath: z
         .string()
         .optional()
@@ -383,7 +385,7 @@ server.registerTool(
   {
     title: 'Convert Markdown File to DOCX',
     description:
-      'Low-level file export tool. Convert an existing local Markdown or text file into a formatted .docx file. Prefer this when the markdown already exists on disk and you want explicit file-based export.',
+      'Low-level file export tool. Convert an existing local Markdown or text file into a formatted .docx file. If template is missing, first ask the user which template they want. If they do not answer or tell you to use the default, omit template and FormalDoc will auto-select one. Prefer this when the markdown already exists on disk and you want explicit file-based export.',
     inputSchema: {
       inputPath: z
         .string()
@@ -392,7 +394,9 @@ server.registerTool(
       template: z
         .string()
         .optional()
-        .describe('Optional template name such as cn-gov, cn-general, en-standard, or en-legal.'),
+        .describe(
+          'Optional template name such as cn-gov, cn-general, en-standard, or en-legal. Ask the user first when feasible; omit this field if they want the default.'
+        ),
       outputPath: z
         .string()
         .optional()
