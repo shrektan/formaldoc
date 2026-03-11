@@ -23,6 +23,7 @@
     "thumbnails": "bun run cli/generate-thumbnails.ts",
     "mcp:build": "rm -rf mcp/dist && tsc -p mcp/tsconfig.json",
     "mcp": "npm run mcp:build && node mcp/dist/mcp/server.js",
+    "mcp:smoke": "npm run mcp:build && node scripts/smoke-mcp.mjs",
     "mcpb:prepare": "npm run mcp:build && node scripts/prepare-mcpb.mjs",
     "mcpb:validate": "npm run mcpb:prepare && mcpb validate .mcpb/bundle/manifest.json",
     "mcpb:pack": "npm run mcpb:prepare && mcpb pack .mcpb/bundle .mcpb/formaldoc.mcpb"
