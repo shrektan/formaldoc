@@ -31,6 +31,37 @@ const convertOutputSchema = {
   sourcePath: z.string().nullable(),
 };
 
+function describeTemplateChoice(templateId: string): string {
+  switch (templateId) {
+    case 'cn-gov':
+      return '适合正式公文、通知、请示、函件。推荐中文正式文件优先使用。';
+    case 'cn-general':
+      return '适合通用中文材料、方案、普通商务文档。';
+    case 'cn-academic':
+      return '适合学位论文、课程论文、研究型文稿。';
+    case 'cn-report':
+      return '适合工作汇报、分析报告、总结复盘。';
+    case 'en-standard':
+      return '适合通用英文文档。推荐英文默认优先使用。';
+    case 'en-business':
+      return '适合英文商务汇报、proposal、企业材料。';
+    case 'en-academic':
+      return '适合英文论文、APA 风格、双倍行距材料。';
+    case 'en-legal':
+      return '适合合同、条款、法律文书。';
+    default:
+      return 'FormalDoc export template.';
+  }
+}
+
+function formatTemplateTitle(item: ReturnType<typeof getAvailableTemplateSummaries>[number]): string {
+  const recommended =
+    item.id === 'cn-gov' || item.id === 'en-standard' ? ' (Recommended)' : '';
+  const displayName = item.category === 'chinese' ? item.name : item.nameEn;
+
+  return `${displayName}${recommended}`;
+}
+
 async function resolveTemplateSelection(template?: string): Promise<string | null> {
   if (template?.trim()) {
     return template.trim();
@@ -39,7 +70,8 @@ async function resolveTemplateSelection(template?: string): Promise<string | nul
   const templates = getAvailableTemplateSummaries();
   const result = await server.server.elicitInput({
     mode: 'form',
-    message: 'Choose a FormalDoc template before generating the DOCX file.',
+    message:
+      'Choose a FormalDoc template before generating the DOCX file. Pick the recommended option unless you need a specific format.',
     requestedSchema: {
       type: 'object',
       properties: {
@@ -49,8 +81,8 @@ async function resolveTemplateSelection(template?: string): Promise<string | nul
           description: 'Select the formatting template to use for DOCX export.',
           oneOf: templates.map((item) => ({
             const: item.id,
-            title: `${item.id} - ${item.name}`,
-            description: item.description || item.descriptionEn,
+            title: formatTemplateTitle(item),
+            description: `${describeTemplateChoice(item.id)} Internal ID: ${item.id}.`,
           })),
         },
       },
