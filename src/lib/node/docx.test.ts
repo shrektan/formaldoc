@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { existsSync } from 'node:fs';
 import { rm, unlink } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
@@ -53,7 +54,7 @@ describe('node docx helpers', () => {
     });
 
     createdPaths.add(result.outputPath);
-    expect(result.outputPath).toContain('formaldoc-exports');
+    expect(result.outputPath).toContain(join(homedir(), 'Documents', 'FormalDoc Exports'));
     expect(result.outputPath.endsWith('formal-result.docx')).toBe(true);
   });
 
