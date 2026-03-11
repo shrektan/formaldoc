@@ -8,25 +8,19 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && npm run mcp:build && vite build",
+    "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint src cli mcp",
-    "lint:fix": "eslint src cli mcp --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\" \"mcp/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\" \"mcp/**/*.ts\"",
+    "lint": "eslint src cli",
+    "lint:fix": "eslint src cli --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
     "check": "npm run format && npm run lint && npm run build && npm run test",
     "test": "bun test",
     "test:fast": "bun test src/",
     "test:watch": "bun test --watch",
     "cli": "bun run cli/index.ts",
     "cli:link": "bun link",
-    "thumbnails": "bun run cli/generate-thumbnails.ts",
-    "mcp:build": "rm -rf mcp/dist && tsc -p mcp/tsconfig.json",
-    "mcp": "npm run mcp:build && node mcp/dist/mcp/server.js",
-    "mcp:smoke": "npm run mcp:build && node scripts/smoke-mcp.mjs",
-    "mcpb:prepare": "npm run mcp:build && node scripts/prepare-mcpb.mjs",
-    "mcpb:validate": "npm run mcpb:prepare && mcpb validate .mcpb/bundle/manifest.json",
-    "mcpb:pack": "npm run mcpb:prepare && mcpb pack .mcpb/bundle .mcpb/formaldoc.mcpb"
+    "thumbnails": "bun run cli/generate-thumbnails.ts"
   },
   "repository": {
     "type": "git",
@@ -34,7 +28,6 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1",
     "@types/katex": "^0.16.7",
     "@types/node": "^22.19.15",
     "@types/turndown": "^5.0.6",
@@ -57,7 +50,6 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@anthropic-ai/mcpb": "^2.1.2",
     "@eslint/js": "^9.39.2",
     "@types/bun": "^1.3.5",
     "@types/file-saver": "^2.0.7",
