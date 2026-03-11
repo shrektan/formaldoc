@@ -132,8 +132,7 @@ server.registerTool(
             type: 'resource',
             resource: {
               uri: toFileUri(result.outputPath),
-              mimeType:
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
               blob: result.buffer.toString('base64'),
             },
           },
