@@ -22,7 +22,10 @@
     "cli:link": "bun link",
     "thumbnails": "bun run cli/generate-thumbnails.ts",
     "mcp:build": "rm -rf mcp/dist && tsc -p mcp/tsconfig.json",
-    "mcp": "npm run mcp:build && node mcp/dist/mcp/server.js"
+    "mcp": "npm run mcp:build && node mcp/dist/mcp/server.js",
+    "mcpb:prepare": "npm run mcp:build && node scripts/prepare-mcpb.mjs",
+    "mcpb:validate": "npm run mcpb:prepare && mcpb validate .mcpb/bundle/manifest.json",
+    "mcpb:pack": "npm run mcpb:prepare && mcpb pack .mcpb/bundle .mcpb/formaldoc.mcpb"
   },
   "repository": {
     "type": "git",

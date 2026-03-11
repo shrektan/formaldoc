@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { dirname, extname, resolve } from 'node:path';
 import { extractTitle, sanitizeFilename } from '../filename.js';
 import { generateDocxBuffer } from '../docx/generator.js';
@@ -108,8 +109,9 @@ function resolveOutputPath(
     };
   }
 
+  const configuredExportDirectory = process.env.FORMALDOC_EXPORT_DIR?.trim();
   const exportDirectory =
-    process.env.FORMALDOC_EXPORT_DIR ?? resolve(workingDirectory, 'formaldoc-exports');
+    configuredExportDirectory || resolve(homedir(), 'Documents', 'FormalDoc Exports');
   const { fileName, title } = resolveDefaultFileName(markdown, options.fileName);
 
   return {
