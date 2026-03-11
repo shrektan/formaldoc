@@ -6,6 +6,7 @@ import {
   convertMarkdownToDocxFile,
   ensureDocxExtension,
   getAvailableTemplateSummaries,
+  toFileUri,
 } from '../src/lib/node/docx.js';
 
 const SERVER_VERSION = '1.14.6';
@@ -66,29 +67,44 @@ server.registerTool(
   {
     title: 'Convert Markdown to DOCX',
     description:
-      'Convert Markdown content into a formatted .docx file using a FormalDoc template. If outputPath is omitted, the file is saved under formaldoc-exports in the server working directory.',
-    inputSchema: {
-      content: z.string().min(1).describe('Markdown content to convert into a Word document.'),
-      template: z
-        .string()
-        .optional()
-        .describe('Optional template name such as cn-gov, cn-general, en-standard, or en-legal.'),
-      outputPath: z
-        .string()
-        .optional()
-        .describe('Optional absolute or relative output path for the generated .docx file.'),
-      fileName: z
-        .string()
-        .optional()
-        .describe(
-          'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
-        ),
-    },
+      'Convert Markdown content or an existing Markdown file into a formatted .docx file using a FormalDoc template. The generated document is written locally and also returned as an embedded resource when the client supports it.',
+    inputSchema: z
+      .object({
+        content: z
+          .string()
+          .min(1)
+          .optional()
+          .describe('Markdown content to convert into a Word document.'),
+        inputPath: z
+          .string()
+          .optional()
+          .describe(
+            'Path to an existing Markdown or text file. Prefer this when the content already exists as a file to avoid sending large text through the chat.'
+          ),
+        template: z
+          .string()
+          .optional()
+          .describe('Optional template name such as cn-gov, cn-general, en-standard, or en-legal.'),
+        outputPath: z
+          .string()
+          .optional()
+          .describe('Optional absolute or relative output path for the generated .docx file.'),
+        fileName: z
+          .string()
+          .optional()
+          .describe(
+            'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
+          ),
+      })
+      .refine((value) => Boolean(value.content?.trim() || value.inputPath?.trim()), {
+        message: 'Provide either content or inputPath.',
+      }),
     outputSchema: {
       outputPath: z.string(),
       template: z.string(),
       fileSize: z.number(),
       title: z.string().nullable(),
+      sourcePath: z.string().nullable(),
     },
     annotations: {
       destructiveHint: true,
@@ -96,10 +112,11 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ content, template, outputPath, fileName }) => {
+  async ({ content, inputPath, template, outputPath, fileName }) => {
     try {
       const result = await convertMarkdownToDocxFile({
         markdown: content,
+        inputPath,
         templateName: template,
         outputPath: outputPath ? ensureDocxExtension(outputPath) : undefined,
         fileName,
@@ -111,12 +128,22 @@ server.registerTool(
             type: 'text',
             text: `Created DOCX at ${result.outputPath} using template ${result.templateName}.`,
           },
+          {
+            type: 'resource',
+            resource: {
+              uri: toFileUri(result.outputPath),
+              mimeType:
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              blob: result.buffer.toString('base64'),
+            },
+          },
         ],
         structuredContent: {
           outputPath: result.outputPath,
           template: result.templateName,
           fileSize: result.fileSize,
           title: result.title,
+          sourcePath: result.sourcePath,
         },
       };
     } catch (error) {

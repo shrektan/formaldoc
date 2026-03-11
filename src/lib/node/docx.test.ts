@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { existsSync } from 'node:fs';
-import { rm, unlink } from 'node:fs/promises';
+import { rm, unlink, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -8,6 +8,7 @@ import {
   convertMarkdownToDocxFile,
   getAvailableTemplateSummaries,
   resolveTemplateName,
+  toFileUri,
 } from './docx';
 
 const createdPaths = new Set<string>();
@@ -67,5 +68,27 @@ describe('node docx helpers', () => {
 
   it('should reject invalid template names', () => {
     expect(() => resolveTemplateName('unknown-template')).toThrow('Unknown template');
+  });
+
+  it('should convert markdown from an existing file path', async () => {
+    const inputPath = join(tmpdir(), 'formaldoc-source.md');
+    const outputPath = join(tmpdir(), 'formaldoc-source.docx');
+    createdPaths.add(inputPath);
+    createdPaths.add(outputPath);
+
+    await writeFile(inputPath, '# Existing File\n\nLoaded from disk.', 'utf-8');
+
+    const result = await convertMarkdownToDocxFile({
+      inputPath,
+      outputPath,
+    });
+
+    expect(result.sourcePath).toBe(inputPath);
+    expect(result.outputPath).toBe(outputPath);
+    expect(result.buffer.length).toBeGreaterThan(0);
+  });
+
+  it('should generate file URIs for embedded resources', () => {
+    expect(toFileUri('/tmp/example.docx')).toBe('file:///tmp/example.docx');
   });
 });

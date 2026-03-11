@@ -1,6 +1,7 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, extname, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { extractTitle, sanitizeFilename } from '../filename.js';
 import { generateDocxBuffer } from '../docx/generator.js';
 import {
@@ -15,7 +16,8 @@ import type { StyleSettings, TemplateName } from '../../types/styles.js';
 initDomPolyfill();
 
 export interface ConvertMarkdownToDocxOptions {
-  markdown: string;
+  markdown?: string;
+  inputPath?: string;
   templateName?: string;
   outputPath?: string;
   fileName?: string;
@@ -28,6 +30,8 @@ export interface ConvertMarkdownToDocxResult {
   templateName: TemplateName;
   title: string | null;
   fileSize: number;
+  buffer: Buffer;
+  sourcePath: string | null;
 }
 
 export interface TemplateSummary {
@@ -120,13 +124,40 @@ function resolveOutputPath(
   };
 }
 
+async function resolveMarkdownInput(
+  options: ConvertMarkdownToDocxOptions
+): Promise<{ markdown: string; sourcePath: string | null }> {
+  const workingDirectory = options.workingDirectory ?? process.cwd();
+
+  if (options.inputPath?.trim()) {
+    const sourcePath = resolve(workingDirectory, options.inputPath.trim());
+    const markdown = (await readFile(sourcePath, 'utf-8')).trim();
+
+    if (!markdown) {
+      throw new Error(`Input file is empty: ${sourcePath}`);
+    }
+
+    return {
+      markdown,
+      sourcePath,
+    };
+  }
+
+  const markdown = options.markdown?.trim();
+  if (!markdown) {
+    throw new Error('Markdown content or inputPath is required.');
+  }
+
+  return {
+    markdown,
+    sourcePath: null,
+  };
+}
+
 export async function convertMarkdownToDocxFile(
   options: ConvertMarkdownToDocxOptions
 ): Promise<ConvertMarkdownToDocxResult> {
-  const markdown = options.markdown.trim();
-  if (!markdown) {
-    throw new Error('Markdown content is required.');
-  }
+  const { markdown, sourcePath } = await resolveMarkdownInput(options);
 
   const templateName = resolveTemplateName(options.templateName);
   const template = getTemplate(templateName);
@@ -145,9 +176,15 @@ export async function convertMarkdownToDocxFile(
     templateName,
     title,
     fileSize: buffer.length,
+    buffer,
+    sourcePath,
   };
 }
 
 export function ensureDocxExtension(path: string): string {
   return extname(path).toLowerCase() === '.docx' ? path : `${path}.docx`;
+}
+
+export function toFileUri(path: string): string {
+  return pathToFileURL(path).toString();
 }
