@@ -31,6 +31,40 @@ const convertOutputSchema = {
   sourcePath: z.string().nullable(),
 };
 
+async function resolveTemplateSelection(template?: string): Promise<string | null> {
+  if (template?.trim()) {
+    return template.trim();
+  }
+
+  const templates = getAvailableTemplateSummaries();
+  const result = await server.server.elicitInput({
+    mode: 'form',
+    message: 'Choose a FormalDoc template before generating the DOCX file.',
+    requestedSchema: {
+      type: 'object',
+      properties: {
+        template: {
+          type: 'string',
+          title: 'Template',
+          description: 'Select the formatting template to use for DOCX export.',
+          oneOf: templates.map((item) => ({
+            const: item.id,
+            title: `${item.id} - ${item.name}`,
+            description: item.description || item.descriptionEn,
+          })),
+        },
+      },
+      required: ['template'],
+    },
+  });
+
+  if (result.action !== 'accept' || !result.content?.template) {
+    return null;
+  }
+
+  return String(result.content.template);
+}
+
 async function createDocxResult(params: {
   markdown?: string;
   inputPath?: string;
@@ -38,10 +72,23 @@ async function createDocxResult(params: {
   outputPath?: string;
   fileName?: string;
 }) {
+  const selectedTemplate = await resolveTemplateSelection(params.template);
+  if (!selectedTemplate) {
+    return {
+      isError: true,
+      content: [
+        {
+          type: 'text' as const,
+          text: 'DOCX generation cancelled because no template was selected.',
+        },
+      ],
+    };
+  }
+
   const result = await convertMarkdownToDocxFile({
     markdown: params.markdown,
     inputPath: params.inputPath,
-    templateName: params.template,
+    templateName: selectedTemplate,
     outputPath: params.outputPath ? ensureDocxExtension(params.outputPath) : undefined,
     fileName: params.fileName,
   });
