@@ -1,4 +1,4 @@
-import { IStylesOptions, LineRuleType, AlignmentType } from 'docx';
+import { LineRuleType, AlignmentType, type IStylesOptions } from 'docx';
 import type {
   StyleSettings,
   TextStyle,

@@ -1,7 +1,7 @@
 import {
   Paragraph,
   TextRun,
-  IRunOptions,
+  type IRunOptions,
   Table,
   TableRow,
   TableCell,

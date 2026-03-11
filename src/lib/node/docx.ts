@@ -34,6 +34,14 @@ export interface ConvertMarkdownToDocxResult {
   sourcePath: string | null;
 }
 
+export interface ConvertMarkdownToDocxBufferResult {
+  templateName: TemplateName;
+  title: string | null;
+  fileSize: number;
+  buffer: Buffer;
+  sourcePath: string | null;
+}
+
 export interface TemplateSummary {
   id: TemplateName;
   name: string;
@@ -154,30 +162,44 @@ async function resolveMarkdownInput(
   };
 }
 
-export async function convertMarkdownToDocxFile(
+export async function convertMarkdownToDocx(
   options: ConvertMarkdownToDocxOptions
-): Promise<ConvertMarkdownToDocxResult> {
+): Promise<ConvertMarkdownToDocxBufferResult> {
   const { markdown, sourcePath } = await resolveMarkdownInput(options);
 
   const templateName = resolveTemplateName(options.templateName);
   const template = getTemplate(templateName);
-  const { outputPath, title } = resolveOutputPath(markdown, options);
+  const { title } = resolveOutputPath(markdown, options);
   const styles = options.styleOverrides
     ? { ...template.styles, ...options.styleOverrides }
     : template.styles;
 
   const buffer = await generateDocxBuffer(markdown, styles, template.documentSettings);
 
-  await mkdir(dirname(outputPath), { recursive: true });
-  await writeFile(outputPath, buffer);
-
   return {
-    outputPath,
     templateName,
     title,
     fileSize: buffer.length,
     buffer,
     sourcePath,
+  };
+}
+
+export async function convertMarkdownToDocxFile(
+  options: ConvertMarkdownToDocxOptions
+): Promise<ConvertMarkdownToDocxResult> {
+  const conversion = await convertMarkdownToDocx(options);
+  const sourceMarkdown =
+    options.markdown?.trim() ??
+    (conversion.sourcePath ? await readFile(conversion.sourcePath, 'utf-8') : '');
+  const { outputPath } = resolveOutputPath(sourceMarkdown, options);
+
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, conversion.buffer);
+
+  return {
+    outputPath,
+    ...conversion,
   };
 }
 

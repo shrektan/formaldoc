@@ -1,14 +1,29 @@
 {
   "name": "formaldoc",
-  "private": true,
   "version": "1.14.6",
   "type": "module",
+  "files": [
+    "dist-package"
+  ],
+  "main": "./dist-package/src/node.js",
+  "types": "./dist-package/src/node.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist-package/src/node.d.ts",
+      "import": "./dist-package/src/node.js"
+    },
+    "./node": {
+      "types": "./dist-package/src/node.d.ts",
+      "import": "./dist-package/src/node.js"
+    }
+  },
   "bin": {
-    "formaldoc": "./cli/index.ts"
+    "formaldoc": "./dist-package/cli/index.js"
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run build:package && tsc -b && vite build",
+    "build:package": "tsc -p tsconfig.package.json",
     "preview": "vite preview",
     "lint": "eslint src cli",
     "lint:fix": "eslint src cli --fix",
@@ -27,6 +42,9 @@
     "url": "git+https://github.com/shrektan/formaldoc.git"
   },
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@types/katex": "^0.16.7",
     "@types/node": "^22.19.15",
