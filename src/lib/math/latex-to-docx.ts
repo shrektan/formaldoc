@@ -191,7 +191,10 @@ function parseOmmlChildren(element: Element): MathComponent[] {
     if (child.localName === 'nary') {
       const naryTail: Element[] = [];
       let tailIndex = index + 1;
-      while (tailIndex < elementChildren.length && !isNaryBoundaryElement(elementChildren[tailIndex])) {
+      while (
+        tailIndex < elementChildren.length &&
+        !isNaryBoundaryElement(elementChildren[tailIndex])
+      ) {
         naryTail.push(elementChildren[tailIndex]);
         tailIndex++;
       }
@@ -436,7 +439,8 @@ function parseMathNary(element: Element, trailingElements: Element[] = []): Math
   const result: MathComponent[] = [];
 
   // Get the operator character (∑, ∫, ∏, etc.)
-  const naryPr = getDirectChild(element, 'naryPr') || element.getElementsByTagNameNS('*', 'naryPr')[0];
+  const naryPr =
+    getDirectChild(element, 'naryPr') || element.getElementsByTagNameNS('*', 'naryPr')[0];
   const chr = naryPr
     ? getDirectChild(naryPr, 'chr') || naryPr.getElementsByTagNameNS('*', 'chr')[0]
     : undefined;

@@ -2,7 +2,12 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, extname, resolve } from 'node:path';
 import { extractTitle, sanitizeFilename } from '../filename';
 import { generateDocxBuffer } from '../docx/generator';
-import { DEFAULT_TEMPLATE, getTemplate, getTemplateNames, isValidTemplateName } from '../styles/templates';
+import {
+  DEFAULT_TEMPLATE,
+  getTemplate,
+  getTemplateNames,
+  isValidTemplateName,
+} from '../styles/templates';
 import { initDomPolyfill } from './dom-polyfill';
 import type { StyleSettings, TemplateName } from '../../types/styles';
 
@@ -61,7 +66,10 @@ export function getAvailableTemplateSummaries(): TemplateSummary[] {
   });
 }
 
-function resolveDefaultFileName(markdown: string, fileName?: string): { fileName: string; title: string | null } {
+function resolveDefaultFileName(
+  markdown: string,
+  fileName?: string
+): { fileName: string; title: string | null } {
   if (fileName && fileName.trim()) {
     const normalized = fileName.trim().endsWith('.docx')
       ? fileName.trim()
@@ -84,7 +92,10 @@ function resolveDefaultFileName(markdown: string, fileName?: string): { fileName
   };
 }
 
-function resolveOutputPath(markdown: string, options: ConvertMarkdownToDocxOptions): {
+function resolveOutputPath(
+  markdown: string,
+  options: ConvertMarkdownToDocxOptions
+): {
   outputPath: string;
   title: string | null;
 } {

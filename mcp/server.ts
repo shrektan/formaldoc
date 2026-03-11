@@ -2,17 +2,18 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import packageJson from '../package.json';
 import {
   convertMarkdownToDocxFile,
   ensureDocxExtension,
   getAvailableTemplateSummaries,
 } from '../src/lib/node/docx';
 
+const SERVER_VERSION = '1.14.6';
+
 const server = new McpServer(
   {
     name: 'formaldoc',
-    version: packageJson.version,
+    version: SERVER_VERSION,
   },
   {
     capabilities: {
@@ -67,10 +68,7 @@ server.registerTool(
     description:
       'Convert Markdown content into a formatted .docx file using a FormalDoc template. If outputPath is omitted, the file is saved under formaldoc-exports in the server working directory.',
     inputSchema: {
-      content: z
-        .string()
-        .min(1)
-        .describe('Markdown content to convert into a Word document.'),
+      content: z.string().min(1).describe('Markdown content to convert into a Word document.'),
       template: z
         .string()
         .optional()
@@ -82,7 +80,9 @@ server.registerTool(
       fileName: z
         .string()
         .optional()
-        .describe('Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'),
+        .describe(
+          'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
+        ),
     },
     outputSchema: {
       outputPath: z.string(),
