@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
@@ -62,6 +62,10 @@ const autoExportInputSchema = z
       .describe(
         'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
       ),
+    filename: z
+      .string()
+      .optional()
+      .describe('Alias for fileName. The .docx extension is added automatically.'),
   })
   .refine((value) => Boolean(value.content?.trim() || value.inputPath?.trim()), {
     message: 'Provide either content or inputPath.',
@@ -202,15 +206,17 @@ async function createDocxResult(params: {
   template?: string;
   outputPath?: string;
   fileName?: string;
+  filename?: string;
 }) {
   const templateSelection = await resolveTemplateSelection(params);
+  const requestedFileName = params.fileName ?? params.filename;
 
   const result = await convertMarkdownToDocxFile({
     markdown: params.markdown,
     inputPath: params.inputPath,
     templateName: templateSelection.template,
     outputPath: params.outputPath ? ensureDocxExtension(params.outputPath) : undefined,
-    fileName: params.fileName,
+    fileName: requestedFileName,
   });
 
   return {
@@ -228,12 +234,12 @@ async function createDocxResult(params: {
         text: `Created DOCX at ${result.outputPath} using template ${result.templateName}.`,
       },
       {
-        type: 'resource' as const,
-        resource: {
-          uri: toFileUri(result.outputPath),
-          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          blob: result.buffer.toString('base64'),
-        },
+        type: 'resource_link' as const,
+        name: basename(result.outputPath),
+        title: 'Generated DOCX file',
+        uri: toFileUri(result.outputPath),
+        description: 'Open or download the generated DOCX file from the local filesystem.',
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       },
     ],
     structuredContent: {
@@ -260,7 +266,7 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ content, inputPath, template, outputPath, fileName }) => {
+  async ({ content, inputPath, template, outputPath, fileName, filename }) => {
     try {
       return await createDocxResult({
         markdown: content,
@@ -268,6 +274,7 @@ server.registerTool(
         template,
         outputPath,
         fileName,
+        filename,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown conversion error.';
@@ -348,6 +355,10 @@ server.registerTool(
         .describe(
           'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
         ),
+      filename: z
+        .string()
+        .optional()
+        .describe('Alias for fileName. The .docx extension is added automatically.'),
     },
     outputSchema: convertOutputSchema,
     annotations: {
@@ -356,13 +367,14 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ content, template, outputPath, fileName }) => {
+  async ({ content, template, outputPath, fileName, filename }) => {
     try {
       return await createDocxResult({
         markdown: content,
         template,
         outputPath,
         fileName,
+        filename,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown conversion error.';
@@ -407,6 +419,10 @@ server.registerTool(
         .describe(
           'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
         ),
+      filename: z
+        .string()
+        .optional()
+        .describe('Alias for fileName. The .docx extension is added automatically.'),
     },
     outputSchema: convertOutputSchema,
     annotations: {
@@ -415,13 +431,14 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ inputPath, template, outputPath, fileName }) => {
+  async ({ inputPath, template, outputPath, fileName, filename }) => {
     try {
       return await createDocxResult({
         inputPath,
         template,
         outputPath,
         fileName,
+        filename,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown conversion error.';
