@@ -21,7 +21,7 @@
     "cli": "bun run cli/index.ts",
     "cli:link": "bun link",
     "thumbnails": "bun run cli/generate-thumbnails.ts",
-    "mcp:build": "tsc -p mcp/tsconfig.json",
+    "mcp:build": "rm -rf mcp/dist && tsc -p mcp/tsconfig.json",
     "mcp": "npm run mcp:build && node mcp/dist/mcp/server.js"
   },
   "repository": {
