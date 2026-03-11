@@ -8,19 +8,21 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && npm run mcp:build && vite build",
     "preview": "vite preview",
-    "lint": "eslint src cli",
-    "lint:fix": "eslint src cli --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\"",
+    "lint": "eslint src cli mcp",
+    "lint:fix": "eslint src cli mcp --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\" \"mcp/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"cli/**/*.ts\" \"mcp/**/*.ts\"",
     "check": "npm run format && npm run lint && npm run build && npm run test",
     "test": "bun test",
     "test:fast": "bun test src/",
     "test:watch": "bun test --watch",
     "cli": "bun run cli/index.ts",
     "cli:link": "bun link",
-    "thumbnails": "bun run cli/generate-thumbnails.ts"
+    "thumbnails": "bun run cli/generate-thumbnails.ts",
+    "mcp:build": "tsc -p mcp/tsconfig.json",
+    "mcp": "npm run mcp:build && node mcp/dist/mcp/server.js"
   },
   "repository": {
     "type": "git",
