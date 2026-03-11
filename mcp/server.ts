@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
@@ -97,39 +99,96 @@ function formatTemplateTitle(
   return `${displayName}${recommended}`;
 }
 
-async function resolveTemplateSelection(template?: string): Promise<string | null> {
-  if (template?.trim()) {
-    return template.trim();
+interface TemplateSelection {
+  template: string;
+  autoSelectedReason: string | null;
+}
+
+async function loadMarkdownSample(params: {
+  markdown?: string;
+  inputPath?: string;
+}): Promise<string | null> {
+  if (params.markdown?.trim()) {
+    return params.markdown.trim();
   }
 
-  const templates = getAvailableTemplateSummaries();
-  const result = await server.server.elicitInput({
-    mode: 'form',
-    message:
-      'Choose a FormalDoc template before generating the DOCX file. Pick the recommended option unless you need a specific format.',
-    requestedSchema: {
-      type: 'object',
-      properties: {
-        template: {
-          type: 'string',
-          title: 'Template',
-          description: 'Select the formatting template to use for DOCX export.',
-          oneOf: templates.map((item) => ({
-            const: item.id,
-            title: formatTemplateTitle(item),
-            description: `${describeTemplateChoice(item.id)} Internal ID: ${item.id}.`,
-          })),
-        },
-      },
-      required: ['template'],
-    },
-  });
-
-  if (result.action !== 'accept' || !result.content?.template) {
+  if (!params.inputPath?.trim()) {
     return null;
   }
 
-  return String(result.content.template);
+  try {
+    const sourcePath = resolve(process.cwd(), params.inputPath.trim());
+    return (await readFile(sourcePath, 'utf-8')).trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+function chooseFallbackTemplate(markdownSample: string | null): TemplateSelection {
+  if (markdownSample && /[\u3400-\u9fff]/.test(markdownSample)) {
+    return {
+      template: 'cn-gov',
+      autoSelectedReason:
+        'The client does not support template selection prompts, so FormalDoc auto-selected the recommended Chinese government template (cn-gov).',
+    };
+  }
+
+  return {
+    template: 'en-standard',
+    autoSelectedReason:
+      'The client does not support template selection prompts, so FormalDoc auto-selected the recommended English standard template (en-standard).',
+  };
+}
+
+async function resolveTemplateSelection(params: {
+  template?: string;
+  markdown?: string;
+  inputPath?: string;
+}): Promise<TemplateSelection> {
+  if (params.template?.trim()) {
+    return {
+      template: params.template.trim(),
+      autoSelectedReason: null,
+    };
+  }
+
+  const fallbackSelection = chooseFallbackTemplate(await loadMarkdownSample(params));
+  const templates = getAvailableTemplateSummaries();
+
+  try {
+    const result = await server.server.elicitInput({
+      mode: 'form',
+      message:
+        'Choose a FormalDoc template before generating the DOCX file. Pick the recommended option unless you need a specific format.',
+      requestedSchema: {
+        type: 'object',
+        properties: {
+          template: {
+            type: 'string',
+            title: 'Template',
+            description: 'Select the formatting template to use for DOCX export.',
+            oneOf: templates.map((item) => ({
+              const: item.id,
+              title: formatTemplateTitle(item),
+              description: `${describeTemplateChoice(item.id)} Internal ID: ${item.id}.`,
+            })),
+          },
+        },
+        required: ['template'],
+      },
+    });
+
+    if (result.action !== 'accept' || !result.content?.template) {
+      return fallbackSelection;
+    }
+
+    return {
+      template: String(result.content.template),
+      autoSelectedReason: null,
+    };
+  } catch {
+    return fallbackSelection;
+  }
 }
 
 async function createDocxResult(params: {
@@ -139,29 +198,26 @@ async function createDocxResult(params: {
   outputPath?: string;
   fileName?: string;
 }) {
-  const selectedTemplate = await resolveTemplateSelection(params.template);
-  if (!selectedTemplate) {
-    return {
-      isError: true,
-      content: [
-        {
-          type: 'text' as const,
-          text: 'DOCX generation cancelled because no template was selected.',
-        },
-      ],
-    };
-  }
+  const templateSelection = await resolveTemplateSelection(params);
 
   const result = await convertMarkdownToDocxFile({
     markdown: params.markdown,
     inputPath: params.inputPath,
-    templateName: selectedTemplate,
+    templateName: templateSelection.template,
     outputPath: params.outputPath ? ensureDocxExtension(params.outputPath) : undefined,
     fileName: params.fileName,
   });
 
   return {
     content: [
+      ...(templateSelection.autoSelectedReason
+        ? [
+            {
+              type: 'text' as const,
+              text: templateSelection.autoSelectedReason,
+            },
+          ]
+        : []),
       {
         type: 'text' as const,
         text: `Created DOCX at ${result.outputPath} using template ${result.templateName}.`,
