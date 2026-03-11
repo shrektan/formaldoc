@@ -117,10 +117,7 @@ server.registerTool(
     description:
       'Convert Markdown text passed directly in the tool call into a formatted .docx file. Use this only when the markdown is not already stored in a local file.',
     inputSchema: {
-      content: z
-        .string()
-        .min(1)
-        .describe('Markdown content to convert into a Word document.'),
+      content: z.string().min(1).describe('Markdown content to convert into a Word document.'),
       template: z
         .string()
         .optional()
