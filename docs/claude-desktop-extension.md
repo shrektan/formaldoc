@@ -23,8 +23,11 @@ This creates:
 
 ## What the extension provides
 
+- `export_reply_to_docx`
 - `list_docx_templates`
 - `convert_markdown_text_to_docx`
 - `convert_markdown_file_to_docx`
 
 If `outputPath` is omitted, FormalDoc saves files to `~/Documents/FormalDoc Exports` by default.
+
+`export_reply_to_docx` is the preferred high-level tool. Claude can use it when the user says things like "turn this reply into a docx" or "export this markdown artifact to Word" without the user naming a specific tool.

@@ -86,6 +86,11 @@ async function writeManifest(rootPackageJson) {
     },
     tools: [
       {
+        name: 'export_reply_to_docx',
+        description:
+          'Automatically export the current reply, markdown draft, or local markdown artifact to DOCX.',
+      },
+      {
         name: 'list_docx_templates',
         description: 'List the available FormalDoc export templates.',
       },

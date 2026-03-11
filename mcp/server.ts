@@ -31,6 +31,40 @@ const convertOutputSchema = {
   sourcePath: z.string().nullable(),
 };
 
+const autoExportInputSchema = z
+  .object({
+    content: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        'Markdown content for the current reply or artifact. Use this when the content exists only in the conversation.'
+      ),
+    inputPath: z
+      .string()
+      .optional()
+      .describe(
+        'Path to an existing local Markdown or text file. Prefer this over content when a file already exists to avoid sending large text through the chat.'
+      ),
+    template: z
+      .string()
+      .optional()
+      .describe('Optional template name such as cn-gov, cn-general, en-standard, or en-legal.'),
+    outputPath: z
+      .string()
+      .optional()
+      .describe('Optional absolute or relative output path for the generated .docx file.'),
+    fileName: z
+      .string()
+      .optional()
+      .describe(
+        'Optional file name to use when outputPath is omitted. The .docx extension is added automatically.'
+      ),
+  })
+  .refine((value) => Boolean(value.content?.trim() || value.inputPath?.trim()), {
+    message: 'Provide either content or inputPath.',
+  });
+
 function describeTemplateChoice(templateId: string): string {
   switch (templateId) {
     case 'cn-gov':
@@ -152,6 +186,45 @@ async function createDocxResult(params: {
 }
 
 server.registerTool(
+  'export_reply_to_docx',
+  {
+    title: 'Export Reply to DOCX',
+    description:
+      'Use this automatically when the user wants to turn the current reply, current markdown draft, or an existing markdown artifact into a .docx file. Prefer inputPath when a local markdown file already exists; otherwise pass the markdown reply as content.',
+    inputSchema: autoExportInputSchema,
+    outputSchema: convertOutputSchema,
+    annotations: {
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
+  },
+  async ({ content, inputPath, template, outputPath, fileName }) => {
+    try {
+      return await createDocxResult({
+        markdown: content,
+        inputPath,
+        template,
+        outputPath,
+        fileName,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown conversion error.';
+
+      return {
+        isError: true,
+        content: [
+          {
+            type: 'text',
+            text: `Failed to create DOCX: ${message}`,
+          },
+        ],
+      };
+    }
+  }
+);
+
+server.registerTool(
   'list_docx_templates',
   {
     title: 'List FormalDoc Templates',
@@ -195,7 +268,7 @@ server.registerTool(
   {
     title: 'Convert Markdown Text to DOCX',
     description:
-      'Convert Markdown text passed directly in the tool call into a formatted .docx file. Use this only when the markdown is not already stored in a local file.',
+      'Low-level text export tool. Convert Markdown text passed directly in the tool call into a formatted .docx file. Use this when you intentionally want text-based export and the markdown is not already stored in a local file.',
     inputSchema: {
       content: z.string().min(1).describe('Markdown content to convert into a Word document.'),
       template: z
@@ -249,7 +322,7 @@ server.registerTool(
   {
     title: 'Convert Markdown File to DOCX',
     description:
-      'Convert an existing local Markdown or text file into a formatted .docx file. Prefer this tool when the markdown already exists on disk to avoid sending large text through the chat.',
+      'Low-level file export tool. Convert an existing local Markdown or text file into a formatted .docx file. Prefer this when the markdown already exists on disk and you want explicit file-based export.',
     inputSchema: {
       inputPath: z
         .string()
