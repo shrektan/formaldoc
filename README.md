@@ -9,6 +9,8 @@
 
 Paste content from AI tools (豆包, 千问, DeepSeek, Kimi, ChatGPT, Claude, etc.) and generate a formal Word document in one click.
 
+FormalDoc now also exposes a Node-friendly package surface so AI coding environments such as Claude code execution can generate `.docx` files directly.
+
 ## Demo
 
 Try it now: [formaldoc.app](https://formaldoc.app)
@@ -39,6 +41,18 @@ Choose from **8 professional templates**—4 Chinese formats (government, academ
 3. Select your preferred template
 4. Click "Download Word Document"
 5. Open in Word and edit as needed
+
+## Claude Code Execution Workflow
+
+FormalDoc is being prepared for a Claude-friendly flow where Claude can:
+
+1. Ask which template to use
+2. Default to `cn-gov` for Chinese content or `en-standard` for English content if the user does not specify
+3. Use code execution to install the package
+4. Generate `output.docx`
+5. Return the generated `.docx` file directly in the conversation
+
+The implementation notes for this workflow are in [docs/claude-file-creation.md](./docs/claude-file-creation.md).
 
 ## Features
 
@@ -144,15 +158,11 @@ FormalDoc includes a CLI for batch processing and automation.
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/shrektan/formaldoc.git
-cd formaldoc
+# Run without installing globally
+npx formaldoc input.md -o output.docx
 
-# Install dependencies
-npm install
-
-# Link CLI globally
-npm run cli:link
+# Or install globally after the package is published
+npm install -g formaldoc
 ```
 
 ### Usage
@@ -178,6 +188,20 @@ formaldoc --help
 
 # Show version
 formaldoc --version
+```
+
+### Node API
+
+```ts
+import { convertMarkdownToDocx } from 'formaldoc';
+import { writeFile } from 'node:fs/promises';
+
+const result = await convertMarkdownToDocx({
+  markdown: '# Hello\n\nFormalDoc from Claude.',
+  templateName: 'en-standard',
+});
+
+await writeFile('output.docx', result.buffer);
 ```
 
 ### Custom Styles JSON

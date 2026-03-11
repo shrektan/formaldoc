@@ -1,5 +1,6 @@
 {
   "name": "formaldoc",
+  "description": "Convert Markdown into professionally formatted DOCX files for Chinese and English documents.",
   "version": "1.14.6",
   "type": "module",
   "files": [
@@ -23,7 +24,9 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run build:package && tsc -b && vite build",
-    "build:package": "tsc -p tsconfig.package.json",
+    "build:package": "rm -rf dist-package && tsc -p tsconfig.package.json",
+    "prepack": "npm run build:package",
+    "package:check": "npm run build:package && npm pack --dry-run",
     "preview": "vite preview",
     "lint": "eslint src cli",
     "lint:fix": "eslint src cli --fix",
@@ -34,17 +37,32 @@
     "test:fast": "bun test src/",
     "test:watch": "bun test --watch",
     "cli": "bun run cli/index.ts",
-    "cli:link": "bun link",
+    "cli:link": "npm run build:package && npm link",
     "thumbnails": "bun run cli/generate-thumbnails.ts"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shrektan/formaldoc.git"
   },
+  "homepage": "https://github.com/shrektan/formaldoc#readme",
+  "bugs": {
+    "url": "https://github.com/shrektan/formaldoc/issues"
+  },
   "license": "Apache-2.0",
   "engines": {
     "node": ">=20.0.0"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "markdown",
+    "docx",
+    "word",
+    "claude",
+    "formal-documents",
+    "gbt-9704"
+  ],
   "dependencies": {
     "@types/katex": "^0.16.7",
     "@types/node": "^22.19.15",
