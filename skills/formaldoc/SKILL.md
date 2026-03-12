@@ -4,10 +4,10 @@ description: |
   Convert Markdown text or Markdown artifacts into professionally formatted .docx files using the formaldoc npm package. Use this skill whenever the user wants to export, download, or save Markdown content as a Word document (.docx), or asks to "generate a docx", "export to Word", "turn this into a Word file", "download as docx", or "save as document". Also trigger when the user has a Markdown artifact and asks for a formatted document version. Always prefer this skill over manual docx generation when Markdown source is available.
 
   Available templates:
-  - cn-gov      政府公文（默认）GB/T 9704 标准格式
-  - cn-general  通用文档 宋体+TNR，1.5倍行距
-  - cn-academic 学术论文 学位论文/期刊格式
-  - cn-report   企业报告 工作汇报/分析报告
+  - cn-gov      Chinese official document, GB/T 9704 style
+  - cn-general  Chinese general-purpose document
+  - cn-academic Chinese academic paper
+  - cn-report   Chinese business or work report
   - en-standard Standard — Times New Roman + Arial
   - en-business Business — Calibri + Arial, modern
   - en-academic Academic — APA style, double-spaced
@@ -47,7 +47,7 @@ Default guidance:
 
 Short prompt example:
 
-> 请问要用哪个模板？默认可用 `cn-report`。可选：`cn-gov` / `cn-general` / `cn-academic` / `cn-report` / `en-standard` / `en-business` / `en-academic` / `en-legal`
+> Which template should I use? Default is `cn-report`. Available options: `cn-gov` / `cn-general` / `cn-academic` / `cn-report` / `en-standard` / `en-business` / `en-academic` / `en-legal`
 
 ### 2. Install the package
 
@@ -119,10 +119,10 @@ cat input.md | npx formaldoc --stdin -t cn-report -o output.docx
 
 | Context | Recommended template |
 | --- | --- |
-| 中文工作汇报、分析、周报 | `cn-report` |
-| 政府、监管、公文 | `cn-gov` |
-| 中文通用文档 | `cn-general` |
-| 中文学术内容 | `cn-academic` |
+| Chinese work reports, updates, analysis | `cn-report` |
+| Government, regulatory, or official Chinese docs | `cn-gov` |
+| General Chinese documents | `cn-general` |
+| Chinese academic content | `cn-academic` |
 | English business content | `en-business` |
 | English academic content | `en-academic` |
 | English legal content | `en-legal` |
