@@ -1,440 +1,336 @@
 # FormalDoc
 
-[![Version](https://img.shields.io/badge/version-1.10.3-blue.svg)](https://github.com/shrektan/formaldoc/releases)
+[![npm version](https://img.shields.io/npm/v/formaldoc.svg)](https://www.npmjs.com/package/formaldoc)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 
 [中文文档](./README_zh.md)
 
-**FormalDoc** is a browser-based Markdown to Word converter that generates professionally formatted .docx files. Originally designed for Chinese government documents (公文) following GB/T 9704-2012 standards, it now supports multiple document formats for both Chinese and English.
+FormalDoc converts Markdown into professionally formatted `.docx` files.
 
-Paste content from AI tools (豆包, 千问, DeepSeek, Kimi, ChatGPT, Claude, etc.) and generate a formal Word document in one click.
+It started as a browser-based generator for Chinese official documents that follow GB/T 9704-2012, and now also ships as a published npm package that can be used in:
 
-## Demo
+- the web app
+- Node.js scripts
+- the CLI
+- Claude, Codex, and other AI tools that can run code or load a skill
 
-Try it now: [formaldoc.app](https://formaldoc.app)
+If you already have Markdown from ChatGPT, Claude, DeepSeek, Kimi, Qwen, Doubao, or any other AI tool, FormalDoc can turn it into a Word document with the right styles, headings, spacing, tables, and formulas.
+
+## Try It
+
+- Web app: [formaldoc.app](https://formaldoc.app)
+- npm package: [`formaldoc` on npm](https://www.npmjs.com/package/formaldoc)
+- Included AI skill: [`skills/formaldoc/SKILL.md`](./skills/formaldoc/SKILL.md)
 
 ![Screenshot](docs/screenshot.png)
 
-## Why FormalDoc?
+## Why This Exists
 
-### Smart Paste
-Rich text from AI chatbots is **automatically converted to Markdown**. Headings, lists, tables, code blocks, and formatting are preserved—no manual conversion needed.
+Most AI tools are good at generating content, but weak at delivering polished `.docx` output. Users usually end up:
 
-### Native Word Equations
-LaTeX formulas are converted to **native, editable Word equations** (OMML format). Edit them directly in Microsoft Word's equation editor.
+- copying rich text into Word and fixing formatting by hand
+- losing structure when converting from HTML or chat output
+- rebuilding headings, tables, and equations manually
+- struggling to match Chinese government, report, academic, or English business formats
 
-### Proper Word Styles
-Generated DOCX files use **proper Word styles (样式)**, not hard-coded formatting. Change a style in Word and all matching content updates automatically.
+FormalDoc closes that gap. It lets humans and AI generate content in Markdown first, then export a document that is much closer to a final deliverable.
 
-### Instant & Offline
-Generate Word documents **instantly in your browser**. No server processing, no uploads. Works offline after first load. Your documents never leave your device.
+## What You Can Use
 
-### Multiple Templates
-Choose from **8 professional templates**—4 Chinese formats (government, academic, business) and 4 English formats (standard, business, academic, legal).
+FormalDoc is not just a demo site. It is a real package and workflow surface.
 
-## How It Works
+### 1. Web app
 
-1. Copy text from AI (豆包, 千问, DeepSeek, Kimi, ChatGPT, Claude, etc.)
-2. Paste into FormalDoc (rich text auto-converts to Markdown)
-3. Select your preferred template
-4. Click "Download Word Document"
-5. Open in Word and edit as needed
+Paste content into the browser and download a `.docx` file locally.
 
-## Features
+- Rich text pasted from AI chat apps is converted to Markdown automatically
+- No server-side document generation
+- Works well for one-off exports and manual editing
 
-| Feature | Description |
-|---------|-------------|
-| **Smart Paste** | Auto-converts HTML to Markdown when pasting from AI chatbots |
-| **LaTeX Formulas** | Converts `$...$` and `$$...$$` to native Word equations |
-| **Quote Conversion** | One-click convert English quotes to Chinese quotes ("..." → "...") |
-| **8 Templates** | Chinese government, academic, business + English standard, business, academic, legal |
-| **Customizable Styles** | Adjust fonts, sizes, bold/italic for each element |
-| **Auto Filename** | Intelligently extracts document title for the filename |
-| **Multi-language UI** | Chinese and English interface |
-| **Mobile Friendly** | Responsive design works on phones and tablets |
-| **CLI Support** | Command-line tool for batch processing |
+### 2. npm package
 
-## Templates
+FormalDoc is published to npm as [`formaldoc`](https://www.npmjs.com/package/formaldoc).
 
-FormalDoc provides 8 professional document templates:
+Use it when you want:
 
-### Chinese Templates
+- programmatic `.docx` generation in Node.js
+- batch export from Markdown files
+- CI or local automation
+- AI agent workflows that can run `npm install formaldoc`
 
-| Template | Description | Body Font | Line Spacing |
-|----------|-------------|-----------|--------------|
-| **cn-gov** | Government format (GB/T 9704-2012) | 仿宋 16pt | Fixed 28pt |
-| **cn-general** | General business documents | 宋体 12pt | 1.5× |
-| **cn-academic** | Thesis/journal format | 宋体 12pt | 1.5× |
-| **cn-report** | Business/work reports | 宋体 12pt | 1.5× |
+### 3. CLI
 
-### English Templates
+Use the CLI when you already have Markdown files on disk and want direct file-to-file conversion.
 
-| Template | Description | Body Font | Line Spacing |
-|----------|-------------|-----------|--------------|
-| **en-standard** | Standard format | Times New Roman 12pt | 1.5× |
-| **en-business** | Modern corporate style | Calibri 11pt | 1.15× |
-| **en-academic** | APA-inspired format | Times New Roman 12pt | 2.0× (double) |
-| **en-legal** | Contracts/legal documents | Times New Roman 12pt | 1.5× |
+### 4. AI skill
 
-### Switching Templates
+This repo includes a reusable skill at [`skills/formaldoc/SKILL.md`](./skills/formaldoc/SKILL.md).
 
-**Web UI**: Click the template strip at the top or the settings gear icon to select a template.
+That skill is designed for Claude-style agent workflows and can also be adapted for other AI tools that support:
 
-**CLI**: Use the `-t` or `--template` flag:
+- reusable prompt/skill files
+- code execution
+- npm package installation
+- file outputs
+
+With the skill, an AI tool can take Markdown content and generate a `.docx` directly instead of only returning Markdown or plain text.
+
+## Core Capabilities
+
+### Smart paste from AI tools
+
+Rich HTML copied from chat products is normalized into Markdown while preserving structure such as:
+
+- headings
+- lists
+- tables
+- code blocks
+- inline emphasis
+
+### Native Word equations
+
+LaTeX formulas are converted into editable Word equations instead of screenshots or plain text math.
+
+### Proper Word styles
+
+Generated documents use Word styles rather than only hard-coded formatting, so the result is easier to edit in Microsoft Word.
+
+### Chinese and English templates
+
+FormalDoc ships with 8 built-in templates:
+
+| Template | Use case |
+| --- | --- |
+| `cn-gov` | Chinese government / official documents |
+| `cn-general` | Chinese general-purpose documents |
+| `cn-academic` | Chinese academic writing |
+| `cn-report` | Chinese reports / work summaries |
+| `en-standard` | Standard English documents |
+| `en-business` | Modern English business documents |
+| `en-academic` | English academic papers |
+| `en-legal` | English legal / contract-style docs |
+
+### Local-first browser generation
+
+The web app generates documents in the browser, which is useful when users want privacy and zero-upload workflows.
+
+## Quick Start
+
+### Use the web app
+
+1. Open [formaldoc.app](https://formaldoc.app)
+2. Paste Markdown or rich text from an AI tool
+3. Choose a template
+4. Download the generated `.docx`
+
+### Install from npm
+
 ```bash
-formaldoc input.md -o output.docx -t en-standard
+npm install formaldoc
 ```
 
-## Markdown Support
-
-FormalDoc supports GitHub Flavored Markdown (GFM) with LaTeX math extensions:
-
-| Markdown | Description | Word Style |
-|----------|-------------|------------|
-| `# Title` | Document title | Title (centered) |
-| `## Heading` | Level 1 heading | Heading 1 |
-| `### Heading` | Level 2 heading | Heading 2 |
-| `#### Heading` | Level 3 heading | Heading 3 |
-| `##### Heading` | Level 4 heading | Heading 4 |
-| Paragraphs | Body text | Body Text |
-| `**bold**` | Bold text | Bold |
-| `*italic*` | Italic text | Italic |
-| `~~strikethrough~~` | Strikethrough | Strikethrough |
-| `[text](url)` | Hyperlinks | External Link |
-| `- item` / `1. item` | Lists (nested supported) | List Paragraph |
-| `> quote` | Blockquotes | Blockquote (gray background) |
-| `` `code` `` | Inline code | Monospace |
-| ` ``` ` | Code blocks | Code block |
-| `\| table \|` | GFM tables | Table styles |
-| `$...$` | Inline math | Inline equation |
-| `$$...$$` | Block math | Centered equation |
-
-### Style Mapping (cn-gov template)
-
-| Markdown | Word Style | Font |
-|----------|------------|------|
-| `# Title` | 公文标题 | 宋体 22pt bold, centered |
-| `## Heading` | 一级标题 | 黑体 16pt |
-| `### Heading` | 二级标题 | 楷体 16pt |
-| `#### Heading` | 三级标题 | 仿宋 16pt bold |
-| `##### Heading` | 四级标题 | 仿宋 16pt bold |
-| Paragraph | 正文 | 仿宋 16pt, 2-char indent |
-| List | 列表项 | 仿宋 16pt |
-| Table | 表格 | 仿宋 16pt, centered |
-| Page Footer | - | 仿宋 14pt, "- 1 -" format |
-
-### Style Mapping (en-standard template)
-
-| Markdown | Word Style | Font |
-|----------|------------|------|
-| `# Title` | Title | Arial 20pt bold, centered |
-| `## Heading` | Heading 1 | Arial 16pt bold |
-| `### Heading` | Heading 2 | Arial 14pt bold |
-| `#### Heading` | Heading 3 | Arial 12pt bold |
-| `##### Heading` | Heading 4 | Arial 12pt bold italic |
-| Paragraph | Body Text | Times New Roman 12pt |
-| List | List Paragraph | Times New Roman 12pt |
-| Table Header | Table Header | Arial 11pt bold |
-| Table Cell | Table Text | Times New Roman 11pt |
-
-## Command-Line Interface (CLI)
-
-FormalDoc includes a CLI for batch processing and automation.
-
-### Installation
+### Run with `npx`
 
 ```bash
-# Clone the repository
-git clone https://github.com/shrektan/formaldoc.git
-cd formaldoc
-
-# Install dependencies
-npm install
-
-# Link CLI globally
-npm run cli:link
+npx formaldoc input.md -o output.docx
 ```
 
-### Usage
+### Install globally
 
 ```bash
-# Basic usage (uses cn-gov template by default)
+npm install -g formaldoc
+formaldoc input.md -o output.docx
+```
+
+## Node.js API
+
+FormalDoc is ESM-first.
+
+### Convert Markdown in memory
+
+```ts
+import { writeFile } from 'node:fs/promises';
+import { convertMarkdownToDocx } from 'formaldoc';
+
+const result = await convertMarkdownToDocx({
+  markdown: '# Hello\n\nGenerated by FormalDoc.',
+  templateName: 'en-business',
+});
+
+await writeFile('output.docx', result.buffer);
+console.log(result.outputPath ?? 'output.docx');
+```
+
+### Convert from a Markdown file
+
+When you already have a `.md` file, prefer the file-based API:
+
+```ts
+import { convertMarkdownToDocxFile } from 'formaldoc';
+
+const result = await convertMarkdownToDocxFile({
+  inputPath: './input.md',
+  outputPath: './output.docx',
+  templateName: 'cn-report',
+});
+
+console.log(result.outputPath);
+```
+
+## CLI Usage
+
+```bash
+# Default template: cn-gov
 formaldoc document.md
 
-# Specify output file
+# Write to a specific file
 formaldoc document.md -o output.docx
 
-# Use a different template
+# Pick a template
 formaldoc document.md -t en-standard
-
-# Apply custom styles from JSON file
-formaldoc document.md -t cn-gov -s custom-styles.json
 
 # Read from stdin
 cat document.md | formaldoc --stdin -o output.docx
 
-# Show help
+# Help
 formaldoc --help
-
-# Show version
-formaldoc --version
 ```
 
-### Custom Styles JSON
+## Use With Claude Or Other AI Tools
 
-Create a JSON file to override default template styles:
+FormalDoc is especially useful in AI-assisted document workflows.
 
-```json
-{
-  "title": {
-    "font": "Arial",
-    "size": 24,
-    "bold": true,
-    "center": true
-  },
-  "bodyText": {
-    "font": "Times New Roman",
-    "size": 12,
-    "indent": false
-  },
-  "heading1": {
-    "font": "Arial",
-    "size": 18,
-    "bold": true
-  }
-}
+Typical flow:
+
+1. The AI writes or receives Markdown content
+2. The AI selects a template
+3. The AI installs `formaldoc` from npm
+4. The AI runs the Node API or CLI
+5. The AI returns the generated `.docx`
+
+This means the AI can produce a real Word document, not just draft text.
+
+### Why the skill matters
+
+The included skill gives an AI tool enough instruction to:
+
+- choose an appropriate template
+- prefer file-based conversion when a Markdown file already exists
+- fall back to inline conversion when needed
+- save the generated `.docx` as a real output artifact
+
+If you use Claude Projects, Claude Code style environments, or other agent systems with reusable instructions, start from:
+
+- [`skills/formaldoc/SKILL.md`](./skills/formaldoc/SKILL.md)
+- [`docs/claude-file-creation.md`](./docs/claude-file-creation.md)
+- [`docs/claude-project-instructions.md`](./docs/claude-project-instructions.md)
+
+## Included Skill
+
+This repository now includes the FormalDoc skill directly so users and AI agents can discover it from the repo itself instead of relying on an external snippet.
+
+Path:
+
+```text
+skills/formaldoc/SKILL.md
 ```
 
-**Available style keys**: `title`, `heading1`, `heading2`, `heading3`, `heading4`, `bodyText`, `listItem`, `blockquote`, `tableHeader`, `tableCell`, `pageFooter`
+You can copy that file into your own skill system, Claude Project instructions, agent prompt library, or other AI automation environment.
 
-**Style properties**: `font`, `size`, `bold`, `italic`, `center`, `indent`
+### Install the skill with `npx`
 
-## LaTeX Formula Support
+If you use the `skills` installer ecosystem, you can install the skill directly from this GitHub repository:
 
-FormalDoc converts LaTeX math to native Word equations that you can edit in Microsoft Word.
-
-### Syntax
-
-- **Inline formulas**: `$E = mc^2$` renders within text
-- **Block formulas**: `$$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$` renders centered on its own line
-
-### Supported Features
-
-- Fractions: `\frac{a}{b}`
-- Superscripts/subscripts: `x^2`, `x_i`
-- Greek letters: `\alpha`, `\beta`, `\gamma`
-- Roots: `\sqrt{x}`, `\sqrt[3]{x}`
-- Sums/integrals: `\sum_{i=1}^n`, `\int_a^b`
-- Matrices: `\begin{pmatrix}...\end{pmatrix}`
-- And more (powered by KaTeX)
-
-### Conversion Pipeline
-
-```
-LaTeX → KaTeX (MathML) → mathml2omml (OMML) → Word Equation
+```bash
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc
 ```
 
-If conversion fails, the formula is preserved as plain text.
+Examples:
 
-## Tech Stack
+```bash
+# Install globally for Claude Code
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc -g -a claude-code -y
 
-| Library | Purpose |
-|---------|---------|
-| [React 19](https://react.dev/) | UI framework |
-| [TypeScript](https://www.typescriptlang.org/) | Type safety |
-| [Vite](https://vite.dev/) | Build tool |
-| [docx](https://docx.js.org/) | Word document generation |
-| [unified](https://unifiedjs.com/) + [remark](https://github.com/remarkjs/remark) | Markdown parsing |
-| [remark-gfm](https://github.com/remarkjs/remark-gfm) | GitHub Flavored Markdown |
-| [remark-math](https://github.com/remarkjs/remark-math) | LaTeX math parsing |
-| [Turndown](https://github.com/mixmark-io/turndown) | HTML to Markdown conversion |
-| [KaTeX](https://katex.org/) | LaTeX rendering |
-| [mathml2omml](https://www.npmjs.com/package/mathml2omml) | MathML to Word equations |
-| [jsdom](https://github.com/jsdom/jsdom) | DOM polyfill for CLI |
+# Install globally for Codex
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc -g -a codex -y
+```
+
+Important:
+
+- this flow installs the skill from GitHub, not from the npm tarball
+- the repository must be pushed to GitHub before others can install the latest skill version
+- the skill name is `formaldoc`, which matches the included frontmatter
+
+## Markdown Support
+
+FormalDoc supports GitHub Flavored Markdown plus LaTeX math.
+
+| Markdown | Output |
+| --- | --- |
+| `# Title` | Document title |
+| `## Heading` | Heading 1 |
+| `### Heading` | Heading 2 |
+| `#### Heading` | Heading 3 |
+| `##### Heading` | Heading 4 |
+| Paragraphs | Body text |
+| `**bold**` | Bold text |
+| `*italic*` | Italic text |
+| `~~strike~~` | Strikethrough |
+| `[text](url)` | Hyperlinks |
+| `- item` / `1. item` | Lists |
+| `> quote` | Blockquotes |
+| `` `code` `` | Inline code |
+| Code fences | Code blocks |
+| GFM tables | Word tables |
+| `$...$` | Inline equations |
+| `$$...$$` | Block equations |
+
+## Template Notes
+
+### Chinese templates
+
+| Template | Description | Typical font |
+| --- | --- | --- |
+| `cn-gov` | GB/T 9704-style official document | 仿宋 / 宋体 / 黑体 mix |
+| `cn-general` | General Chinese document | 宋体 |
+| `cn-academic` | Chinese academic format | 宋体 |
+| `cn-report` | Chinese report / business summary | 宋体 |
+
+### English templates
+
+| Template | Description | Typical font |
+| --- | --- | --- |
+| `en-standard` | Standard English format | Times New Roman + Arial |
+| `en-business` | Business format | Calibri + Arial |
+| `en-academic` | Academic format | Times New Roman |
+| `en-legal` | Legal format | Times New Roman |
 
 ## Development
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) 18+ or [Bun](https://bun.sh/) 1.0+
-- npm or bun package manager
-
-### Setup
-
 ```bash
-# Clone the repository
-git clone https://github.com/shrektan/formaldoc.git
-cd formaldoc
-
-# Install dependencies
-npm install
-
-# Start development server
 npm run dev
-
-# Open http://localhost:5173 in your browser
-```
-
-### Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with HMR |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run format` | Format code with Prettier |
-| `npm run lint` | Check for linting errors |
-| `npm run lint:fix` | Auto-fix linting errors |
-| `npm run test` | Run all tests (~20s) |
-| `npm run test:fast` | Run unit tests only (~1.5s) |
-| `npm run test:watch` | Run tests in watch mode |
-
-### Testing
-
-```bash
-# Run all tests (includes CLI integration tests)
-npm run test
-
-# Run fast unit tests only (recommended during development)
-npm run test:fast
-
-# Run tests in watch mode
-npm run test:watch
-```
-
-**Note**: CLI tests (`cli/cli.test.ts`) are slower (~19s) because they spawn subprocesses. Use `test:fast` for quick feedback during development.
-
-### Code Quality
-
-Before committing, ensure your code passes all checks:
-
-```bash
-npm run format      # Format with Prettier
-npm run lint:fix    # Fix linting errors
-npm run build       # Verify build passes
-```
-
-## Project Structure
-
-```
-formaldoc/
-├── src/
-│   ├── App.tsx                 # Main application component
-│   ├── main.tsx                # React entry point
-│   ├── components/             # React components
-│   │   ├── Editor/             # Markdown editor with paste handling
-│   │   ├── TemplateStrip/      # Template selection strip
-│   │   ├── TemplateGallery/    # Template gallery modal
-│   │   ├── StyleSettings/      # Style customization drawer
-│   │   ├── Toolbar/            # Action buttons
-│   │   └── LoadingOverlay/     # Loading spinner
-│   ├── hooks/                  # Custom React hooks
-│   │   ├── useDocxGenerator.ts # Document generation hook
-│   │   └── useTranslation.ts   # i18n hook
-│   ├── contexts/               # React contexts
-│   │   ├── StyleContext.tsx    # Style state management
-│   │   └── LanguageContext.tsx # Language state management
-│   ├── lib/                    # Core libraries
-│   │   ├── markdown/           # Markdown parsing
-│   │   ├── docx/               # Word document generation
-│   │   ├── math/               # LaTeX to Word conversion
-│   │   ├── styles/             # Template & style definitions
-│   │   └── html-to-markdown.ts # HTML conversion
-│   ├── types/                  # TypeScript type definitions
-│   ├── i18n/                   # Translations & examples
-│   └── styles/                 # CSS styles
-├── cli/                        # Command-line interface
-│   ├── index.ts                # CLI entry point
-│   ├── dom-polyfill.ts         # DOM polyfill for Node.js
-│   └── cli.test.ts             # CLI integration tests
-├── docs/                       # Documentation assets
-├── package.json                # Dependencies & scripts
-└── README.md                   # This file
-```
-
-## Architecture
-
-### Conversion Pipeline
-
-```
-┌─────────────────┐
-│  User Input     │  (Paste from AI / Type Markdown)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Smart Paste    │  (HTML → Markdown via Turndown)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Markdown       │  (User edits in textarea)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Parser         │  (remark + remark-gfm + remark-math)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  mdast AST      │  (Markdown Abstract Syntax Tree)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Converter      │  (mdast → docx elements)
-│                 │  - Headings → Word styles
-│                 │  - Paragraphs → Body text
-│                 │  - Lists → Nested lists
-│                 │  - Tables → Word tables
-│                 │  - Math → OMML equations
-│                 │  - Links → Hyperlinks
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  docx Document  │  (Document object with styles)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Packer         │  (Serialize to binary)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  .docx File     │  (Download via FileSaver)
-└─────────────────┘
-```
-
-### Key Design Decisions
-
-1. **Client-side only**: All processing happens in the browser. No server, no uploads, complete privacy.
-
-2. **Word styles over formatting**: Documents use proper Word styles, making them easy to modify in Word.
-
-3. **Native equations**: LaTeX is converted to OMML (Word's equation format), not images or MathML.
-
-4. **Font references**: Fonts are referenced by name, not embedded. This keeps file sizes small but requires the user to have fonts installed.
-
-5. **Template-based**: Predefined templates ensure professional formatting without manual configuration.
-
-## Contributing
-
-Contributions are welcome! Please ensure your code passes linting and tests before submitting a pull request.
-
-```bash
-npm run format
-npm run lint:fix
-npm run test
 npm run build
+npm run lint
 ```
+
+Project layout:
+
+- `src/`: React app and document generation logic
+- `cli/`: CLI entrypoint
+- `docs/`: supporting documentation
+- `skills/`: AI skill definitions included with the repo
+
+## Repository Positioning
+
+FormalDoc should be understood as all of the following at once:
+
+- a user-facing web app
+- a published npm package
+- a CLI for Markdown-to-DOCX conversion
+- an AI-native document generation building block
+
+If you are evaluating the project, that combined positioning is the important part: a human can use the app directly, and an AI agent can also use the same engine to generate `.docx` deliverables programmatically.
 
 ## License
 
-[Apache-2.0](LICENSE)
-
----
-
-**FormalDoc** — Markdown → Word, instantly.
+Apache-2.0. See [LICENSE](LICENSE).

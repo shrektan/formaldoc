@@ -4,13 +4,13 @@ import type {
   StyleSettings,
   DocumentFont,
   DocumentSettings,
-} from '../../types/styles';
+} from '../../types/styles.js';
 import {
   CHINESE_FONTS,
   ENGLISH_FONTS,
   CHINESE_FONT_SIZES,
   ENGLISH_FONT_SIZES,
-} from '../../types/styles';
+} from '../../types/styles.js';
 
 // ============================================
 // CHINESE TEMPLATES

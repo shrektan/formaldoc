@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * FormalDoc CLI - Convert Markdown to formal Word documents
  *
@@ -16,17 +16,10 @@
  *   --stdin                 Read markdown from stdin
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve, basename, dirname, extname, join } from 'node:path';
-import { initDomPolyfill } from './dom-polyfill';
-
-// Initialize DOM polyfill before importing conversion modules
-initDomPolyfill();
-
-// Import conversion modules after DOM polyfill is initialized
-import { generateDocxBuffer } from '../src/lib/docx/generator';
-import { getTemplate, isValidTemplateName, DEFAULT_TEMPLATE } from '../src/lib/styles/templates';
-import type { StyleSettings, DocumentSettings } from '../src/types/styles';
+import { convertMarkdownToDocxFile, DEFAULT_TEMPLATE, isValidTemplateName } from '../src/node.js';
+import type { StyleSettings } from '../src/types/styles.js';
 
 const VERSION = '1.2.2';
 
@@ -119,16 +112,7 @@ function parseArgs(args: string[]): CliOptions {
   return options;
 }
 
-interface LoadedSettings {
-  styles: StyleSettings;
-  documentSettings: DocumentSettings;
-}
-
-function loadStyles(
-  templateName: string | undefined,
-  stylesPath: string | undefined
-): LoadedSettings {
-  // Get base styles from template
+function loadStyleOverrides(templateName: string | undefined, stylesPath: string | undefined) {
   let template = DEFAULT_TEMPLATE;
   if (templateName) {
     if (isValidTemplateName(templateName)) {
@@ -139,10 +123,7 @@ function loadStyles(
       );
     }
   }
-
-  const templateObj = getTemplate(template);
-  let styles = templateObj.styles;
-  const documentSettings = templateObj.documentSettings;
+  let styleOverrides: Partial<StyleSettings> | undefined;
 
   // Apply custom styles on top if provided
   if (stylesPath) {
@@ -155,15 +136,17 @@ function loadStyles(
     try {
       const content = readFileSync(fullPath, 'utf-8');
       const customStyles = JSON.parse(content);
-      // Merge custom styles on top of template defaults
-      styles = { ...styles, ...customStyles };
+      styleOverrides = customStyles;
     } catch (error) {
       console.error(`Error: Failed to parse styles file: ${error}`);
       process.exit(1);
     }
   }
 
-  return { styles, documentSettings };
+  return {
+    styleOverrides,
+    template,
+  };
 }
 
 async function readStdin(): Promise<string> {
@@ -216,14 +199,18 @@ async function main(): Promise<void> {
   }
 
   const outputPath = options.output ? resolve(options.output) : defaultOutput;
-  const { styles, documentSettings } = loadStyles(options.template, options.styles);
+  const { styleOverrides, template } = loadStyleOverrides(options.template, options.styles);
 
   try {
-    const templateLabel = options.template || DEFAULT_TEMPLATE;
+    const templateLabel = template || DEFAULT_TEMPLATE;
     console.log(`Converting markdown to docx (template: ${templateLabel})...`);
-    const buffer = await generateDocxBuffer(markdown, styles, documentSettings);
-    writeFileSync(outputPath, buffer);
-    console.log(`Successfully created: ${outputPath}`);
+    const result = await convertMarkdownToDocxFile({
+      markdown,
+      templateName: template,
+      outputPath,
+      styleOverrides,
+    });
+    console.log(`Successfully created: ${result.outputPath}`);
   } catch (error) {
     console.error(`Error: Conversion failed: ${error}`);
     process.exit(1);
