@@ -208,17 +208,6 @@ function LayersIcon({ className }: { className?: string }) {
   );
 }
 
-function ZoomInIcon({ className }: { className?: string }) {
-  return (
-    <Icon className={className}>
-      <circle cx="11" cy="11" r="6" />
-      <path d="M21 21l-4.35-4.35" />
-      <path d="M11 8v6" />
-      <path d="M8 11h6" />
-    </Icon>
-  );
-}
-
 function LanguageSwitch() {
   const { language, setLanguage } = useLanguage();
 
@@ -320,6 +309,14 @@ function AppContent() {
             fileName: '文件名',
             fileNamePlaceholder: '自动读取标题作为文件名',
             currentTemplate: '当前模板',
+            templateHint: '选择模板',
+            workbenchEyebrow: '首屏工作台',
+            workbenchTitle: '直接粘贴，直接下载',
+            workbenchBody: '把文本粘进去，选一个模板，立即导出 Word。整个流程在一个屏幕内完成。',
+            downloadReady: '准备导出',
+            quickMetaA: '支持富文本粘贴',
+            quickMetaB: '自动识别标题为文件名',
+            quickMetaC: '模板可随时切换',
           }
         : {
             navFeatures: 'Features',
@@ -381,6 +378,15 @@ function AppContent() {
             fileName: 'Filename',
             fileNamePlaceholder: 'Use the title automatically',
             currentTemplate: 'Current template',
+            templateHint: 'Choose template',
+            workbenchEyebrow: 'One-screen workspace',
+            workbenchTitle: 'Paste once, download immediately',
+            workbenchBody:
+              'Drop in your text, pick a template, and export a Word file without leaving the first screen.',
+            downloadReady: 'Ready to export',
+            quickMetaA: 'Rich text paste supported',
+            quickMetaB: 'Filename auto-detected from title',
+            quickMetaC: 'Switch templates instantly',
           },
     [language]
   );
@@ -657,19 +663,21 @@ function AppContent() {
                 {pageCopy.trustC}
               </span>
             </div>
-          </div>
-        </section>
 
-        <section id="demo" className="demo-section">
-          <div className="page-container">
-            <div className="section-heading dark">
-              <h2>{pageCopy.demoTitle}</h2>
-              <p>{pageCopy.demoBody}</p>
+            <div className="workbench-intro">
+              <span>{pageCopy.workbenchEyebrow}</span>
+              <h2>{pageCopy.workbenchTitle}</h2>
+              <p>{pageCopy.workbenchBody}</p>
+              <div className="workbench-meta">
+                <span>{pageCopy.quickMetaA}</span>
+                <span>{pageCopy.quickMetaB}</span>
+                <span>{pageCopy.quickMetaC}</span>
+              </div>
             </div>
 
-            <div className="demo-shell">
-              <div className="demo-input-pane">
-                <div className="pane-header">
+            <div id="demo" className="workbench-shell">
+              <div className="workbench-editor">
+                <div className="workbench-header">
                   <div className="pane-title">
                     <FileTextIcon className="icon icon-sm blue" />
                     {pageCopy.inputTitle}
@@ -718,12 +726,12 @@ function AppContent() {
                   value={text}
                   onChange={(event) => handleTextChange(event.target.value)}
                   onPaste={handlePaste}
-                  className="demo-textarea"
+                  className="demo-textarea compact"
                   placeholder={pageCopy.inputPlaceholder}
                 />
 
                 {(showHeadingHint || showEscapedLatexHint || showPasteUndoHint || error) && (
-                  <div className="notice-stack">
+                  <div className="notice-stack compact">
                     {showHeadingHint && (
                       <div className="notice">
                         <span>{pageCopy.noticeMarkdown}</span>
@@ -753,112 +761,91 @@ function AppContent() {
                 )}
               </div>
 
-              <div className="demo-output-pane">
-                <div className="pane-header">
-                  <div className="pane-title">
-                    <LayoutIcon className="icon icon-sm indigo" />
-                    {pageCopy.exportTitle}
+              <aside className="workbench-rail">
+                <div className="rail-card">
+                  <div className="rail-topline">
+                    <span className="rail-kicker">{pageCopy.templateHint}</span>
+                    <strong>{pageCopy.currentTemplate}</strong>
+                  </div>
+                  <div className="template-groups-compact">
+                    {templateGroups.map((group) => (
+                      <div key={group.key} className="template-chip-group">
+                        <h3>{group.key}</h3>
+                        <div className="template-chip-row">
+                          {group.ids.map((id) => {
+                            const templateItem = TEMPLATES[id];
+                            const isSelected = template === id;
+
+                            return (
+                              <button
+                                type="button"
+                                key={id}
+                                className={`template-chip ${isSelected ? 'selected' : ''}`}
+                                onClick={() => setTemplate(id)}
+                                title={
+                                  language === 'cn'
+                                    ? templateItem.description
+                                    : templateItem.descriptionEn
+                                }
+                              >
+                                {language === 'cn' ? templateItem.name : templateItem.nameEn}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="template-scroll">
-                  {templateGroups.map((group) => (
-                    <div key={group.key} className="template-group">
-                      <h3>{group.key}</h3>
-                      <div className="template-list">
-                        {group.ids.map((id) => {
-                          const templateItem = TEMPLATES[id];
-                          const isSelected = template === id;
-
-                          return (
-                            <button
-                              type="button"
-                              key={id}
-                              className={`template-card ${isSelected ? 'selected' : ''}`}
-                              onClick={() => setTemplate(id)}
-                            >
-                              <div className="template-thumbnail">
-                                <div className="template-paper">
-                                  <div className="template-line title" />
-                                  <div className="template-line short" />
-                                  <div className="template-line" />
-                                  <div className="template-line" />
-                                  <div className="template-line medium" />
-                                </div>
-                                <div className="template-hover">
-                                  <span>
-                                    <ZoomInIcon className="icon icon-xs" />
-                                    {language === 'cn' ? '放大' : 'Preview'}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="template-body">
-                                <div className="template-head">
-                                  <div>
-                                    <h4>
-                                      {language === 'cn' ? templateItem.name : templateItem.nameEn}
-                                    </h4>
-                                    <p>
-                                      {language === 'cn'
-                                        ? templateItem.description
-                                        : templateItem.descriptionEn}
-                                    </p>
-                                  </div>
-                                  {isSelected && (
-                                    <CheckCircleIcon className="icon icon-sm selected-icon" />
-                                  )}
-                                </div>
-
-                                <div className="template-specs">
-                                  <div>
-                                    <span>{language === 'cn' ? '正文:' : 'Body:'}</span>
-                                    <strong>{templateItem.specs.bodyFont}</strong>
-                                  </div>
-                                  <div>
-                                    <span>{language === 'cn' ? '标题:' : 'Heading:'}</span>
-                                    <strong>{templateItem.specs.headingFont}</strong>
-                                  </div>
-                                  <div>
-                                    <span>{language === 'cn' ? '行距:' : 'Spacing:'}</span>
-                                    <strong>{templateItem.specs.lineSpacing}</strong>
-                                  </div>
-                                  <div>
-                                    <span>{language === 'cn' ? '缩进:' : 'Indent:'}</span>
-                                    <strong>{templateItem.specs.indent}</strong>
-                                  </div>
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="download-panel">
-                  <div className="filename-row">
+                <div className="rail-card selected-template-card">
+                  <div className="selected-template-head">
                     <div>
-                      <span className="filename-label">{pageCopy.currentTemplate}</span>
-                      <strong>
+                      <span className="rail-kicker">{pageCopy.downloadReady}</span>
+                      <h3>
                         {language === 'cn'
                           ? selectedTemplateItem.name
                           : selectedTemplateItem.nameEn}
-                      </strong>
+                      </h3>
+                      <p>
+                        {language === 'cn'
+                          ? selectedTemplateItem.description
+                          : selectedTemplateItem.descriptionEn}
+                      </p>
                     </div>
-                    <div className="filename-input-wrap">
-                      <label htmlFor="filename">{pageCopy.fileName}</label>
-                      <div className="filename-input">
-                        <input
-                          id="filename"
-                          type="text"
-                          value={customFilename || detectedFilename}
-                          onChange={(event) => setCustomFilename(event.target.value)}
-                          placeholder={pageCopy.fileNamePlaceholder}
-                        />
-                        <span>.docx</span>
-                      </div>
+                    <CheckCircleIcon className="icon icon-sm selected-icon" />
+                  </div>
+
+                  <div className="selected-spec-grid">
+                    <div>
+                      <span>{language === 'cn' ? '正文' : 'Body'}</span>
+                      <strong>{selectedTemplateItem.specs.bodyFont}</strong>
+                    </div>
+                    <div>
+                      <span>{language === 'cn' ? '标题' : 'Heading'}</span>
+                      <strong>{selectedTemplateItem.specs.headingFont}</strong>
+                    </div>
+                    <div>
+                      <span>{language === 'cn' ? '行距' : 'Spacing'}</span>
+                      <strong>{selectedTemplateItem.specs.lineSpacing}</strong>
+                    </div>
+                    <div>
+                      <span>{language === 'cn' ? '缩进' : 'Indent'}</span>
+                      <strong>{selectedTemplateItem.specs.indent}</strong>
+                    </div>
+                  </div>
+
+                  <div className="filename-input-wrap compact">
+                    <label htmlFor="filename">{pageCopy.fileName}</label>
+                    <div className="filename-input">
+                      <input
+                        id="filename"
+                        type="text"
+                        value={customFilename || detectedFilename}
+                        onChange={(event) => setCustomFilename(event.target.value)}
+                        placeholder={pageCopy.fileNamePlaceholder}
+                      />
+                      <span>.docx</span>
                     </div>
                   </div>
 
@@ -873,7 +860,7 @@ function AppContent() {
                   </button>
                   <p className="download-note">{pageCopy.exportFoot}</p>
                 </div>
-              </div>
+              </aside>
             </div>
           </div>
         </section>
