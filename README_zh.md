@@ -237,6 +237,30 @@ skills/formaldoc/SKILL.md
 
 你可以把这个文件直接复制到自己的 skill 系统、Claude Project 指令、agent prompt 库或其他 AI 自动化环境中。
 
+### 用 `npx` 直接安装 skill
+
+如果你使用的是 `skills` 安装器生态，也可以直接从这个 GitHub 仓库安装：
+
+```bash
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc
+```
+
+示例：
+
+```bash
+# 为 Claude Code 做全局安装
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc -g -a claude-code -y
+
+# 为 Codex 做全局安装
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc -g -a codex -y
+```
+
+注意：
+
+- 这条安装路径走的是 GitHub skill 安装流程，不是 npm tarball 分发
+- 如果你希望别人拿到最新 skill，必须先把仓库改动 push 到 GitHub
+- skill 名称是 `formaldoc`，与仓库内 frontmatter 保持一致
+
 ## Markdown 支持
 
 FormalDoc 支持 GitHub Flavored Markdown 和 LaTeX 数学公式。

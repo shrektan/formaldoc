@@ -237,6 +237,30 @@ skills/formaldoc/SKILL.md
 
 You can copy that file into your own skill system, Claude Project instructions, agent prompt library, or other AI automation environment.
 
+### Install the skill with `npx`
+
+If you use the `skills` installer ecosystem, you can install the skill directly from this GitHub repository:
+
+```bash
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc
+```
+
+Examples:
+
+```bash
+# Install globally for Claude Code
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc -g -a claude-code -y
+
+# Install globally for Codex
+npx skills add https://github.com/shrektan/formaldoc --skill formaldoc -g -a codex -y
+```
+
+Important:
+
+- this flow installs the skill from GitHub, not from the npm tarball
+- the repository must be pushed to GitHub before others can install the latest skill version
+- the skill name is `formaldoc`, which matches the included frontmatter
+
 ## Markdown Support
 
 FormalDoc supports GitHub Flavored Markdown plus LaTeX math.
