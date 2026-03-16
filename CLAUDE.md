@@ -91,11 +91,16 @@ FormalDoc uses a template system to support different document formats.
 - `src/components/TemplateGallery/` - Template selection gallery UI
 - `src/components/StyleSettings/StyleDrawer.tsx` - Style customization drawer
 
-### CLI Template Flag
+### CLI Flags
 
 Use `-t` or `--template` to specify template:
 ```bash
 formaldoc input.md -o output.docx -t en-standard
+```
+
+Use `-l` or `--title-level` to set which heading level maps to Title (1-5, default: 1):
+```bash
+formaldoc input.md -o output.docx -l 2   # ## maps to Title, ### to Heading1, etc.
 ```
 
 ## Style Mapping (cn-gov template)
