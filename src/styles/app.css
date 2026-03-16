@@ -669,6 +669,34 @@ button {
   color: #3b82f6;
 }
 
+.title-level-wrap.compact {
+  min-width: 0;
+  width: 100%;
+}
+
+.title-level-wrap label {
+  color: #64748b;
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+}
+
+.title-level-select {
+  appearance: auto;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  color: #0f172a;
+  font-size: 0.9rem;
+  outline: none;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.title-level-select:focus {
+  border-color: #3b82f6;
+}
+
 .filename-input-wrap {
   min-width: 280px;
 }

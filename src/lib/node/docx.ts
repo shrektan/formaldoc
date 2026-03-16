@@ -23,6 +23,7 @@ export interface ConvertMarkdownToDocxOptions {
   fileName?: string;
   workingDirectory?: string;
   styleOverrides?: Partial<StyleSettings>;
+  titleLevel?: number;
 }
 
 export interface ConvertMarkdownToDocxResult {
@@ -174,7 +175,12 @@ export async function convertMarkdownToDocx(
     ? { ...template.styles, ...options.styleOverrides }
     : template.styles;
 
-  const buffer = await generateDocxBuffer(markdown, styles, template.documentSettings);
+  const buffer = await generateDocxBuffer(
+    markdown,
+    styles,
+    template.documentSettings,
+    options.titleLevel
+  );
 
   return {
     templateName,

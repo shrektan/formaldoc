@@ -165,6 +165,55 @@ describe('CLI', () => {
     });
   });
 
+  describe('title level', () => {
+    const testDir = tmpdir();
+    const inputFile = join(testDir, 'test-title-level-input.md');
+    const outputFile = join(testDir, 'test-title-level-output.docx');
+
+    beforeEach(() => {
+      writeFileSync(inputFile, '## 文档标题\n\n### 一级标题\n\n这是正文。');
+    });
+
+    afterEach(() => {
+      if (existsSync(inputFile)) unlinkSync(inputFile);
+      if (existsSync(outputFile)) unlinkSync(outputFile);
+    });
+
+    it('should accept --title-level flag', () => {
+      const output = runCli(`${inputFile} -o ${outputFile} --title-level 2`);
+
+      expect(output).toContain('Successfully created');
+      expect(existsSync(outputFile)).toBe(true);
+    });
+
+    it('should accept -l short flag', () => {
+      const output = runCli(`${inputFile} -o ${outputFile} -l 2`);
+
+      expect(output).toContain('Successfully created');
+      expect(existsSync(outputFile)).toBe(true);
+    });
+
+    it('should show title-level in help', () => {
+      const output = runCli('--help');
+
+      expect(output).toContain('--title-level');
+      expect(output).toContain('-l');
+    });
+
+    it('should error on invalid title-level value', () => {
+      const output = runCli(`${inputFile} -o ${outputFile} -l 0`);
+
+      expect(output).toContain('Error');
+      expect(output).toContain('--title-level');
+    });
+
+    it('should error on title-level > 5', () => {
+      const output = runCli(`${inputFile} -o ${outputFile} -l 6`);
+
+      expect(output).toContain('Error');
+    });
+  });
+
   describe('template selection', () => {
     const testDir = tmpdir();
     const inputFile = join(testDir, 'test-template-input.md');

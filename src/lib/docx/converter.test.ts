@@ -186,6 +186,38 @@ describe('convertMdastToDocx', () => {
     });
   });
 
+  describe('titleLevel offset', () => {
+    it('should map ## to Title when titleLevel is 2', () => {
+      const mdast = parseMarkdown('## 文档标题\n\n### 一级标题\n\n#### 二级标题');
+      const elements = convertMdastToDocx(mdast, 16, 2);
+
+      // ## → Title, ### → Heading1, #### → Heading2
+      expect(elements).toHaveLength(3);
+      elements.forEach((el) => expect(el).toBeInstanceOf(Paragraph));
+    });
+
+    it('should default to titleLevel 1 (standard behavior)', () => {
+      const mdast = parseMarkdown('# 标题\n\n## 一级');
+      const elementsDefault = convertMdastToDocx(mdast);
+      const elementsExplicit = convertMdastToDocx(mdast, 16, 1);
+
+      expect(elementsDefault).toHaveLength(2);
+      expect(elementsExplicit).toHaveLength(2);
+    });
+
+    it('should clamp headings above titleLevel to Title', () => {
+      // titleLevel=3 but markdown has ## (depth 2, which is above titleLevel)
+      const mdast = parseMarkdown('## 高级标题\n\n### 文档标题\n\n#### 一级标题');
+      const elements = convertMdastToDocx(mdast, 16, 3);
+
+      // ## (depth 2) → effectiveDepth max(1, 2-3+1)=max(1,0)=1 → Title (clamped)
+      // ### (depth 3) → effectiveDepth max(1, 3-3+1)=1 → Title
+      // #### (depth 4) → effectiveDepth max(1, 4-3+1)=2 → Heading1
+      expect(elements).toHaveLength(3);
+      elements.forEach((el) => expect(el).toBeInstanceOf(Paragraph));
+    });
+  });
+
   describe('empty content', () => {
     it('should handle empty markdown', () => {
       const mdast = parseMarkdown('');

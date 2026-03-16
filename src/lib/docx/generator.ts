@@ -68,19 +68,21 @@ function createFooter(
  * @param markdown - The markdown text to convert
  * @param settings - Style settings for the document
  * @param documentSettings - Optional document-level settings (line spacing, margins, page numbers)
+ * @param titleLevel - The markdown heading level that should map to Title (1-5), defaults to 1
  * @returns A docx Document object
  */
 export function createDocument(
   markdown: string,
   settings: StyleSettings,
-  documentSettings?: DocumentSettings
+  documentSettings?: DocumentSettings,
+  titleLevel: number = 1
 ): Document {
   // Step 1: Parse markdown to AST
   const mdast = parseMarkdown(markdown);
 
   // Step 2: Convert AST to docx paragraphs
   // Pass listItem font size for correct indent calculation
-  const paragraphs = convertMdastToDocx(mdast, settings.listItem.size);
+  const paragraphs = convertMdastToDocx(mdast, settings.listItem.size, titleLevel);
 
   // Step 3: Create footer with custom styles and format
   const pageNumberFormat = documentSettings?.pageNumberFormat ?? 'dash';
@@ -133,14 +135,16 @@ export function createDocument(
  * @param markdown - The markdown text to convert
  * @param settings - Style settings for the document
  * @param documentSettings - Optional document-level settings
+ * @param titleLevel - The markdown heading level that should map to Title (1-5), defaults to 1
  * @returns A Blob containing the generated .docx file
  */
 export async function generateDocx(
   markdown: string,
   settings: StyleSettings,
-  documentSettings?: DocumentSettings
+  documentSettings?: DocumentSettings,
+  titleLevel: number = 1
 ): Promise<Blob> {
-  const doc = createDocument(markdown, settings, documentSettings);
+  const doc = createDocument(markdown, settings, documentSettings, titleLevel);
   const blob = await Packer.toBlob(doc);
   return blob;
 }
@@ -150,14 +154,16 @@ export async function generateDocx(
  * @param markdown - The markdown text to convert
  * @param settings - Style settings for the document
  * @param documentSettings - Optional document-level settings
+ * @param titleLevel - The markdown heading level that should map to Title (1-5), defaults to 1
  * @returns A Buffer containing the generated .docx file
  */
 export async function generateDocxBuffer(
   markdown: string,
   settings: StyleSettings,
-  documentSettings?: DocumentSettings
+  documentSettings?: DocumentSettings,
+  titleLevel: number = 1
 ): Promise<Buffer> {
-  const doc = createDocument(markdown, settings, documentSettings);
+  const doc = createDocument(markdown, settings, documentSettings, titleLevel);
   const buffer = await Packer.toBuffer(doc);
   return buffer;
 }

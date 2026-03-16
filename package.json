@@ -1,7 +1,7 @@
 {
   "name": "formaldoc",
   "description": "Convert Markdown into professionally formatted DOCX files for Chinese and English documents.",
-  "version": "1.14.6",
+  "version": "1.15.0",
   "type": "module",
   "files": [
     "dist-package"

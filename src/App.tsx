@@ -236,6 +236,7 @@ function AppContent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState('');
   const [customFilename, setCustomFilename] = useState('');
+  const [titleLevel, setTitleLevel] = useState(1);
   const [showHeadingHint, setShowHeadingHint] = useState(false);
   const [showEscapedLatexHint, setShowEscapedLatexHint] = useState(false);
   const [showPasteUndoHint, setShowPasteUndoHint] = useState(false);
@@ -306,6 +307,7 @@ function AppContent() {
             undo: '撤销',
             templatesChinese: '中文',
             templatesEnglish: 'ENGLISH',
+            titleLevel: '标题级别',
             fileName: '文件名',
             fileNamePlaceholder: '自动读取标题作为文件名',
             currentTemplate: '当前模板',
@@ -375,6 +377,7 @@ function AppContent() {
             undo: 'Undo',
             templatesChinese: '中文',
             templatesEnglish: 'ENGLISH',
+            titleLevel: 'Title Level',
             fileName: 'Filename',
             fileNamePlaceholder: 'Use the title automatically',
             currentTemplate: 'Current template',
@@ -543,7 +546,7 @@ function AppContent() {
 
   const handleGenerate = () => {
     const filename = customFilename.trim() || detectedFilename;
-    generate(text, styles, currentTemplate.documentSettings, filename);
+    generate(text, styles, currentTemplate.documentSettings, filename, titleLevel);
   };
 
   const selectedTemplateItem = TEMPLATES[template];
@@ -833,6 +836,22 @@ function AppContent() {
                       <span>{language === 'cn' ? '缩进' : 'Indent'}</span>
                       <strong>{selectedTemplateItem.specs.indent}</strong>
                     </div>
+                  </div>
+
+                  <div className="title-level-wrap compact">
+                    <label htmlFor="title-level">{pageCopy.titleLevel}</label>
+                    <select
+                      id="title-level"
+                      className="title-level-select"
+                      value={titleLevel}
+                      onChange={(e) => setTitleLevel(Number(e.target.value))}
+                    >
+                      <option value={1}># H1</option>
+                      <option value={2}>## H2</option>
+                      <option value={3}>### H3</option>
+                      <option value={4}>#### H4</option>
+                      <option value={5}>##### H5</option>
+                    </select>
                   </div>
 
                   <div className="filename-input-wrap compact">

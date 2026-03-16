@@ -54,12 +54,17 @@ const HEADING_STYLE_MAP: Record<number, string> = {
  * Converts an mdast AST to an array of docx elements (Paragraphs and Tables)
  * @param mdast - The markdown AST root node
  * @param listItemSize - Font size for list items (used to calculate indent), defaults to 16pt
+ * @param titleLevel - The markdown heading level that should map to Title (1-5), defaults to 1
  */
-export function convertMdastToDocx(mdast: Root, listItemSize: number = 16): DocxElement[] {
+export function convertMdastToDocx(
+  mdast: Root,
+  listItemSize: number = 16,
+  titleLevel: number = 1
+): DocxElement[] {
   const elements: DocxElement[] = [];
 
   for (const node of mdast.children) {
-    const converted = convertNode(node, listItemSize);
+    const converted = convertNode(node, listItemSize, titleLevel);
     elements.push(...converted);
   }
 
@@ -78,10 +83,10 @@ interface MathNode {
 /**
  * Converts a single mdast node to docx element(s)
  */
-function convertNode(node: Content, listItemSize: number): DocxElement[] {
+function convertNode(node: Content, listItemSize: number, titleLevel: number): DocxElement[] {
   switch (node.type) {
     case 'heading':
-      return [convertHeading(node)];
+      return [convertHeading(node, titleLevel)];
     case 'paragraph':
       return [convertParagraph(node)];
     case 'list':
@@ -152,9 +157,12 @@ function extractLinkText(children: PhrasingContent[]): string {
 
 /**
  * Converts a heading node to a docx Paragraph with appropriate style
+ * When titleLevel > 1, heading depths are shifted so that the specified level maps to Title
+ * e.g., titleLevel=2: ## → Title, ### → Heading1, #### → Heading2
  */
-function convertHeading(node: Heading): Paragraph {
-  const styleId = HEADING_STYLE_MAP[node.depth] || 'Normal';
+function convertHeading(node: Heading, titleLevel: number): Paragraph {
+  const effectiveDepth = Math.max(1, node.depth - titleLevel + 1);
+  const styleId = HEADING_STYLE_MAP[effectiveDepth] || 'Normal';
   const runs = convertPhrasingContent(node.children);
 
   return new Paragraph({

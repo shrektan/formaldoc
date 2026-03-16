@@ -28,6 +28,7 @@ interface CliOptions {
   output?: string;
   template?: string;
   styles?: string;
+  titleLevel?: number;
   help: boolean;
   version: boolean;
   stdin: boolean;
@@ -49,6 +50,7 @@ OPTIONS:
   -o, --output <file>     Output file path (default: input with .docx extension)
   -t, --template <name>   Template to use (default: cn-gov)
   -s, --styles <file>     Custom styles JSON (applied on top of template)
+  -l, --title-level <n>   Heading level to use as title (1-5, default: 1)
   -h, --help              Show this help message
   -v, --version           Show version number
   --stdin                 Read markdown from stdin (requires -o)
@@ -62,6 +64,7 @@ TEMPLATES:
 EXAMPLES:
   formaldoc document.md                       # CN gov format (default)
   formaldoc document.md -t en-standard        # English format
+  formaldoc document.md -l 2                  # Treat ## as title
   formaldoc document.md -t cn-gov -s custom.json  # CN gov + custom overrides
   cat doc.md | formaldoc --stdin -o out.docx
 
@@ -102,6 +105,14 @@ function parseArgs(args: string[]): CliOptions {
     } else if (arg === '-s' || arg === '--styles') {
       i++;
       options.styles = args[i];
+    } else if (arg === '-l' || arg === '--title-level') {
+      i++;
+      const level = parseInt(args[i], 10);
+      if (isNaN(level) || level < 1 || level > 5) {
+        console.error('Error: --title-level must be a number between 1 and 5');
+        process.exit(1);
+      }
+      options.titleLevel = level;
     } else if (!arg.startsWith('-') && !options.input) {
       options.input = arg;
     }
@@ -209,6 +220,7 @@ async function main(): Promise<void> {
       templateName: template,
       outputPath,
       styleOverrides,
+      titleLevel: options.titleLevel,
     });
     console.log(`Successfully created: ${result.outputPath}`);
   } catch (error) {

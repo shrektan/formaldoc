@@ -11,7 +11,8 @@ interface UseDocxGeneratorResult {
     markdown: string,
     styles: StyleSettings,
     documentSettings?: DocumentSettings,
-    customFilename?: string
+    customFilename?: string,
+    titleLevel?: number
   ) => Promise<void>;
   isGenerating: boolean;
   error: string | null;
@@ -26,7 +27,8 @@ export function useDocxGenerator(): UseDocxGeneratorResult {
       markdown: string,
       styles: StyleSettings,
       documentSettings?: DocumentSettings,
-      customFilename?: string
+      customFilename?: string,
+      titleLevel?: number
     ) => {
       // Auto-trim leading/trailing whitespace and empty lines
       const trimmedMarkdown = markdown.trim();
@@ -40,7 +42,7 @@ export function useDocxGenerator(): UseDocxGeneratorResult {
       setError(null);
 
       try {
-        const blob = await generateDocx(trimmedMarkdown, styles, documentSettings);
+        const blob = await generateDocx(trimmedMarkdown, styles, documentSettings, titleLevel);
 
         // Use custom filename if provided, otherwise auto-detect from title
         let filename: string;
