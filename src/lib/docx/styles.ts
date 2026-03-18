@@ -327,6 +327,7 @@ export function createDocumentStyles(
           size: ptToHalfPoints(settings.listItem.size),
         },
         paragraph: {
+          alignment: AlignmentType.BOTH,
           spacing: {
             after: spacingAfter,
             line: spacing.line,
@@ -350,6 +351,7 @@ export function createDocumentStyles(
           italics: settings.blockquote.italic,
         },
         paragraph: {
+          alignment: AlignmentType.BOTH,
           spacing: {
             after: spacingAfter,
             line: spacing.line,
