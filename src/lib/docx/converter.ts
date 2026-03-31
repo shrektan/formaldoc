@@ -11,6 +11,7 @@ import {
   VerticalAlign,
   ShadingType,
   ExternalHyperlink,
+  FootnoteReferenceRun,
   type ParagraphChild,
 } from 'docx';
 import { latexToDocxMath } from '../math/latex-to-docx.js';
@@ -29,10 +30,23 @@ import type {
   Blockquote,
   Link,
   Delete,
+  FootnoteDefinition,
+  FootnoteReference,
 } from 'mdast';
 
 // Type for docx elements that can be in a section
 type DocxElement = Paragraph | Table;
+
+/**
+ * Result of converting mdast to docx, including footnote definitions
+ */
+export interface ConversionResult {
+  elements: DocxElement[];
+  footnotes: Record<string, { children: Paragraph[] }>;
+}
+
+// Module-level footnote identifier → numeric ID map, set during conversion
+let _footnoteMap: Map<string, number> = new Map();
 
 /**
  * Maps markdown heading depth to Word style IDs
@@ -51,7 +65,7 @@ const HEADING_STYLE_MAP: Record<number, string> = {
 };
 
 /**
- * Converts an mdast AST to an array of docx elements (Paragraphs and Tables)
+ * Converts an mdast AST to docx elements with footnote support
  * @param mdast - The markdown AST root node
  * @param listItemSize - Font size for list items (used to calculate indent), defaults to 16pt
  * @param titleLevel - The markdown heading level that should map to Title (1-5), defaults to 1
@@ -60,15 +74,40 @@ export function convertMdastToDocx(
   mdast: Root,
   listItemSize: number = 16,
   titleLevel: number = 1
-): DocxElement[] {
-  const elements: DocxElement[] = [];
+): ConversionResult {
+  // Phase 1: Collect footnote definitions and assign numeric IDs
+  const footnotes: Record<string, { children: Paragraph[] }> = {};
+  _footnoteMap = new Map();
+  let nextFootnoteId = 1;
 
   for (const node of mdast.children) {
+    if (node.type === 'footnoteDefinition') {
+      const defNode = node as FootnoteDefinition;
+      const numId = nextFootnoteId++;
+      _footnoteMap.set(defNode.identifier, numId);
+
+      // Convert definition children to Paragraphs
+      const paras: Paragraph[] = [];
+      for (const child of defNode.children) {
+        const converted = convertNode(child as Content, listItemSize, titleLevel);
+        for (const el of converted) {
+          if (el instanceof Paragraph) paras.push(el);
+        }
+      }
+      footnotes[String(numId)] = { children: paras };
+    }
+  }
+
+  // Phase 2: Convert main content, skipping footnoteDefinition nodes
+  const elements: DocxElement[] = [];
+  for (const node of mdast.children) {
+    if (node.type === 'footnoteDefinition') continue;
     const converted = convertNode(node, listItemSize, titleLevel);
     elements.push(...converted);
   }
 
-  return elements;
+  _footnoteMap = new Map(); // Reset after conversion
+  return { elements, footnotes };
 }
 
 /**
@@ -101,6 +140,9 @@ function convertNode(node: Content, listItemSize: number, titleLevel: number): D
       return convertBlockquote(node as Blockquote, listItemSize);
     case 'thematicBreak':
       // Ignore thematic breaks (---) as AI often generates many of these
+      return [];
+    case 'footnoteDefinition':
+      // Already processed in convertMdastToDocx pre-pass
       return [];
     default:
       // Fallback: try to extract text content from unknown nodes
@@ -465,6 +507,16 @@ function convertPhrasingNode(node: PhrasingContent): ParagraphChild[] {
     case 'break':
       // Ignore manual line breaks as AI often generates many of these
       return [];
+
+    case 'footnoteReference': {
+      const refNode = node as FootnoteReference;
+      const numId = _footnoteMap.get(refNode.identifier);
+      if (numId !== undefined) {
+        return [new FootnoteReferenceRun(numId)];
+      }
+      // Fallback: render as superscript text if definition is missing
+      return [new TextRun({ text: `[${refNode.identifier}]`, superScript: true })];
+    }
 
     case 'link': {
       // Hyperlink - extract text and create hyperlink with styling

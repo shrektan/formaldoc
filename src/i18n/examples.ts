@@ -9,7 +9,7 @@ XX主管部门：
 
 ## 一、采购基本情况
 
-上半年，我单位严格执行《XX单位办公用品采购管理办法》，采用"集中采购为主、零星补采为辅"的模式，所有采购均通过合规渠道完成，全程留存采购记录及发票。
+上半年，我单位严格执行《XX单位办公用品采购管理办法》[^1]，采用"集中采购为主、零星补采为辅"的模式，所有采购均通过合规渠道完成，全程留存采购记录及发票。
 
 ### （一）采购批次及金额
 
@@ -21,7 +21,7 @@ XX主管部门：
 
 ### （二）采购成本对比
 
-与202X年度上半年相比，采购金额减少3,220元，降幅12.9%，主要原因包括：
+与202X年度上半年相比，采购金额减少3,220元，降幅12.9%[^2]，主要原因包括：
 
 1. 优化采购方案，通过批量采购降低单价；
 2. 减少非必要物资采购，聚焦核心办公需求；
@@ -68,7 +68,10 @@ $$
 特此报告。
 
 XX单位（盖章）
-202X年X月X日`,
+202X年X月X日
+
+[^1]: 该管理办法于202X年X月修订实施，详见XX发〔202X〕X号文件。
+[^2]: 数据来源：XX单位财务部门202X年度上半年采购台账。`,
 
   en: `# Q3 2024 API Gateway Performance Analysis Report
 
@@ -77,7 +80,7 @@ XX单位（盖章）
 
 ## Executive Summary
 
-This report presents a comprehensive analysis of the API Gateway performance during Q3 2024. Overall system availability reached 99.97%, exceeding our SLA target of 99.9%. Response latency improved by 23% compared to Q2, primarily due to the new caching layer implementation.
+This report presents a comprehensive analysis of the API Gateway performance during Q3 2024. Overall system availability reached 99.97%[^1], exceeding our SLA target of 99.9%. Response latency improved by 23% compared to Q2, primarily due to the new caching layer implementation.
 
 ## 1. Performance Metrics Overview
 
@@ -156,7 +159,7 @@ $$
 C_{\\text{required}} = R_{\\text{peak}} \\times (1 + M_{\\text{buffer}}) \\times G_{\\text{factor}}
 $$
 
-Where $R_{\\text{peak}}$ is peak requests per second, $M_{\\text{buffer}} = 0.3$ (30% buffer), and $G_{\\text{factor}} = 1.37$ (growth factor). Substituting values:
+Where $R_{\\text{peak}}$ is peak requests per second, $M_{\\text{buffer}} = 0.3$ (30% buffer), and $G_{\\text{factor}} = 1.37$ (growth factor)[^2]. Substituting values:
 
 $$
 C_{\\text{required}} = 58400 \\times 1.3 \\times 1.37 = 104,018 \\text{ req/s}
@@ -175,5 +178,8 @@ Q3 demonstrated strong performance improvements across all key metrics. The engi
 ---
 
 *Platform Engineering Team*
-*October 2024*`,
+*October 2024*
+
+[^1]: Measured using the industry-standard five-nines methodology across all production regions.
+[^2]: Growth factor derived from linear regression of monthly request volumes over the trailing 12 months.`,
 };
