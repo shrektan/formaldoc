@@ -167,3 +167,7 @@ Formulas are converted to **native Word equations** (OMML format), which are edi
 **Key files**:
 - `src/lib/math/latex-to-docx.ts` - LaTeX → docx Math conversion
 - `src/lib/markdown/latex-preprocessor.ts` - Auto-detects bare LaTeX from ChatGPT
+
+## Project Context
+
+At conversation start, read `.project/CONTEXT.md` if it exists for project identity and architecture overview.
