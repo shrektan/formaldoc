@@ -45,9 +45,6 @@ export interface ConversionResult {
   footnotes: Record<string, { children: Paragraph[] }>;
 }
 
-// Module-level footnote identifier → numeric ID map, set during conversion
-let _footnoteMap: Map<string, number> = new Map();
-
 /**
  * Maps markdown heading depth to Word style IDs
  * # H1 → Title (公文标题)
@@ -77,21 +74,29 @@ export function convertMdastToDocx(
 ): ConversionResult {
   // Phase 1: Collect footnote definitions and assign numeric IDs
   const footnotes: Record<string, { children: Paragraph[] }> = {};
-  _footnoteMap = new Map();
+  const footnoteMap = new Map<string, number>();
   let nextFootnoteId = 1;
 
   for (const node of mdast.children) {
     if (node.type === 'footnoteDefinition') {
       const defNode = node as FootnoteDefinition;
       const numId = nextFootnoteId++;
-      _footnoteMap.set(defNode.identifier, numId);
+      footnoteMap.set(defNode.identifier, numId);
 
-      // Convert definition children to Paragraphs
+      // Convert definition children to docx elements
       const paras: Paragraph[] = [];
       for (const child of defNode.children) {
-        const converted = convertNode(child as Content, listItemSize, titleLevel);
+        const converted = convertNode(child as Content, listItemSize, titleLevel, footnoteMap);
         for (const el of converted) {
-          if (el instanceof Paragraph) paras.push(el);
+          if (el instanceof Paragraph) {
+            paras.push(el);
+          } else {
+            // Tables or other non-Paragraph elements in footnotes: wrap text as fallback
+            console.warn(
+              'Non-paragraph element in footnote definition, skipping:',
+              el.constructor.name
+            );
+          }
         }
       }
       footnotes[String(numId)] = { children: paras };
@@ -102,11 +107,10 @@ export function convertMdastToDocx(
   const elements: DocxElement[] = [];
   for (const node of mdast.children) {
     if (node.type === 'footnoteDefinition') continue;
-    const converted = convertNode(node, listItemSize, titleLevel);
+    const converted = convertNode(node, listItemSize, titleLevel, footnoteMap);
     elements.push(...converted);
   }
 
-  _footnoteMap = new Map(); // Reset after conversion
   return { elements, footnotes };
 }
 
@@ -122,22 +126,27 @@ interface MathNode {
 /**
  * Converts a single mdast node to docx element(s)
  */
-function convertNode(node: Content, listItemSize: number, titleLevel: number): DocxElement[] {
+function convertNode(
+  node: Content,
+  listItemSize: number,
+  titleLevel: number,
+  footnoteMap: Map<string, number>
+): DocxElement[] {
   switch (node.type) {
     case 'heading':
-      return [convertHeading(node, titleLevel)];
+      return [convertHeading(node, titleLevel, footnoteMap)];
     case 'paragraph':
-      return [convertParagraph(node)];
+      return [convertParagraph(node, footnoteMap)];
     case 'list':
-      return convertList(node, listItemSize);
+      return convertList(node, listItemSize, 0, footnoteMap);
     case 'table':
-      return [convertTable(node as MdTable)];
+      return [convertTable(node as MdTable, footnoteMap)];
     case 'html':
       return convertHtmlBlock(node as Html);
     case 'math':
       return [convertMath(node as unknown as MathNode)];
     case 'blockquote':
-      return convertBlockquote(node as Blockquote, listItemSize);
+      return convertBlockquote(node as Blockquote, listItemSize, 1, footnoteMap);
     case 'thematicBreak':
       // Ignore thematic breaks (---) as AI often generates many of these
       return [];
@@ -202,10 +211,14 @@ function extractLinkText(children: PhrasingContent[]): string {
  * When titleLevel > 1, heading depths are shifted so that the specified level maps to Title
  * e.g., titleLevel=2: ## → Title, ### → Heading1, #### → Heading2
  */
-function convertHeading(node: Heading, titleLevel: number): Paragraph {
+function convertHeading(
+  node: Heading,
+  titleLevel: number,
+  footnoteMap: Map<string, number>
+): Paragraph {
   const effectiveDepth = Math.max(1, node.depth - titleLevel + 1);
   const styleId = HEADING_STYLE_MAP[effectiveDepth] || 'Normal';
-  const runs = convertPhrasingContent(node.children);
+  const runs = convertPhrasingContent(node.children, footnoteMap);
 
   return new Paragraph({
     style: styleId,
@@ -216,8 +229,8 @@ function convertHeading(node: Heading, titleLevel: number): Paragraph {
 /**
  * Converts a paragraph node to a docx Paragraph
  */
-function convertParagraph(node: MdParagraph): Paragraph {
-  const runs = convertPhrasingContent(node.children);
+function convertParagraph(node: MdParagraph, footnoteMap: Map<string, number>): Paragraph {
+  const runs = convertPhrasingContent(node.children, footnoteMap);
 
   return new Paragraph({
     style: 'BodyText',
@@ -244,7 +257,12 @@ const BLOCKQUOTE_SHADING = 'E8E8E8';
  * Converts a blockquote node to docx Paragraph(s)
  * Uses BodyText style with italic text and light gray background
  */
-function convertBlockquote(node: Blockquote, listItemSize: number, level: number = 1): Paragraph[] {
+function convertBlockquote(
+  node: Blockquote,
+  listItemSize: number,
+  level: number = 1,
+  footnoteMap: Map<string, number> = new Map()
+): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const indent = BLOCKQUOTE_INDENT * level;
 
@@ -268,11 +286,11 @@ function convertBlockquote(node: Blockquote, listItemSize: number, level: number
       );
     } else if (child.type === 'blockquote') {
       // Nested blockquote - recurse with increased level
-      const nested = convertBlockquote(child, listItemSize, level + 1);
+      const nested = convertBlockquote(child, listItemSize, level + 1, footnoteMap);
       paragraphs.push(...nested);
     } else if (child.type === 'list') {
       // Lists inside blockquotes - convert and adjust indent
-      const listParagraphs = convertBlockquoteList(child, indent, listItemSize);
+      const listParagraphs = convertBlockquoteList(child, indent, listItemSize, 0, footnoteMap);
       paragraphs.push(...listParagraphs);
     }
   }
@@ -295,7 +313,8 @@ function convertBlockquoteList(
   node: List,
   baseIndent: number,
   listItemSize: number,
-  level: number = 0
+  level: number = 0,
+  footnoteMap: Map<string, number> = new Map()
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const isOrdered = node.ordered ?? false;
@@ -308,7 +327,8 @@ function convertBlockquoteList(
       startNum + index,
       baseIndent,
       listItemSize,
-      level
+      level,
+      footnoteMap
     );
     paragraphs.push(...itemParagraphs);
   });
@@ -325,7 +345,8 @@ function convertBlockquoteListItem(
   number: number,
   baseIndent: number,
   listItemSize: number,
-  level: number
+  level: number,
+  footnoteMap: Map<string, number>
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const prefix = isOrdered ? `${number}. ` : '• ';
@@ -333,7 +354,7 @@ function convertBlockquoteListItem(
 
   item.children.forEach((child, childIndex) => {
     if (child.type === 'paragraph') {
-      const runs = convertPhrasingContent(child.children);
+      const runs = convertPhrasingContent(child.children, footnoteMap);
 
       if (childIndex === 0) {
         runs.unshift(new TextRun({ text: prefix }));
@@ -350,7 +371,13 @@ function convertBlockquoteListItem(
         })
       );
     } else if (child.type === 'list') {
-      const nestedParagraphs = convertBlockquoteList(child, baseIndent, listItemSize, level + 1);
+      const nestedParagraphs = convertBlockquoteList(
+        child,
+        baseIndent,
+        listItemSize,
+        level + 1,
+        footnoteMap
+      );
       paragraphs.push(...nestedParagraphs);
     }
   });
@@ -391,13 +418,25 @@ const getListIndent = (fontSize: number) => fontSize * 2 * 20;
 /**
  * Converts a list node to multiple docx Paragraphs
  */
-function convertList(node: List, listItemSize: number, level: number = 0): Paragraph[] {
+function convertList(
+  node: List,
+  listItemSize: number,
+  level: number = 0,
+  footnoteMap: Map<string, number> = new Map()
+): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const isOrdered = node.ordered ?? false;
   const startNum = node.start ?? 1;
 
   node.children.forEach((item, index) => {
-    const itemParagraphs = convertListItem(item, isOrdered, startNum + index, listItemSize, level);
+    const itemParagraphs = convertListItem(
+      item,
+      isOrdered,
+      startNum + index,
+      listItemSize,
+      level,
+      footnoteMap
+    );
     paragraphs.push(...itemParagraphs);
   });
 
@@ -413,7 +452,8 @@ function convertListItem(
   isOrdered: boolean,
   number: number,
   listItemSize: number,
-  level: number
+  level: number,
+  footnoteMap: Map<string, number>
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const prefix = isOrdered ? `${number}. ` : '• ';
@@ -422,7 +462,7 @@ function convertListItem(
   // Process each child of the list item
   item.children.forEach((child, childIndex) => {
     if (child.type === 'paragraph') {
-      const runs = convertPhrasingContent(child.children);
+      const runs = convertPhrasingContent(child.children, footnoteMap);
 
       // Add prefix only to the first paragraph
       if (childIndex === 0) {
@@ -440,7 +480,7 @@ function convertListItem(
       );
     } else if (child.type === 'list') {
       // Handle nested lists with increased indentation
-      const nestedParagraphs = convertList(child, listItemSize, level + 1);
+      const nestedParagraphs = convertList(child, listItemSize, level + 1, footnoteMap);
       paragraphs.push(...nestedParagraphs);
     }
   });
@@ -452,11 +492,14 @@ function convertListItem(
  * Converts an array of phrasing content (inline elements) to ParagraphChild array
  * Returns TextRun for text, Math for inline formulas
  */
-function convertPhrasingContent(nodes: PhrasingContent[]): ParagraphChild[] {
+function convertPhrasingContent(
+  nodes: PhrasingContent[],
+  footnoteMap: Map<string, number> = new Map()
+): ParagraphChild[] {
   const runs: ParagraphChild[] = [];
 
   for (const node of nodes) {
-    runs.push(...convertPhrasingNode(node));
+    runs.push(...convertPhrasingNode(node, footnoteMap));
   }
 
   return runs;
@@ -474,7 +517,10 @@ interface InlineMathNode {
  * Converts a single phrasing content node to ParagraphChild(s)
  * Returns TextRun for text, Math for inline formulas
  */
-function convertPhrasingNode(node: PhrasingContent): ParagraphChild[] {
+function convertPhrasingNode(
+  node: PhrasingContent,
+  footnoteMap: Map<string, number>
+): ParagraphChild[] {
   switch (node.type) {
     case 'text':
       return [new TextRun({ text: node.value })];
@@ -510,7 +556,7 @@ function convertPhrasingNode(node: PhrasingContent): ParagraphChild[] {
 
     case 'footnoteReference': {
       const refNode = node as FootnoteReference;
-      const numId = _footnoteMap.get(refNode.identifier);
+      const numId = footnoteMap.get(refNode.identifier);
       if (numId !== undefined) {
         return [new FootnoteReferenceRun(numId)];
       }
@@ -587,13 +633,13 @@ const TABLE_BORDERS = {
 /**
  * Converts a markdown table to a docx Table
  */
-function convertTable(node: MdTable): Table {
+function convertTable(node: MdTable, footnoteMap: Map<string, number>): Table {
   const rows = node.children as MdTableRow[];
   const alignments = node.align || [];
 
   const tableRows = rows.map((row, rowIndex) => {
     const isHeader = rowIndex === 0;
-    return convertTableRow(row, isHeader, alignments);
+    return convertTableRow(row, isHeader, alignments, footnoteMap);
   });
 
   return new Table({
@@ -612,12 +658,13 @@ function convertTable(node: MdTable): Table {
 function convertTableRow(
   row: MdTableRow,
   isHeader: boolean,
-  alignments: (string | null)[]
+  alignments: (string | null)[],
+  footnoteMap: Map<string, number>
 ): TableRow {
   const cells = row.children as MdTableCell[];
 
   const tableCells = cells.map((cell, cellIndex) => {
-    return convertTableCell(cell, isHeader, alignments[cellIndex]);
+    return convertTableCell(cell, isHeader, alignments[cellIndex], footnoteMap);
   });
 
   return new TableRow({
@@ -633,12 +680,13 @@ function convertTableRow(
 function convertTableCell(
   cell: MdTableCell,
   isHeader: boolean,
-  _alignment: string | null
+  _alignment: string | null,
+  footnoteMap: Map<string, number>
 ): TableCell {
   // Convert cell content - apply bold style for headers
   const runs = isHeader
     ? convertStyledContent(cell.children as PhrasingContent[], { bold: true })
-    : convertPhrasingContent(cell.children as PhrasingContent[]);
+    : convertPhrasingContent(cell.children as PhrasingContent[], footnoteMap);
 
   return new TableCell({
     verticalAlign: VerticalAlign.CENTER,
