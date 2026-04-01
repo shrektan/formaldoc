@@ -26,3 +26,9 @@ npm-debug.log*
 .env.local
 .env.*.local
 .gstack/
+
+# Claude Code plugins
+.agents/
+.claude/agent-memory/
+.claude/skills/
+skills-lock.json
