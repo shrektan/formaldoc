@@ -18,7 +18,7 @@ describe('convertMdastToDocx', () => {
   describe('headings', () => {
     it('should convert # to Paragraph', () => {
       const mdast = parseMarkdown('# 文档标题');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -26,7 +26,7 @@ describe('convertMdastToDocx', () => {
 
     it('should convert ## to Paragraph', () => {
       const mdast = parseMarkdown('## 一、第一部分');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -34,7 +34,7 @@ describe('convertMdastToDocx', () => {
 
     it('should convert ### to Paragraph', () => {
       const mdast = parseMarkdown('### （一）子标题');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -42,7 +42,7 @@ describe('convertMdastToDocx', () => {
 
     it('should convert #### to Paragraph', () => {
       const mdast = parseMarkdown('#### 1. 详细内容');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -50,7 +50,7 @@ describe('convertMdastToDocx', () => {
 
     it('should convert ##### to Paragraph', () => {
       const mdast = parseMarkdown('##### （1）更多内容');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -60,7 +60,7 @@ describe('convertMdastToDocx', () => {
   describe('paragraphs', () => {
     it('should convert paragraph to Paragraph', () => {
       const mdast = parseMarkdown('这是正文内容。');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -68,7 +68,7 @@ describe('convertMdastToDocx', () => {
 
     it('should handle bold text', () => {
       const mdast = parseMarkdown('这是**粗体**文字');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -76,7 +76,7 @@ describe('convertMdastToDocx', () => {
 
     it('should handle italic text', () => {
       const mdast = parseMarkdown('这是*斜体*文字');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -86,7 +86,7 @@ describe('convertMdastToDocx', () => {
   describe('lists', () => {
     it('should convert unordered list to Paragraphs', () => {
       const mdast = parseMarkdown('- 项目一\n- 项目二\n- 项目三');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(3);
       elements.forEach((el) => {
@@ -96,7 +96,7 @@ describe('convertMdastToDocx', () => {
 
     it('should convert ordered list to Paragraphs', () => {
       const mdast = parseMarkdown('1. 第一项\n2. 第二项\n3. 第三项');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(3);
       elements.forEach((el) => {
@@ -106,7 +106,7 @@ describe('convertMdastToDocx', () => {
 
     it('should handle nested lists', () => {
       const mdast = parseMarkdown('- 外层\n  - 内层一\n  - 内层二');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements.length).toBeGreaterThanOrEqual(3);
       elements.forEach((el) => {
@@ -120,7 +120,7 @@ describe('convertMdastToDocx', () => {
       const mdast = parseMarkdown(`| 列A | 列B |
 |-----|-----|
 | 值1 | 值2 |`);
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Table);
@@ -131,7 +131,7 @@ describe('convertMdastToDocx', () => {
 |------|------|------|
 | 张三 | 30 | 经理 |
 | 李四 | 25 | 员工 |`);
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Table);
@@ -141,7 +141,7 @@ describe('convertMdastToDocx', () => {
   describe('math formulas', () => {
     it('should convert block math to Paragraph', () => {
       const mdast = parseMarkdown('$$\nE = mc^2\n$$');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -149,7 +149,7 @@ describe('convertMdastToDocx', () => {
 
     it('should handle inline math within paragraphs', () => {
       const mdast = parseMarkdown('公式 $a^2 + b^2 = c^2$ 是勾股定理');
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
@@ -172,7 +172,7 @@ describe('convertMdastToDocx', () => {
 | A | 100 |
 `;
       const mdast = parseMarkdown(markdown);
-      const elements = convertMdastToDocx(mdast);
+      const { elements } = convertMdastToDocx(mdast);
 
       // Should have: title, heading, paragraph, 2 list items, table
       expect(elements.length).toBeGreaterThanOrEqual(6);
@@ -189,7 +189,7 @@ describe('convertMdastToDocx', () => {
   describe('titleLevel offset', () => {
     it('should map ## to Title when titleLevel is 2', () => {
       const mdast = parseMarkdown('## 文档标题\n\n### 一级标题\n\n#### 二级标题');
-      const elements = convertMdastToDocx(mdast, 16, 2);
+      const { elements } = convertMdastToDocx(mdast, 16, 2);
 
       // ## → Title, ### → Heading1, #### → Heading2
       expect(elements).toHaveLength(3);
@@ -198,8 +198,8 @@ describe('convertMdastToDocx', () => {
 
     it('should default to titleLevel 1 (standard behavior)', () => {
       const mdast = parseMarkdown('# 标题\n\n## 一级');
-      const elementsDefault = convertMdastToDocx(mdast);
-      const elementsExplicit = convertMdastToDocx(mdast, 16, 1);
+      const { elements: elementsDefault } = convertMdastToDocx(mdast);
+      const { elements: elementsExplicit } = convertMdastToDocx(mdast, 16, 1);
 
       expect(elementsDefault).toHaveLength(2);
       expect(elementsExplicit).toHaveLength(2);
@@ -208,7 +208,7 @@ describe('convertMdastToDocx', () => {
     it('should clamp headings above titleLevel to Title', () => {
       // titleLevel=3 but markdown has ## (depth 2, which is above titleLevel)
       const mdast = parseMarkdown('## 高级标题\n\n### 文档标题\n\n#### 一级标题');
-      const elements = convertMdastToDocx(mdast, 16, 3);
+      const { elements } = convertMdastToDocx(mdast, 16, 3);
 
       // ## (depth 2) → effectiveDepth max(1, 2-3+1)=max(1,0)=1 → Title (clamped)
       // ### (depth 3) → effectiveDepth max(1, 3-3+1)=1 → Title
@@ -218,12 +218,52 @@ describe('convertMdastToDocx', () => {
     });
   });
 
+  describe('footnotes', () => {
+    it('should convert single footnote', () => {
+      const mdast = parseMarkdown('Text with a note[^1].\n\n[^1]: The footnote content.');
+      const result = convertMdastToDocx(mdast);
+
+      expect(result.elements).toHaveLength(1);
+      expect(result.elements[0]).toBeInstanceOf(Paragraph);
+      expect(Object.keys(result.footnotes)).toHaveLength(1);
+      expect(result.footnotes['1']).toBeDefined();
+      expect(result.footnotes['1'].children).toHaveLength(1);
+      expect(result.footnotes['1'].children[0]).toBeInstanceOf(Paragraph);
+    });
+
+    it('should convert multiple footnotes with correct IDs', () => {
+      const mdast = parseMarkdown('First[^a] and second[^b].\n\n[^a]: Note A.\n\n[^b]: Note B.');
+      const result = convertMdastToDocx(mdast);
+
+      expect(result.elements).toHaveLength(1);
+      expect(Object.keys(result.footnotes)).toHaveLength(2);
+      expect(result.footnotes['1']).toBeDefined();
+      expect(result.footnotes['2']).toBeDefined();
+    });
+
+    it('should handle footnote with formatted content', () => {
+      const mdast = parseMarkdown('Text[^1].\n\n[^1]: Note with **bold** and *italic*.');
+      const result = convertMdastToDocx(mdast);
+
+      expect(Object.keys(result.footnotes)).toHaveLength(1);
+      expect(result.footnotes['1'].children[0]).toBeInstanceOf(Paragraph);
+    });
+
+    it('should return empty footnotes when none exist', () => {
+      const mdast = parseMarkdown('Just a paragraph.');
+      const result = convertMdastToDocx(mdast);
+
+      expect(result.elements).toHaveLength(1);
+      expect(Object.keys(result.footnotes)).toHaveLength(0);
+    });
+  });
+
   describe('empty content', () => {
     it('should handle empty markdown', () => {
       const mdast = parseMarkdown('');
-      const elements = convertMdastToDocx(mdast);
+      const result = convertMdastToDocx(mdast);
 
-      expect(elements).toHaveLength(0);
+      expect(result.elements).toHaveLength(0);
     });
   });
 });

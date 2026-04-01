@@ -80,9 +80,13 @@ export function createDocument(
   // Step 1: Parse markdown to AST
   const mdast = parseMarkdown(markdown);
 
-  // Step 2: Convert AST to docx paragraphs
+  // Step 2: Convert AST to docx paragraphs (with footnote extraction)
   // Pass listItem font size for correct indent calculation
-  const paragraphs = convertMdastToDocx(mdast, settings.listItem.size, titleLevel);
+  const { elements: paragraphs, footnotes } = convertMdastToDocx(
+    mdast,
+    settings.listItem.size,
+    titleLevel
+  );
 
   // Step 3: Create footer with custom styles and format
   const pageNumberFormat = documentSettings?.pageNumberFormat ?? 'dash';
@@ -99,8 +103,10 @@ export function createDocument(
   };
 
   // Step 5: Create document with styles and page settings
+  const hasFootnotes = Object.keys(footnotes).length > 0;
   const doc = new Document({
     styles: createDocumentStyles(settings, documentSettings),
+    ...(hasFootnotes ? { footnotes } : {}),
     sections: [
       {
         properties: {
