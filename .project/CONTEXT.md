@@ -6,7 +6,7 @@
 and English document formats. All processing happens client-side (no server, works offline).
 
 - **Repo**: https://github.com/shrektan/formaldoc
-- **Version**: 1.16.1
+- **Version**: 1.19.3
 - **License**: Apache-2.0
 - **Platforms**: Web app, npm package, CLI tool, AI Skill
 
