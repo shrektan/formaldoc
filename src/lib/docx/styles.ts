@@ -339,7 +339,7 @@ export function createDocumentStyles(
         },
       },
 
-      // Block Quote - indented text for quotations
+      // Block Quote - plain style (spacing separation) or indented+italic depending on template
       {
         id: 'BlockQuote',
         name: 'Block Quote',
@@ -352,15 +352,30 @@ export function createDocumentStyles(
         },
         paragraph: {
           alignment: AlignmentType.BOTH,
-          spacing: {
-            after: spacingAfter,
-            line: spacing.line,
-            lineRule: spacing.lineRule,
-          },
-          indent: {
-            left: 567, // ~1cm left indent for quotes
-            firstLine: 0, // No first line indent
-          },
+          spacing: settings.blockquote.italic
+            ? {
+                after: spacingAfter,
+                line: spacing.line,
+                lineRule: spacing.lineRule,
+              }
+            : {
+                before: 120, // ~6pt spacing before for visual separation
+                after: 120, // ~6pt spacing after for visual separation
+                line: spacing.line,
+                lineRule: spacing.lineRule,
+              },
+          ...(settings.blockquote.italic
+            ? {
+                indent: {
+                  left: 567, // ~1cm left indent for quotes
+                  firstLine: 0, // No first line indent
+                },
+              }
+            : {
+                indent: {
+                  firstLine: getIndent(settings.blockquote),
+                },
+              }),
         },
       },
 

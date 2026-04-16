@@ -85,7 +85,8 @@ export function createDocument(
   const { elements: paragraphs, footnotes } = convertMdastToDocx(
     mdast,
     settings.listItem.size,
-    titleLevel
+    titleLevel,
+    { blockquotePlain: !settings.blockquote.italic }
   );
 
   // Step 3: Create footer with custom styles and format

@@ -67,11 +67,20 @@ const HEADING_STYLE_MAP: Record<number, string> = {
  * @param listItemSize - Font size for list items (used to calculate indent), defaults to 16pt
  * @param titleLevel - The markdown heading level that should map to Title (1-5), defaults to 1
  */
+export interface ConvertOptions {
+  listItemSize?: number;
+  titleLevel?: number;
+  /** When true, blockquotes render as plain body text with BlockQuote style (no shading/indent/italic) */
+  blockquotePlain?: boolean;
+}
+
 export function convertMdastToDocx(
   mdast: Root,
   listItemSize: number = 16,
-  titleLevel: number = 1
+  titleLevel: number = 1,
+  options?: ConvertOptions
 ): ConversionResult {
+  const blockquotePlain = options?.blockquotePlain ?? false;
   // Phase 1: Collect footnote definitions and assign numeric IDs
   const footnotes: Record<string, { children: Paragraph[] }> = {};
   const footnoteMap = new Map<string, number>();
@@ -86,7 +95,13 @@ export function convertMdastToDocx(
       // Convert definition children to docx elements
       const paras: Paragraph[] = [];
       for (const child of defNode.children) {
-        const converted = convertNode(child as Content, listItemSize, titleLevel, footnoteMap);
+        const converted = convertNode(
+          child as Content,
+          listItemSize,
+          titleLevel,
+          footnoteMap,
+          blockquotePlain
+        );
         for (const el of converted) {
           if (el instanceof Paragraph) {
             paras.push(el);
@@ -107,7 +122,7 @@ export function convertMdastToDocx(
   const elements: DocxElement[] = [];
   for (const node of mdast.children) {
     if (node.type === 'footnoteDefinition') continue;
-    const converted = convertNode(node, listItemSize, titleLevel, footnoteMap);
+    const converted = convertNode(node, listItemSize, titleLevel, footnoteMap, blockquotePlain);
     elements.push(...converted);
   }
 
@@ -130,7 +145,8 @@ function convertNode(
   node: Content,
   listItemSize: number,
   titleLevel: number,
-  footnoteMap: Map<string, number>
+  footnoteMap: Map<string, number>,
+  blockquotePlain: boolean = false
 ): DocxElement[] {
   switch (node.type) {
     case 'heading':
@@ -146,7 +162,7 @@ function convertNode(
     case 'math':
       return [convertMath(node as unknown as MathNode)];
     case 'blockquote':
-      return convertBlockquote(node as Blockquote, listItemSize, 1, footnoteMap);
+      return convertBlockquote(node as Blockquote, listItemSize, 1, footnoteMap, blockquotePlain);
     case 'thematicBreak':
       // Ignore thematic breaks (---) as AI often generates many of these
       return [];
@@ -255,38 +271,49 @@ const BLOCKQUOTE_SHADING = 'E8E8E8';
 
 /**
  * Converts a blockquote node to docx Paragraph(s)
- * Uses BodyText style with italic text and light gray background
+ * Plain mode: uses BlockQuote style (no shading/indent/italic, spacing handles separation)
+ * Fancy mode: uses BodyText style with italic text, gray background, and left indent
  */
 function convertBlockquote(
   node: Blockquote,
   listItemSize: number,
   level: number = 1,
-  footnoteMap: Map<string, number> = new Map()
+  footnoteMap: Map<string, number> = new Map(),
+  plain: boolean = false
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const indent = BLOCKQUOTE_INDENT * level;
 
   for (const child of node.children) {
     if (child.type === 'paragraph') {
-      // Convert content with italic styling
-      const runs = convertBlockquoteContent(child.children);
-      paragraphs.push(
-        new Paragraph({
-          style: 'BodyText',
-          children: runs,
-          shading: {
-            type: ShadingType.CLEAR,
-            fill: BLOCKQUOTE_SHADING,
-          },
-          indent: {
-            left: indent,
-            firstLine: 0,
-          },
-        })
-      );
+      if (plain) {
+        const runs = convertPhrasingContent(child.children, footnoteMap);
+        paragraphs.push(
+          new Paragraph({
+            style: 'BlockQuote',
+            children: runs,
+          })
+        );
+      } else {
+        const runs = convertBlockquoteContent(child.children);
+        paragraphs.push(
+          new Paragraph({
+            style: 'BodyText',
+            children: runs,
+            shading: {
+              type: ShadingType.CLEAR,
+              fill: BLOCKQUOTE_SHADING,
+            },
+            indent: {
+              left: indent,
+              firstLine: 0,
+            },
+          })
+        );
+      }
     } else if (child.type === 'blockquote') {
       // Nested blockquote - recurse with increased level
-      const nested = convertBlockquote(child, listItemSize, level + 1, footnoteMap);
+      const nested = convertBlockquote(child, listItemSize, level + 1, footnoteMap, plain);
       paragraphs.push(...nested);
     } else if (child.type === 'list') {
       // Lists inside blockquotes - convert and adjust indent
@@ -299,7 +326,7 @@ function convertBlockquote(
 }
 
 /**
- * Converts blockquote content with italic styling
+ * Converts blockquote content with italic styling (used in fancy mode)
  */
 function convertBlockquoteContent(nodes: PhrasingContent[]): TextRun[] {
   // Use convertStyledContent which properly handles nested formatting

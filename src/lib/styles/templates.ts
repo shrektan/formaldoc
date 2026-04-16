@@ -82,9 +82,9 @@ const CN_GOV_STYLES: StyleSettings = {
     indent: true,
   },
 
-  // 引用: 楷体 16pt (使用楷体区分引用内容)
+  // 引用: 与正文一致 (公文中无特殊引用样式)
   blockquote: {
-    font: '楷体',
+    font: '仿宋',
     englishFont: 'Times New Roman',
     size: 16,
   },
