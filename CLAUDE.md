@@ -26,6 +26,8 @@ Fix any remaining errors before committing. Do not commit code that fails lintin
 - **Patch** (e.g., 1.6.0 → 1.6.1): Bug fixes, minor tweaks, CSS adjustments
 - **Minor** (e.g., 1.6.0 → 1.7.0): New features, significant enhancements
 
+**npm Publish Reminder**: When changes touch `cli/`, `src/lib/`, `src/node.ts`, or `src/types/` (i.e., anything shipped in the npm package), remind the user to publish to npm (`npm publish`) at the end of the session.
+
 ## Project Stack
 
 - **Framework**: React 19 + TypeScript + Vite
