@@ -39,6 +39,9 @@ function stripZws(node: Root): void {
       if ('value' in child && typeof child.value === 'string') {
         child.value = child.value.replace(/\u200B/g, '');
       }
+      if ('url' in child && typeof child.url === 'string') {
+        child.url = child.url.replace(/\u200B/g, '');
+      }
       if ('children' in child && Array.isArray(child.children)) {
         walk(child.children as (RootContent | PhrasingContent)[]);
       }

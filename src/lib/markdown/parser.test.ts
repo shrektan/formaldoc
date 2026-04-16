@@ -83,6 +83,17 @@ describe('parseMarkdown', () => {
 
       expect(para.children[1].type).toBe('strong');
     });
+
+    it('should not corrupt URLs containing asterisks', () => {
+      const input = '[glob](https://host/**/foo)';
+      const result = parseMarkdown(input);
+      const para = result.children[0] as {
+        children: { type: string; url?: string }[];
+      };
+
+      expect(para.children[0].type).toBe('link');
+      expect(para.children[0].url).toBe('https://host/**/foo');
+    });
   });
 
   describe('GFM support', () => {
