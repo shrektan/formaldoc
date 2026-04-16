@@ -19,6 +19,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve, basename, dirname, extname, join } from 'node:path';
 import { convertMarkdownToDocxFile, DEFAULT_TEMPLATE, isValidTemplateName } from '../src/node.js';
+import { convertQuotes } from '../src/lib/text-processing.js';
 import type { StyleSettings } from '../src/types/styles.js';
 
 const VERSION = '1.2.2';
@@ -29,6 +30,7 @@ interface CliOptions {
   template?: string;
   styles?: string;
   titleLevel?: number;
+  quotes: boolean;
   help: boolean;
   version: boolean;
   stdin: boolean;
@@ -51,6 +53,7 @@ OPTIONS:
   -t, --template <name>   Template to use (default: cn-gov)
   -s, --styles <file>     Custom styles JSON (applied on top of template)
   -l, --title-level <n>   Heading level to use as title (1-5, default: 1)
+  --quotes                Convert English quotes to Chinese quotes ("..." → \u201C...\u201D)
   -h, --help              Show this help message
   -v, --version           Show version number
   --stdin                 Read markdown from stdin (requires -o)
@@ -65,6 +68,7 @@ EXAMPLES:
   formaldoc document.md                       # CN gov format (default)
   formaldoc document.md -t en-standard        # English format
   formaldoc document.md -l 2                  # Treat ## as title
+  formaldoc document.md --quotes                  # Convert quotes first
   formaldoc document.md -t cn-gov -s custom.json  # CN gov + custom overrides
   cat doc.md | formaldoc --stdin -o out.docx
 
@@ -81,6 +85,7 @@ STYLE SETTINGS:
 
 function parseArgs(args: string[]): CliOptions {
   const options: CliOptions = {
+    quotes: false,
     help: false,
     version: false,
     stdin: false,
@@ -94,6 +99,8 @@ function parseArgs(args: string[]): CliOptions {
       options.help = true;
     } else if (arg === '-v' || arg === '--version') {
       options.version = true;
+    } else if (arg === '--quotes') {
+      options.quotes = true;
     } else if (arg === '--stdin') {
       options.stdin = true;
     } else if (arg === '-o' || arg === '--output') {
@@ -211,6 +218,14 @@ async function main(): Promise<void> {
 
   const outputPath = options.output ? resolve(options.output) : defaultOutput;
   const { styleOverrides, template } = loadStyleOverrides(options.template, options.styles);
+
+  if (options.quotes) {
+    const { text, count } = convertQuotes(markdown);
+    markdown = text;
+    if (count > 0) {
+      console.log(`Converted ${count} quote pair(s) to Chinese quotes`);
+    }
+  }
 
   try {
     const templateLabel = template || DEFAULT_TEMPLATE;
