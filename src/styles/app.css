@@ -71,14 +71,13 @@ a:focus-visible {
 .app-simple {
   min-height: 100vh;
   min-height: 100dvh;
-  height: 100dvh;
   display: flex;
   flex-direction: column;
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
   padding: 18px 22px 14px;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .header-simple {
@@ -222,7 +221,7 @@ a:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .input-section {
@@ -993,5 +992,40 @@ a:focus-visible {
   .editor-container,
   .content-textarea {
     min-height: 260px;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 768px) {
+  .app-simple {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .header-simple {
+    padding-bottom: 8px;
+  }
+
+  .template-strip {
+    margin-top: 6px;
+  }
+
+  .editor-container,
+  .content-textarea {
+    min-height: 170px;
+  }
+
+  .footer-simple {
+    padding-top: 8px;
+  }
+}
+
+@media (max-height: 640px) and (min-width: 768px) {
+  .tip {
+    display: none;
+  }
+
+  .editor-container,
+  .content-textarea {
+    min-height: 140px;
   }
 }

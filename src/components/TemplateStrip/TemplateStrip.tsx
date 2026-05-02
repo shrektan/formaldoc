@@ -31,9 +31,18 @@ function MiniTemplateCard({ template, isSelected, onSelect, uiLanguage }: MiniTe
       title={template.category === 'chinese' ? template.description : template.descriptionEn}
     >
       {isSelected && <span className="mini-card-check">&#10003;</span>}
-      <div className="mini-card-name">{displayName}</div>
-      <div className="mini-card-spec">
-        {spec.bodyFont} | {spec.lineSpacing} | {spec.indent}
+      <span className="mini-card-thumb" aria-hidden="true">
+        {template.thumbnail ? (
+          <img src={template.thumbnail} alt="" loading="lazy" decoding="async" />
+        ) : (
+          <span className="mini-card-thumb-fallback" />
+        )}
+      </span>
+      <div className="mini-card-copy">
+        <div className="mini-card-name">{displayName}</div>
+        <div className="mini-card-spec">
+          {spec.bodyFont} | {spec.lineSpacing} | {spec.indent}
+        </div>
       </div>
     </button>
   );
