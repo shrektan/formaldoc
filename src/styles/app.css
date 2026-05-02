@@ -443,20 +443,20 @@ a:focus-visible {
 .filename-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 10px;
-  padding: 9px 10px;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 8px;
   background: var(--surface-subtle);
   border: 1px solid transparent;
   border-radius: var(--radius);
 }
 
 .filename-row + .filename-row {
-  margin-top: 6px;
+  margin-top: 3px;
 }
 
 .filename-row label {
-  width: 78px;
+  width: 62px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -472,7 +472,7 @@ a:focus-visible {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 0 9px;
+  padding: 0 8px;
   box-shadow: var(--shadow-control);
   transition: border-color 0.16s;
 }
@@ -487,7 +487,7 @@ a:focus-visible {
   border: none;
   background: transparent;
   font-size: 14px;
-  padding: 8px 0;
+  padding: 6px 0;
   color: var(--text);
 }
 
@@ -508,7 +508,7 @@ a:focus-visible {
 .title-level-select {
   flex: 1;
   min-width: 0;
-  height: 34px;
+  height: 31px;
   font-size: 14px;
   padding: 0 10px;
   border: 1px solid var(--border);
