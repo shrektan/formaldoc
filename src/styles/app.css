@@ -901,13 +901,13 @@ a:focus-visible {
   }
 
   .header-title {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
     gap: 10px;
   }
 
   .brand-lockup {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
   }
 
   .header-simple h1 {
@@ -923,8 +923,8 @@ a:focus-visible {
   }
 
   .header-actions {
-    width: 100%;
-    justify-content: space-between;
+    justify-content: flex-end;
+    gap: 8px;
   }
 
   .input-section {
@@ -981,6 +981,40 @@ a:focus-visible {
 
   .style-section-preview {
     max-width: 120px;
+  }
+}
+
+@media (max-width: 460px) {
+  .logo-frame {
+    width: 38px;
+    height: 38px;
+  }
+
+  .logo {
+    width: 25px;
+    height: 25px;
+  }
+
+  .header-simple h1 {
+    font-size: 20px;
+  }
+
+  .tagline {
+    font-size: 12px;
+  }
+
+  .github-link {
+    width: 34px;
+    height: 34px;
+  }
+
+  .language-switch {
+    padding: 2px;
+  }
+
+  .lang-btn {
+    min-width: 34px;
+    padding: 7px 8px;
   }
 }
 

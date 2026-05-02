@@ -19,11 +19,13 @@
 .mini-card {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 6px;
   flex: 1 1 0;
-  min-width: 176px;
-  padding: 8px 34px 8px 9px;
+  min-width: 156px;
+  min-height: 66px;
+  padding: 10px 12px;
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -71,42 +73,6 @@
   font-weight: 700;
 }
 
-.mini-card-thumb {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  width: 42px;
-  height: 56px;
-  flex: 0 0 auto;
-  overflow: hidden;
-  padding: 3px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-}
-
-.mini-card-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center center;
-}
-
-.mini-card-thumb-fallback {
-  display: block;
-  width: 22px;
-  height: 30px;
-  margin-top: 8px;
-  border-radius: 3px;
-  background:
-    linear-gradient(var(--border), var(--border)) 5px 8px / 12px 1px no-repeat,
-    linear-gradient(var(--border), var(--border)) 5px 13px / 12px 1px no-repeat,
-    linear-gradient(var(--border), var(--border)) 5px 18px / 9px 1px no-repeat,
-    var(--surface-subtle);
-  border: 1px solid var(--border);
-}
-
 .mini-card-copy {
   min-width: 0;
 }
@@ -129,6 +95,24 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.mini-card-preview {
+  position: static;
+  padding: 2px 7px;
+  color: var(--primary);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.mini-card-preview:hover {
+  background: var(--surface);
+  border-color: rgba(37, 99, 235, 0.5);
 }
 
 .strip-settings-btn {
@@ -162,6 +146,89 @@
   height: 17px;
 }
 
+.template-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(3px);
+}
+
+.template-preview-dialog {
+  width: min(860px, 100%);
+  max-height: min(92vh, 900px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.26);
+}
+
+.template-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.template-preview-header h2 {
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.template-preview-header p {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.template-preview-close {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.template-preview-close:hover {
+  color: var(--text);
+  background: var(--surface-muted);
+}
+
+.template-preview-body {
+  overflow: auto;
+  padding: 18px;
+  background: var(--surface-subtle);
+}
+
+.template-preview-image {
+  display: block;
+  width: min(100%, 760px);
+  height: auto;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+}
+
 @media (max-width: 640px) {
   .template-strip {
     gap: 7px;
@@ -173,13 +240,10 @@
   }
 
   .mini-card {
-    flex: 0 0 176px;
-    padding: 8px 30px 8px 9px;
-  }
-
-  .mini-card-thumb {
-    width: 38px;
-    height: 50px;
+    flex: 0 0 164px;
+    min-width: 164px;
+    min-height: 66px;
+    padding: 9px 10px;
   }
 
   .mini-card-name {
@@ -193,5 +257,13 @@
   .strip-settings-btn {
     width: 38px;
     min-width: 38px;
+  }
+
+  .template-preview-overlay {
+    padding: 10px;
+  }
+
+  .template-preview-body {
+    padding: 12px;
   }
 }
