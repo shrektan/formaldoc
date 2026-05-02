@@ -556,8 +556,8 @@ a:focus-visible {
 .generate-btn {
   flex: 0 0 auto;
   width: 100%;
-  min-height: 50px;
-  padding: 13px 22px;
+  min-height: 48px;
+  padding: 12px 22px;
   font-size: 16px;
   font-weight: 700;
   color: white;
@@ -1025,6 +1025,14 @@ a:focus-visible {
 @media (min-width: 768px) {
   .app-simple {
     padding-top: 20px;
+  }
+
+  .generate-btn {
+    align-self: flex-end;
+    width: min(100%, 320px);
+    min-height: 46px;
+    padding: 11px 20px;
+    font-size: 15px;
   }
 
   .editor-container,
