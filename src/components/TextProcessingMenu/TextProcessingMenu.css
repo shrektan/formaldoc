@@ -3,41 +3,49 @@
 }
 
 .text-processing-trigger {
+  min-height: 32px;
   font-size: 13px;
-  color: var(--primary);
-  background: none;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  padding: 5px 11px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   white-space: nowrap;
+  box-shadow: var(--shadow-control);
   transition:
-    border-color 0.2s,
-    background 0.2s;
+    border-color 0.16s,
+    background 0.16s,
+    color 0.16s,
+    transform 0.16s;
 }
 
 .text-processing-trigger:hover:not(:disabled) {
   border-color: var(--primary);
-  background: rgba(26, 115, 232, 0.05);
+  color: var(--primary);
+  background: var(--primary-soft);
+  transform: translateY(-1px);
 }
 
 .text-processing-trigger:disabled {
-  opacity: 0.4;
+  opacity: 0.42;
   cursor: not-allowed;
+  transform: none;
 }
 
 .dropdown-arrow {
   display: inline-block;
   width: 0;
   height: 0;
-  margin-left: 4px;
+  margin-left: 2px;
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 5px solid currentColor;
-  transition: transform 0.2s ease;
+  transition: transform 0.16s ease;
 }
 
 .dropdown-arrow.open {
@@ -46,42 +54,43 @@
 
 .text-processing-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 6px);
   left: 0;
-  margin-top: 4px;
-  min-width: 140px;
+  min-width: 168px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
   z-index: 50;
   overflow: hidden;
 }
 
 .text-processing-item {
   width: 100%;
-  padding: 10px 14px;
+  padding: 10px 13px;
   font-size: 13px;
   color: var(--text);
   background: none;
   border: none;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s;
+  transition:
+    background 0.14s,
+    color 0.14s;
 }
 
 .text-processing-item:hover:not(:disabled) {
-  background: var(--bg);
+  background: var(--surface-subtle);
 }
 
 .text-processing-item:disabled {
-  opacity: 0.4;
+  opacity: 0.42;
   cursor: not-allowed;
 }
 
 .text-processing-item.clean-all {
   color: var(--primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .text-processing-divider {
