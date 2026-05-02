@@ -451,6 +451,10 @@ a:focus-visible {
   border-radius: var(--radius);
 }
 
+.filename-row + .filename-row {
+  margin-top: 6px;
+}
+
 .filename-row label {
   width: 78px;
   font-size: 13px;
