@@ -581,6 +581,29 @@ function convertPhrasingNode(
       // Ignore manual line breaks as AI often generates many of these
       return [];
 
+    case 'html': {
+      // Honor inline <br> tags (most common in table cells where real newlines
+      // aren't possible). Other inline HTML falls through to the default and
+      // renders as literal text (existing behavior).
+      const value = (node as Html).value;
+      const brPattern = /<br\s*\/?>/gi;
+      if (!brPattern.test(value)) {
+        return [new TextRun({ text: value })];
+      }
+      // Split on <br> and produce alternating text + break runs.
+      const parts = value.split(/<br\s*\/?>/gi);
+      const runs: ParagraphChild[] = [];
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i]) {
+          runs.push(new TextRun({ text: parts[i] }));
+        }
+        if (i < parts.length - 1) {
+          runs.push(new TextRun({ break: 1 }));
+        }
+      }
+      return runs;
+    }
+
     case 'footnoteReference': {
       const refNode = node as FootnoteReference;
       const numId = footnoteMap.get(refNode.identifier);

@@ -83,6 +83,77 @@ describe('convertMdastToDocx', () => {
     });
   });
 
+  describe('inline HTML', () => {
+    // Count <w:br/> elements in a Paragraph by walking its docx internal tree.
+    // docx represents <br> via a Break XmlComponent whose root XML element is
+    // 'w:br'. We look at TextRun children (rootKey === 'w:r') and inspect their
+    // content for Break instances.
+    const countLineBreaks = (paragraph: Paragraph): number => {
+      let count = 0;
+      const visit = (node: unknown) => {
+        if (node && typeof node === 'object') {
+          const rootKey = (node as { rootKey?: string }).rootKey;
+          if (rootKey === 'w:br') {
+            count++;
+          }
+          const root = (node as { root?: unknown[] }).root;
+          if (Array.isArray(root)) {
+            for (const child of root) visit(child);
+          }
+        }
+      };
+      visit(paragraph);
+      return count;
+    };
+
+    it('should convert <br> to a line break inside a paragraph', () => {
+      const mdast = parseMarkdown('first<br>second');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(countLineBreaks(elements[0] as Paragraph)).toBe(1);
+    });
+
+    it('should convert consecutive <br><br> to two line breaks', () => {
+      const mdast = parseMarkdown('alpha<br><br>beta');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(countLineBreaks(elements[0] as Paragraph)).toBe(2);
+    });
+
+    it('should support <br/> and <BR> variants', () => {
+      const mdast = parseMarkdown('a<br/>b<BR>c<br />d');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(countLineBreaks(elements[0] as Paragraph)).toBe(3);
+    });
+
+    it('should honor <br> inside table cells', () => {
+      const mdast = parseMarkdown(`| 列A | 列B |
+|-----|-----|
+| 行1<br><br>行2 | 单值 |`);
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Table);
+      // Walk the Table to count w:br anywhere inside.
+      let breakCount = 0;
+      const visit = (node: unknown) => {
+        if (node && typeof node === 'object') {
+          if ((node as { rootKey?: string }).rootKey === 'w:br') breakCount++;
+          const root = (node as { root?: unknown[] }).root;
+          if (Array.isArray(root)) for (const c of root) visit(c);
+        }
+      };
+      visit(elements[0]);
+      expect(breakCount).toBe(2);
+    });
+  });
+
   describe('lists', () => {
     it('should convert unordered list to Paragraphs', () => {
       const mdast = parseMarkdown('- 项目一\n- 项目二\n- 项目三');
