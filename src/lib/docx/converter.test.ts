@@ -152,6 +152,44 @@ describe('convertMdastToDocx', () => {
       visit(elements[0]);
       expect(breakCount).toBe(2);
     });
+
+    it('should honor <br> inside bold text', () => {
+      const mdast = parseMarkdown('**第一行<br>第二行**');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(countLineBreaks(elements[0] as Paragraph)).toBe(1);
+    });
+
+    it('should honor <br><br> inside italic text', () => {
+      const mdast = parseMarkdown('*强调<br><br>注释*');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(countLineBreaks(elements[0] as Paragraph)).toBe(2);
+    });
+
+    it('should honor <br> inside bold table cells', () => {
+      const mdast = parseMarkdown(`| 列A | 列B |
+|-----|-----|
+| **重要**<br>说明 | **核心**<br><br>细节 |`);
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Table);
+      let breakCount = 0;
+      const visit = (node: unknown) => {
+        if (node && typeof node === 'object') {
+          if ((node as { rootKey?: string }).rootKey === 'w:br') breakCount++;
+          const root = (node as { root?: unknown[] }).root;
+          if (Array.isArray(root)) for (const c of root) visit(c);
+        }
+      };
+      visit(elements[0]);
+      expect(breakCount).toBe(3);
+    });
   });
 
   describe('lists', () => {
