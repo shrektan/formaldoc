@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.20.1] — 2026-05-25
+
+### Fixed
+- Editor textarea now fills the full container height — `.editor-container` switched to flex column and `.content-textarea` uses `flex: 1` with `display: block` instead of `height: 100%` on a default inline-block textarea, eliminating the unusable empty strip at the bottom of the textbox after pasting
+
 ## [1.19.3] — 2026-04-16
 
 ### Added
