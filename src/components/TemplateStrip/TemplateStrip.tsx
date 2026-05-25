@@ -33,10 +33,19 @@ function MiniTemplateCard({
   const spec = template.specs;
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
       className={`mini-card ${isSelected ? 'selected' : ''}`}
       onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect();
+        }
+      }}
       title={template.category === 'chinese' ? template.description : template.descriptionEn}
     >
       {isSelected && <span className="mini-card-check">&#10003;</span>}
@@ -58,7 +67,7 @@ function MiniTemplateCard({
           {previewLabel}
         </button>
       )}
-    </button>
+    </div>
   );
 }
 
