@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.20.3] — 2026-05-25
+
+### Fixed
+- Inline `<br>` in Markdown is now honored as a Word line break in both unstyled and styled contexts (bold / italic / strike / styled table cells). Previously rendered as the literal string `<br>`, which broke the common pattern of using `<br>` inside Markdown table cells (where real newlines aren't allowed) — particularly noticeable when AI assistants emit `<br><br>` inside `**bold**` cells. Other inline HTML (`<sub>`, `<u>`, …) keeps its existing literal-text behavior
+
 ## [1.20.1] — 2026-05-25
 
 ### Fixed

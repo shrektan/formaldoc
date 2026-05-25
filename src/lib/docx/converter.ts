@@ -541,6 +541,30 @@ interface InlineMathNode {
 }
 
 /**
+ * Splits an inline HTML value on <br>/<br/>/<br /> (case-insensitive) and emits
+ * alternating text + break runs. When no <br> is present, returns a single text
+ * run with the value as literal text (preserves existing inline-HTML behavior).
+ * `runOptions` carries inherited styling (bold/italic/strike) for styled paths.
+ */
+function splitHtmlBreaks(value: string, runOptions: Partial<IRunOptions> = {}): TextRun[] {
+  const brPattern = /<br\s*\/?>/gi;
+  if (!brPattern.test(value)) {
+    return [new TextRun({ text: value, ...runOptions })];
+  }
+  const parts = value.split(/<br\s*\/?>/gi);
+  const runs: TextRun[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i]) {
+      runs.push(new TextRun({ text: parts[i], ...runOptions }));
+    }
+    if (i < parts.length - 1) {
+      runs.push(new TextRun({ break: 1 }));
+    }
+  }
+  return runs;
+}
+
+/**
  * Converts a single phrasing content node to ParagraphChild(s)
  * Returns TextRun for text, Math for inline formulas
  */
@@ -580,6 +604,11 @@ function convertPhrasingNode(
     case 'break':
       // Ignore manual line breaks as AI often generates many of these
       return [];
+
+    case 'html':
+      // Honor inline <br> as line breaks; other inline HTML (<sub>, <u>, ...)
+      // still renders as literal text (same as the pre-existing default branch).
+      return splitHtmlBreaks((node as Html).value);
 
     case 'footnoteReference': {
       const refNode = node as FootnoteReference;
@@ -635,6 +664,11 @@ function convertStyledContent(nodes: PhrasingContent[], style: Partial<IRunOptio
     } else if (node.type === 'emphasis') {
       // Nested emphasis inside strong
       runs.push(...convertStyledContent(node.children, { ...style, italics: true }));
+    } else if (node.type === 'html') {
+      // Honor <br> inside styled spans (**a<br>b**, *a<br>b*, ~~a<br>b~~,
+      // styled table cells). Non-<br> inline HTML falls through to literal
+      // text with the inherited style.
+      runs.push(...splitHtmlBreaks((node as Html).value, style));
     } else if ('children' in node && Array.isArray(node.children)) {
       runs.push(...convertStyledContent(node.children as PhrasingContent[], style));
     } else if ('value' in node && typeof node.value === 'string') {
