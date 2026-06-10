@@ -86,7 +86,10 @@ export function createDocument(
     mdast,
     settings.listItem.size,
     titleLevel,
-    { blockquotePlain: !settings.blockquote.italic }
+    {
+      blockquotePlain: !settings.blockquote.italic,
+      bodyLineSpacingType: documentSettings?.lineSpacing.type ?? 'exact',
+    }
   );
 
   // Step 3: Create footer with custom styles and format

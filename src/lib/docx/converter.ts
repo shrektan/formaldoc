@@ -74,7 +74,7 @@ const BLOCK_FORMULA_SPACING = {
 };
 
 const TALL_INLINE_MATH_PATTERN =
-  /\\(?:d?frac|tfrac|cfrac|sqrt|sum|prod|iiint|iint|oint|int|lim|overline|underline|overset|underset|overbrace|underbrace|binom|stackrel)\b|\\begin\s*\{(?:matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|array|gathered|split)\}|\\choose\b/;
+  /\\(?:d?frac|cfrac|binom|overset|underset|overbrace|underbrace|stackrel)\b|\\begin\s*\{(?:matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|array|gathered|split)\}|\\choose\b/;
 
 /**
  * Converts an mdast AST to docx elements with footnote support
@@ -87,6 +87,8 @@ export interface ConvertOptions {
   titleLevel?: number;
   /** When true, blockquotes render as plain body text with BlockQuote style (no shading/indent/italic) */
   blockquotePlain?: boolean;
+  /** Body paragraphs only need inline formula spacing overrides when template line spacing is fixed. */
+  bodyLineSpacingType?: 'exact' | 'auto';
 }
 
 export function convertMdastToDocx(
@@ -96,6 +98,7 @@ export function convertMdastToDocx(
   options?: ConvertOptions
 ): ConversionResult {
   const blockquotePlain = options?.blockquotePlain ?? false;
+  const shouldAdjustInlineFormulaSpacing = (options?.bodyLineSpacingType ?? 'exact') === 'exact';
   // Phase 1: Collect footnote definitions and assign numeric IDs
   const footnotes: Record<string, { children: Paragraph[] }> = {};
   const footnoteMap = new Map<string, number>();
@@ -115,7 +118,8 @@ export function convertMdastToDocx(
           listItemSize,
           titleLevel,
           footnoteMap,
-          blockquotePlain
+          blockquotePlain,
+          shouldAdjustInlineFormulaSpacing
         );
         for (const el of converted) {
           if (el instanceof Paragraph) {
@@ -137,7 +141,14 @@ export function convertMdastToDocx(
   const elements: DocxElement[] = [];
   for (const node of mdast.children) {
     if (node.type === 'footnoteDefinition') continue;
-    const converted = convertNode(node, listItemSize, titleLevel, footnoteMap, blockquotePlain);
+    const converted = convertNode(
+      node,
+      listItemSize,
+      titleLevel,
+      footnoteMap,
+      blockquotePlain,
+      shouldAdjustInlineFormulaSpacing
+    );
     elements.push(...converted);
   }
 
@@ -161,13 +172,14 @@ function convertNode(
   listItemSize: number,
   titleLevel: number,
   footnoteMap: Map<string, number>,
-  blockquotePlain: boolean = false
+  blockquotePlain: boolean = false,
+  shouldAdjustInlineFormulaSpacing: boolean = true
 ): DocxElement[] {
   switch (node.type) {
     case 'heading':
       return [convertHeading(node, titleLevel, footnoteMap)];
     case 'paragraph':
-      return [convertParagraph(node, footnoteMap)];
+      return [convertParagraph(node, footnoteMap, shouldAdjustInlineFormulaSpacing)];
     case 'list':
       return convertList(node, listItemSize, 0, footnoteMap);
     case 'table':
@@ -260,9 +272,16 @@ function convertHeading(
 /**
  * Converts a paragraph node to a docx Paragraph
  */
-function convertParagraph(node: MdParagraph, footnoteMap: Map<string, number>): Paragraph {
+function convertParagraph(
+  node: MdParagraph,
+  footnoteMap: Map<string, number>,
+  shouldAdjustInlineFormulaSpacing: boolean
+): Paragraph {
   const runs = convertPhrasingContent(node.children, footnoteMap);
-  const spacing = hasTallInlineMath(node.children) ? SINGLE_LINE_SPACING : undefined;
+  const spacing =
+    shouldAdjustInlineFormulaSpacing && hasTallInlineMath(node.children)
+      ? SINGLE_LINE_SPACING
+      : undefined;
 
   return new Paragraph({
     style: 'BodyText',

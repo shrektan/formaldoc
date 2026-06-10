@@ -309,6 +309,15 @@ describe('convertMdastToDocx', () => {
       expect(getParagraphSpacing(elements[0] as Paragraph)).toBeUndefined();
     });
 
+    it('should not single-space paragraphs containing simple inline operators', () => {
+      const mdast = parseMarkdown('公式 $\\sum_{i=1}^{n} x_i$ 在正文行内。');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toBeUndefined();
+    });
+
     it('should single-space paragraphs containing tall inline math', () => {
       const mdast = parseMarkdown('公式 $\\frac{a}{b}$ 在正文行内。');
       const { elements } = convertMdastToDocx(mdast);
@@ -320,6 +329,15 @@ describe('convertMdastToDocx', () => {
         line: 240,
         lineRule: 'auto',
       });
+    });
+
+    it('should not override tall inline math spacing when body line spacing is already auto', () => {
+      const mdast = parseMarkdown('公式 $\\frac{a}{b}$ 在正文行内。');
+      const { elements } = convertMdastToDocx(mdast, 16, 1, { bodyLineSpacingType: 'auto' });
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toBeUndefined();
     });
   });
 
