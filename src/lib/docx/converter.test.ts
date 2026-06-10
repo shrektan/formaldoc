@@ -339,6 +339,31 @@ describe('convertMdastToDocx', () => {
       expect(elements[0]).toBeInstanceOf(Paragraph);
       expect(getParagraphSpacing(elements[0] as Paragraph)).toBeUndefined();
     });
+
+    it('should single-space list items containing tall inline math', () => {
+      const mdast = parseMarkdown('- 公式 $\\frac{a}{b}$ 在列表项内。');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphStyle(elements[0] as Paragraph)).toBe('ListParagraph');
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toMatchObject({
+        line: 240,
+        lineRule: 'auto',
+      });
+    });
+
+    it('should single-space blockquotes containing tall inline math', () => {
+      const mdast = parseMarkdown('> 公式 $\\frac{a}{b}$ 在引用内。');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toMatchObject({
+        line: 240,
+        lineRule: 'auto',
+      });
+    });
   });
 
   describe('mixed content', () => {
