@@ -116,6 +116,30 @@ describe('convertMdastToDocx', () => {
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
     });
+
+    it('should preserve inline math inside bold text', () => {
+      const mdast = parseMarkdown('**单位累计基准收益（$A_T$）**');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+
+      let mathCount = 0;
+      const visit = (node: unknown) => {
+        if (node && typeof node === 'object') {
+          if ((node as { rootKey?: string }).rootKey === 'm:oMath') {
+            mathCount++;
+          }
+          const root = (node as { root?: unknown[] }).root;
+          if (Array.isArray(root)) {
+            for (const child of root) visit(child);
+          }
+        }
+      };
+      visit(elements[0]);
+
+      expect(mathCount).toBe(1);
+    });
   });
 
   describe('inline HTML', () => {

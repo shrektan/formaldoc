@@ -393,7 +393,7 @@ function convertBlockquote(
 /**
  * Converts blockquote content with italic styling (used in fancy mode)
  */
-function convertBlockquoteContent(nodes: PhrasingContent[]): TextRun[] {
+function convertBlockquoteContent(nodes: PhrasingContent[]): ParagraphChild[] {
   // Use convertStyledContent which properly handles nested formatting
   return convertStyledContent(nodes, { italics: true });
 }
@@ -760,12 +760,17 @@ function convertPhrasingNode(
 /**
  * Converts phrasing content with additional styling (bold, italic)
  */
-function convertStyledContent(nodes: PhrasingContent[], style: Partial<IRunOptions>): TextRun[] {
-  const runs: TextRun[] = [];
+function convertStyledContent(
+  nodes: PhrasingContent[],
+  style: Partial<IRunOptions>
+): ParagraphChild[] {
+  const runs: ParagraphChild[] = [];
 
   for (const node of nodes) {
     if (node.type === 'text') {
       runs.push(new TextRun({ text: node.value, ...style }));
+    } else if (node.type === 'inlineMath') {
+      runs.push(latexToDocxMath((node as unknown as InlineMathNode).value, false));
     } else if (node.type === 'strong') {
       // Nested strong inside emphasis
       runs.push(...convertStyledContent(node.children, { ...style, bold: true }));
