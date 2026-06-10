@@ -14,6 +14,41 @@ import { Paragraph, Table } from 'docx';
 // Initialize DOM polyfill for DOMParser support in math conversion tests
 initDomPolyfill();
 
+const findXmlNode = (node: unknown, rootKey: string): unknown => {
+  if (!node || typeof node !== 'object') {
+    return undefined;
+  }
+
+  if ((node as { rootKey?: string }).rootKey === rootKey) {
+    return node;
+  }
+
+  const root = (node as { root?: unknown }).root;
+  if (Array.isArray(root)) {
+    for (const child of root) {
+      const found = findXmlNode(child, rootKey);
+      if (found) return found;
+    }
+  }
+
+  return undefined;
+};
+
+const getXmlAttrs = (node: unknown): Record<string, unknown> | undefined => {
+  const attr = findXmlNode(node, '_attr') as { root?: Record<string, unknown> } | undefined;
+  return attr?.root;
+};
+
+const getParagraphStyle = (paragraph: Paragraph): unknown => {
+  const styleNode = findXmlNode(paragraph, 'w:pStyle');
+  return getXmlAttrs(styleNode)?.val;
+};
+
+const getParagraphSpacing = (paragraph: Paragraph): Record<string, unknown> | undefined => {
+  const spacingNode = findXmlNode(paragraph, 'w:spacing');
+  return getXmlAttrs(spacingNode);
+};
+
 describe('convertMdastToDocx', () => {
   describe('headings', () => {
     it('should convert # to Paragraph', () => {
@@ -248,12 +283,21 @@ describe('convertMdastToDocx', () => {
   });
 
   describe('math formulas', () => {
-    it('should convert block math to Paragraph', () => {
+    it('should convert block math to a single-spaced Formula paragraph', () => {
       const mdast = parseMarkdown('$$\nE = mc^2\n$$');
       const { elements } = convertMdastToDocx(mdast);
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
+
+      const paragraph = elements[0] as Paragraph;
+      expect(getParagraphStyle(paragraph)).toBe('Formula');
+      expect(getParagraphSpacing(paragraph)).toMatchObject({
+        line: 240,
+        lineRule: 'auto',
+        before: 120,
+        after: 120,
+      });
     });
 
     it('should handle inline math within paragraphs', () => {
@@ -262,6 +306,63 @@ describe('convertMdastToDocx', () => {
 
       expect(elements).toHaveLength(1);
       expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toBeUndefined();
+    });
+
+    it('should not single-space paragraphs containing simple inline operators', () => {
+      const mdast = parseMarkdown('公式 $\\sum_{i=1}^{n} x_i$ 在正文行内。');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toBeUndefined();
+    });
+
+    it('should single-space paragraphs containing tall inline math', () => {
+      const mdast = parseMarkdown('公式 $\\frac{a}{b}$ 在正文行内。');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphStyle(elements[0] as Paragraph)).toBe('BodyText');
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toMatchObject({
+        line: 240,
+        lineRule: 'auto',
+      });
+    });
+
+    it('should not override tall inline math spacing when body line spacing is already auto', () => {
+      const mdast = parseMarkdown('公式 $\\frac{a}{b}$ 在正文行内。');
+      const { elements } = convertMdastToDocx(mdast, 16, 1, { bodyLineSpacingType: 'auto' });
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toBeUndefined();
+    });
+
+    it('should single-space list items containing tall inline math', () => {
+      const mdast = parseMarkdown('- 公式 $\\frac{a}{b}$ 在列表项内。');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphStyle(elements[0] as Paragraph)).toBe('ListParagraph');
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toMatchObject({
+        line: 240,
+        lineRule: 'auto',
+      });
+    });
+
+    it('should single-space blockquotes containing tall inline math', () => {
+      const mdast = parseMarkdown('> 公式 $\\frac{a}{b}$ 在引用内。');
+      const { elements } = convertMdastToDocx(mdast);
+
+      expect(elements).toHaveLength(1);
+      expect(elements[0]).toBeInstanceOf(Paragraph);
+      expect(getParagraphSpacing(elements[0] as Paragraph)).toMatchObject({
+        line: 240,
+        lineRule: 'auto',
+      });
     });
   });
 

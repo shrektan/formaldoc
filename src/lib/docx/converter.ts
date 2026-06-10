@@ -8,6 +8,7 @@ import {
   WidthType,
   BorderStyle,
   AlignmentType,
+  LineRuleType,
   VerticalAlign,
   ShadingType,
   ExternalHyperlink,
@@ -61,6 +62,20 @@ const HEADING_STYLE_MAP: Record<number, string> = {
   5: 'Heading4',
 };
 
+const SINGLE_LINE_SPACING = {
+  line: 240,
+  lineRule: LineRuleType.AUTO,
+};
+
+const BLOCK_FORMULA_SPACING = {
+  ...SINGLE_LINE_SPACING,
+  before: 120,
+  after: 120,
+};
+
+const TALL_INLINE_MATH_PATTERN =
+  /\\(?:d?frac|cfrac|binom|overset|underset|overbrace|underbrace|stackrel)\b|\\begin\s*\{(?:matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|array|gathered|split)\}|\\choose\b/;
+
 /**
  * Converts an mdast AST to docx elements with footnote support
  * @param mdast - The markdown AST root node
@@ -72,6 +87,8 @@ export interface ConvertOptions {
   titleLevel?: number;
   /** When true, blockquotes render as plain body text with BlockQuote style (no shading/indent/italic) */
   blockquotePlain?: boolean;
+  /** Body paragraphs only need inline formula spacing overrides when template line spacing is fixed. */
+  bodyLineSpacingType?: 'exact' | 'auto';
 }
 
 export function convertMdastToDocx(
@@ -81,6 +98,7 @@ export function convertMdastToDocx(
   options?: ConvertOptions
 ): ConversionResult {
   const blockquotePlain = options?.blockquotePlain ?? false;
+  const shouldAdjustInlineFormulaSpacing = (options?.bodyLineSpacingType ?? 'exact') === 'exact';
   // Phase 1: Collect footnote definitions and assign numeric IDs
   const footnotes: Record<string, { children: Paragraph[] }> = {};
   const footnoteMap = new Map<string, number>();
@@ -100,7 +118,8 @@ export function convertMdastToDocx(
           listItemSize,
           titleLevel,
           footnoteMap,
-          blockquotePlain
+          blockquotePlain,
+          shouldAdjustInlineFormulaSpacing
         );
         for (const el of converted) {
           if (el instanceof Paragraph) {
@@ -122,7 +141,14 @@ export function convertMdastToDocx(
   const elements: DocxElement[] = [];
   for (const node of mdast.children) {
     if (node.type === 'footnoteDefinition') continue;
-    const converted = convertNode(node, listItemSize, titleLevel, footnoteMap, blockquotePlain);
+    const converted = convertNode(
+      node,
+      listItemSize,
+      titleLevel,
+      footnoteMap,
+      blockquotePlain,
+      shouldAdjustInlineFormulaSpacing
+    );
     elements.push(...converted);
   }
 
@@ -146,15 +172,16 @@ function convertNode(
   listItemSize: number,
   titleLevel: number,
   footnoteMap: Map<string, number>,
-  blockquotePlain: boolean = false
+  blockquotePlain: boolean = false,
+  shouldAdjustInlineFormulaSpacing: boolean = true
 ): DocxElement[] {
   switch (node.type) {
     case 'heading':
       return [convertHeading(node, titleLevel, footnoteMap)];
     case 'paragraph':
-      return [convertParagraph(node, footnoteMap)];
+      return [convertParagraph(node, footnoteMap, shouldAdjustInlineFormulaSpacing)];
     case 'list':
-      return convertList(node, listItemSize, 0, footnoteMap);
+      return convertList(node, listItemSize, 0, footnoteMap, shouldAdjustInlineFormulaSpacing);
     case 'table':
       return [convertTable(node as MdTable, footnoteMap)];
     case 'html':
@@ -162,7 +189,14 @@ function convertNode(
     case 'math':
       return [convertMath(node as unknown as MathNode)];
     case 'blockquote':
-      return convertBlockquote(node as Blockquote, listItemSize, 1, footnoteMap, blockquotePlain);
+      return convertBlockquote(
+        node as Blockquote,
+        listItemSize,
+        1,
+        footnoteMap,
+        blockquotePlain,
+        shouldAdjustInlineFormulaSpacing
+      );
     case 'thematicBreak':
       // Ignore thematic breaks (---) as AI often generates many of these
       return [];
@@ -245,11 +279,20 @@ function convertHeading(
 /**
  * Converts a paragraph node to a docx Paragraph
  */
-function convertParagraph(node: MdParagraph, footnoteMap: Map<string, number>): Paragraph {
+function convertParagraph(
+  node: MdParagraph,
+  footnoteMap: Map<string, number>,
+  shouldAdjustInlineFormulaSpacing: boolean
+): Paragraph {
   const runs = convertPhrasingContent(node.children, footnoteMap);
+  const spacing =
+    shouldAdjustInlineFormulaSpacing && hasTallInlineMath(node.children)
+      ? SINGLE_LINE_SPACING
+      : undefined;
 
   return new Paragraph({
     style: 'BodyText',
+    spacing,
     children: runs,
   });
 }
@@ -279,18 +322,25 @@ function convertBlockquote(
   listItemSize: number,
   level: number = 1,
   footnoteMap: Map<string, number> = new Map(),
-  plain: boolean = false
+  plain: boolean = false,
+  shouldAdjustInlineFormulaSpacing: boolean = true
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const indent = BLOCKQUOTE_INDENT * level;
 
   for (const child of node.children) {
     if (child.type === 'paragraph') {
+      const spacing =
+        shouldAdjustInlineFormulaSpacing && hasTallInlineMath(child.children)
+          ? SINGLE_LINE_SPACING
+          : undefined;
+
       if (plain) {
         const runs = convertPhrasingContent(child.children, footnoteMap);
         paragraphs.push(
           new Paragraph({
             style: 'BlockQuote',
+            spacing,
             children: runs,
           })
         );
@@ -300,6 +350,7 @@ function convertBlockquote(
           new Paragraph({
             style: 'BodyText',
             children: runs,
+            spacing,
             shading: {
               type: ShadingType.CLEAR,
               fill: BLOCKQUOTE_SHADING,
@@ -313,11 +364,25 @@ function convertBlockquote(
       }
     } else if (child.type === 'blockquote') {
       // Nested blockquote - recurse with increased level
-      const nested = convertBlockquote(child, listItemSize, level + 1, footnoteMap, plain);
+      const nested = convertBlockquote(
+        child,
+        listItemSize,
+        level + 1,
+        footnoteMap,
+        plain,
+        shouldAdjustInlineFormulaSpacing
+      );
       paragraphs.push(...nested);
     } else if (child.type === 'list') {
       // Lists inside blockquotes - convert and adjust indent
-      const listParagraphs = convertBlockquoteList(child, indent, listItemSize, 0, footnoteMap);
+      const listParagraphs = convertBlockquoteList(
+        child,
+        indent,
+        listItemSize,
+        0,
+        footnoteMap,
+        shouldAdjustInlineFormulaSpacing
+      );
       paragraphs.push(...listParagraphs);
     }
   }
@@ -341,7 +406,8 @@ function convertBlockquoteList(
   baseIndent: number,
   listItemSize: number,
   level: number = 0,
-  footnoteMap: Map<string, number> = new Map()
+  footnoteMap: Map<string, number> = new Map(),
+  shouldAdjustInlineFormulaSpacing: boolean = true
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const isOrdered = node.ordered ?? false;
@@ -355,7 +421,8 @@ function convertBlockquoteList(
       baseIndent,
       listItemSize,
       level,
-      footnoteMap
+      footnoteMap,
+      shouldAdjustInlineFormulaSpacing
     );
     paragraphs.push(...itemParagraphs);
   });
@@ -373,7 +440,8 @@ function convertBlockquoteListItem(
   baseIndent: number,
   listItemSize: number,
   level: number,
-  footnoteMap: Map<string, number>
+  footnoteMap: Map<string, number>,
+  shouldAdjustInlineFormulaSpacing: boolean
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const prefix = isOrdered ? `${number}. ` : '• ';
@@ -382,6 +450,10 @@ function convertBlockquoteListItem(
   item.children.forEach((child, childIndex) => {
     if (child.type === 'paragraph') {
       const runs = convertPhrasingContent(child.children, footnoteMap);
+      const spacing =
+        shouldAdjustInlineFormulaSpacing && hasTallInlineMath(child.children)
+          ? SINGLE_LINE_SPACING
+          : undefined;
 
       if (childIndex === 0) {
         runs.unshift(new TextRun({ text: prefix }));
@@ -391,6 +463,7 @@ function convertBlockquoteListItem(
         new Paragraph({
           style: 'ListParagraph',
           children: runs,
+          spacing,
           indent: {
             left: baseIndent,
             firstLine: listIndent + listIndent * level,
@@ -403,7 +476,8 @@ function convertBlockquoteListItem(
         baseIndent,
         listItemSize,
         level + 1,
-        footnoteMap
+        footnoteMap,
+        shouldAdjustInlineFormulaSpacing
       );
       paragraphs.push(...nestedParagraphs);
     }
@@ -422,6 +496,7 @@ function convertMath(node: MathNode): Paragraph {
 
     return new Paragraph({
       style: 'Formula',
+      spacing: BLOCK_FORMULA_SPACING,
       children: [mathObj],
     });
   } catch (error) {
@@ -429,6 +504,7 @@ function convertMath(node: MathNode): Paragraph {
     console.warn('Formula conversion failed, using text fallback:', error);
     return new Paragraph({
       style: 'Formula',
+      spacing: BLOCK_FORMULA_SPACING,
       children: [
         new TextRun({
           text: `[公式: ${node.value}]`,
@@ -449,7 +525,8 @@ function convertList(
   node: List,
   listItemSize: number,
   level: number = 0,
-  footnoteMap: Map<string, number> = new Map()
+  footnoteMap: Map<string, number> = new Map(),
+  shouldAdjustInlineFormulaSpacing: boolean = true
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const isOrdered = node.ordered ?? false;
@@ -462,7 +539,8 @@ function convertList(
       startNum + index,
       listItemSize,
       level,
-      footnoteMap
+      footnoteMap,
+      shouldAdjustInlineFormulaSpacing
     );
     paragraphs.push(...itemParagraphs);
   });
@@ -480,7 +558,8 @@ function convertListItem(
   number: number,
   listItemSize: number,
   level: number,
-  footnoteMap: Map<string, number>
+  footnoteMap: Map<string, number>,
+  shouldAdjustInlineFormulaSpacing: boolean
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
   const prefix = isOrdered ? `${number}. ` : '• ';
@@ -490,6 +569,10 @@ function convertListItem(
   item.children.forEach((child, childIndex) => {
     if (child.type === 'paragraph') {
       const runs = convertPhrasingContent(child.children, footnoteMap);
+      const spacing =
+        shouldAdjustInlineFormulaSpacing && hasTallInlineMath(child.children)
+          ? SINGLE_LINE_SPACING
+          : undefined;
 
       // Add prefix only to the first paragraph
       if (childIndex === 0) {
@@ -502,12 +585,19 @@ function convertListItem(
         new Paragraph({
           style: 'ListParagraph',
           children: runs,
+          spacing,
           indent: level > 0 ? { firstLine: listIndent + listIndent * level } : undefined,
         })
       );
     } else if (child.type === 'list') {
       // Handle nested lists with increased indentation
-      const nestedParagraphs = convertList(child, listItemSize, level + 1, footnoteMap);
+      const nestedParagraphs = convertList(
+        child,
+        listItemSize,
+        level + 1,
+        footnoteMap,
+        shouldAdjustInlineFormulaSpacing
+      );
       paragraphs.push(...nestedParagraphs);
     }
   });
@@ -538,6 +628,24 @@ function convertPhrasingContent(
 interface InlineMathNode {
   type: 'inlineMath';
   value: string;
+}
+
+function isTallInlineMath(latex: string): boolean {
+  return TALL_INLINE_MATH_PATTERN.test(latex);
+}
+
+function hasTallInlineMath(nodes: PhrasingContent[]): boolean {
+  return nodes.some((node) => {
+    if (node.type === 'inlineMath') {
+      return isTallInlineMath((node as unknown as InlineMathNode).value);
+    }
+
+    if ('children' in node && Array.isArray(node.children)) {
+      return hasTallInlineMath(node.children as PhrasingContent[]);
+    }
+
+    return false;
+  });
 }
 
 /**
