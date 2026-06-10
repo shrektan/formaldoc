@@ -8,6 +8,7 @@ import {
   WidthType,
   BorderStyle,
   AlignmentType,
+  LineRuleType,
   VerticalAlign,
   ShadingType,
   ExternalHyperlink,
@@ -60,6 +61,20 @@ const HEADING_STYLE_MAP: Record<number, string> = {
   4: 'Heading3',
   5: 'Heading4',
 };
+
+const SINGLE_LINE_SPACING = {
+  line: 240,
+  lineRule: LineRuleType.AUTO,
+};
+
+const BLOCK_FORMULA_SPACING = {
+  ...SINGLE_LINE_SPACING,
+  before: 120,
+  after: 120,
+};
+
+const TALL_INLINE_MATH_PATTERN =
+  /\\(?:d?frac|tfrac|cfrac|sqrt|sum|prod|iiint|iint|oint|int|lim|overline|underline|overset|underset|overbrace|underbrace|binom|stackrel)\b|\\begin\s*\{(?:matrix|pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|array|gathered|split)\}|\\choose\b/;
 
 /**
  * Converts an mdast AST to docx elements with footnote support
@@ -247,9 +262,11 @@ function convertHeading(
  */
 function convertParagraph(node: MdParagraph, footnoteMap: Map<string, number>): Paragraph {
   const runs = convertPhrasingContent(node.children, footnoteMap);
+  const spacing = hasTallInlineMath(node.children) ? SINGLE_LINE_SPACING : undefined;
 
   return new Paragraph({
     style: 'BodyText',
+    spacing,
     children: runs,
   });
 }
@@ -422,6 +439,7 @@ function convertMath(node: MathNode): Paragraph {
 
     return new Paragraph({
       style: 'Formula',
+      spacing: BLOCK_FORMULA_SPACING,
       children: [mathObj],
     });
   } catch (error) {
@@ -429,6 +447,7 @@ function convertMath(node: MathNode): Paragraph {
     console.warn('Formula conversion failed, using text fallback:', error);
     return new Paragraph({
       style: 'Formula',
+      spacing: BLOCK_FORMULA_SPACING,
       children: [
         new TextRun({
           text: `[公式: ${node.value}]`,
@@ -538,6 +557,24 @@ function convertPhrasingContent(
 interface InlineMathNode {
   type: 'inlineMath';
   value: string;
+}
+
+function isTallInlineMath(latex: string): boolean {
+  return TALL_INLINE_MATH_PATTERN.test(latex);
+}
+
+function hasTallInlineMath(nodes: PhrasingContent[]): boolean {
+  return nodes.some((node) => {
+    if (node.type === 'inlineMath') {
+      return isTallInlineMath((node as unknown as InlineMathNode).value);
+    }
+
+    if ('children' in node && Array.isArray(node.children)) {
+      return hasTallInlineMath(node.children as PhrasingContent[]);
+    }
+
+    return false;
+  });
 }
 
 /**

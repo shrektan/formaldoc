@@ -96,13 +96,15 @@ describe('createDocumentStyles', () => {
     expect(bodyStyle!.paragraph?.indent?.firstLine).toBe(640); // 2 chars
   });
 
-  it('should set Formula style to Cambria Math centered', () => {
+  it('should set Formula style to Cambria Math centered with single line spacing', () => {
     const styles = createDocumentStyles(DEFAULT_STYLES);
     const formulaStyle = styles.paragraphStyles!.find((s) => s.id === 'Formula');
 
     const font = formulaStyle!.run?.font as { ascii?: string };
     expect(font?.ascii).toBe('Cambria Math');
     expect(formulaStyle!.paragraph?.alignment).toBe('center');
+    expect(formulaStyle!.paragraph?.spacing?.line).toBe(240);
+    expect(formulaStyle!.paragraph?.spacing?.lineRule).toBe('auto');
   });
 
   it('should apply custom style settings', () => {
@@ -308,6 +310,15 @@ describe('Line spacing with documentSettings', () => {
       expect(style!.paragraph?.spacing?.line).toBe(360);
       expect(style!.paragraph?.spacing?.lineRule).toBe('auto');
     }
+  });
+
+  it('should keep Formula style single-spaced when document body uses exact spacing', () => {
+    const cnTemplate = getTemplate('cn-gov');
+    const styles = createDocumentStyles(cnTemplate.styles, cnTemplate.documentSettings);
+
+    const formulaStyle = styles.paragraphStyles!.find((s) => s.id === 'Formula');
+    expect(formulaStyle!.paragraph?.spacing?.line).toBe(240);
+    expect(formulaStyle!.paragraph?.spacing?.lineRule).toBe('auto');
   });
 
   it('should default to cn-gov spacing when documentSettings is not provided', () => {
