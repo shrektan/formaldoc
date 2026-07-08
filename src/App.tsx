@@ -21,7 +21,7 @@ import './styles/app.css';
 type PasteMode = 'auto' | 'plain';
 
 const PASTE_MODE_STORAGE_KEY = 'formaldoc.pasteMode';
-const FEEDBACK_URL = 'mailto:nicholastan0708@gmail.com?subject=FormalDoc%20Feedback';
+const FEEDBACK_URL = 'mailto:support@formaldoc.app?subject=FormalDoc%20Feedback';
 
 const isPasteMode = (value: string): value is PasteMode => value === 'auto' || value === 'plain';
 
