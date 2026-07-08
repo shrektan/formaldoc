@@ -35,3 +35,5 @@ npm-debug.log*
 .claude/agent-memory/
 .claude/skills/
 skills-lock.json
+
+.codex/
