@@ -5,103 +5,86 @@
 
 [English](./README.md)
 
-FormalDoc 用于把 Markdown 转成专业排版的 `.docx` 文件。
+FormalDoc 把 Markdown 转成排版正式、可以继续编辑的 Word 文档。
 
-它最初是一个面向中国公文场景的浏览器端生成器，遵循 GB/T 9704-2012 的排版思路；现在它同时也是一个已经发布到 npm 的正式包，可以用于：
-
-- Web 应用
-- Node.js 脚本
-- CLI
-- Claude、Codex 以及其他支持 code execution 或 skill 的 AI 工具
-
-如果你的内容本来就来自 ChatGPT、Claude、DeepSeek、Kimi、Qwen、豆包等 AI 工具，FormalDoc 可以把这些 Markdown 内容进一步生成成更接近正式交付物的 Word 文档，保留标题、层级、间距、表格和公式。
-
-## 立即使用
+它面向的是已经用 AI 或 Markdown 写内容、但最终仍然需要 `.docx` 交付物的人：标题、层级、间距、表格、模板和公式都应该尽量一次到位，而不是导出后再手工修半天。
 
 - Web 应用：[formaldoc.app](https://formaldoc.app)
 - npm 包：[npm 上的 `formaldoc`](https://www.npmjs.com/package/formaldoc)
-- 仓库内置 skill：[`skills/formaldoc/SKILL.md`](./skills/formaldoc/SKILL.md)
+- AI skill：[`skills/formaldoc/SKILL.md`](./skills/formaldoc/SKILL.md)
 
 ![截图](docs/screenshot.png)
 
-## 这个项目解决什么问题
+## 为什么需要 FormalDoc
 
-大多数 AI 工具擅长生成内容，但不擅长直接交付高质量 `.docx`。用户通常会遇到这些问题：
+AI 工具很会写内容，但直接交付 Word 文档仍然很痛。你从 ChatGPT、Claude、DeepSeek、Kimi、Qwen、豆包或其他工具复制内容时，经常会遇到：
 
-- 从聊天界面复制到 Word 后还要手工修格式
-- 从 HTML 或富文本转过去时丢失结构
-- 标题、表格、公式需要重新排版
-- 很难快速套到中文公文、报告、论文或英文商务文档的规范格式里
+- 标题层级要重新整理
+- 字体、字号、行距不统一
+- 表格从富文本复制后很难看
+- LaTeX 公式变成普通文本或截图
+- 中文公文、报告、论文格式很难手工快速套好
 
-FormalDoc 的价值就在这里：先让人或 AI 用 Markdown 产出内容，再把它转成更接近最终交付状态的 Word 文档。
+FormalDoc 解决的是最后一公里：先用 Markdown 写清楚内容，再生成更接近正式交付状态的 `.docx`。
 
-## 你可以怎么用
-
-FormalDoc 不只是一个演示网站，它同时提供完整的产品和工程入口。
-
-### 1. Web 应用
-
-直接在浏览器中粘贴内容并下载 `.docx`。
-
-- 从 AI 聊天工具复制的富文本会自动转换为 Markdown
-- 文档生成在浏览器本地完成
-- 适合一次性导出和手工调整
-
-### 2. npm 包
-
-FormalDoc 已经发布到 npm，包名为 [`formaldoc`](https://www.npmjs.com/package/formaldoc)。
-
-适合这些场景：
-
-- 在 Node.js 中程序化生成 `.docx`
-- 对 Markdown 文件做批量导出
-- 本地自动化或 CI 流程
-- AI agent 通过 `npm install formaldoc` 直接调用
-
-### 3. CLI
-
-如果你的 Markdown 文件已经在磁盘上，CLI 是最直接的文件到文件转换入口。
-
-### 4. AI skill
-
-仓库内已经包含可复用 skill：[`skills/formaldoc/SKILL.md`](./skills/formaldoc/SKILL.md)
-
-它面向 Claude 风格的 agent 工作流，也可以迁移到其他支持以下能力的 AI 工具中：
-
-- 可复用 prompt / skill 文件
-- code execution
-- npm 安装
-- 文件输出
-
-有了这个 skill，AI 工具就不只是输出 Markdown，而是可以直接产出 `.docx` 文件。
-
-## 核心能力
+## 核心卖点
 
 ### 面向 AI 内容的智能粘贴
 
-从聊天产品复制出来的富文本会被标准化成 Markdown，并尽可能保留这些结构：
+直接粘贴 Markdown，或者从 AI 聊天窗口复制富文本。FormalDoc 会把内容标准化成 Markdown，并尽量保留关键结构：
 
 - 标题
 - 列表
 - 表格
 - 代码块
-- 行内强调
+- 粗体、斜体、链接和行内结构
 
-### 原生 Word 公式
+它不是只服务“手写 Markdown”的极客工具，而是为真实的 AI 写作和编辑流程准备的。
 
-LaTeX 公式会被转换成 Word 中可编辑的原生公式，而不是截图或纯文本。
+### LaTeX 公式转成可编辑 Word 公式
 
-### 正规 Word 样式
+FormalDoc 对 LaTeX 数学公式是专门支持的。公式会被转换成 Word 原生公式，在 Microsoft Word 里可以继续编辑，而不是变成图片或一段普通文本。
 
-生成结果优先使用 Word 样式，而不是单纯把格式硬编码进去，因此后续在 Microsoft Word 中继续编辑会更自然。
+### 正式模板，而不是普通导出
 
-### 中英文模板
+内置中文和英文模板，覆盖公文、报告、论文、商务文档和法律/合同风格文档。
 
-FormalDoc 内置 8 个模板：
+### 浏览器本地生成
+
+Web 应用在浏览器内生成文档。一次性导出时，打开网页、粘贴内容、选择模板、下载 `.docx` 即可，不需要搭建后端流程。
+
+### 也适合自动化
+
+FormalDoc 同时是 npm 包、CLI 和 AI agent 可调用的文档生成模块。浏览器、Node.js 脚本、终端命令和 AI skill 使用的是同一套文档生成能力。
+
+## LaTeX 公式支持
+
+公式支持是 FormalDoc 目前最值得单独强调的能力之一。
+
+| 输入 | Word 输出 |
+| --- | --- |
+| `$E = mc^2$` | 行内可编辑 Word 公式 |
+| `$$\frac{a}{b}$$` | 居中的独立公式 |
+| `$\sum_{i=1}^{n} x_i$` | 带上下标/上下限的行内公式 |
+| `$$\begin{cases} a & x > 0 \\ b & x \le 0 \end{cases}$$` | 结构化独立公式 |
+
+支持的公式场景包括：
+
+- 正文段落里的行内公式
+- 段落之间的独立公式
+- 分式、根号、求和、积分、连乘、希腊字母、重音、矩阵和分段函数
+- 公式与加粗、强调文本混排
+- 从 AI 工具复制出来、可能带转义反斜杠的 LaTeX
+
+底层转换路径是 LaTeX 到 MathML，再到 OMML，最后生成 Word 公式对象。实际效果就是：导出的 `.docx` 使用 Word 原生数学公式模型，而不是截图式的替代方案。
+
+## 模板
+
+FormalDoc 内置 8 个模板。
 
 | 模板 | 适用场景 |
 | --- | --- |
-| `cn-gov` | 中文政府、公文、正式文件 |
+| `cn-gov` | 中文政府、公文、正式文件，GB/T 9704 风格 |
 | `cn-general` | 中文通用文档 |
 | `cn-academic` | 中文学术论文 |
 | `cn-report` | 中文报告、工作总结、汇报 |
@@ -110,24 +93,14 @@ FormalDoc 内置 8 个模板：
 | `en-academic` | 英文学术论文 |
 | `en-legal` | 英文法律或合同文档 |
 
-### 浏览器本地生成
-
-Web 应用在浏览器内完成文档生成，适合关注隐私和本地处理的使用方式。
-
 ## 快速开始
 
 ### 用 Web 应用
 
 1. 打开 [formaldoc.app](https://formaldoc.app)
-2. 粘贴 Markdown 或来自 AI 工具的富文本
+2. 粘贴 Markdown，或从 AI 工具复制富文本后直接粘贴
 3. 选择模板
 4. 下载生成的 `.docx`
-
-### 从 npm 安装
-
-```bash
-npm install formaldoc
-```
 
 ### 用 `npx` 直接运行
 
@@ -135,11 +108,60 @@ npm install formaldoc
 npx formaldoc input.md -o output.docx
 ```
 
+### 从 npm 安装
+
+```bash
+npm install formaldoc
+```
+
 ### 全局安装
 
 ```bash
 npm install -g formaldoc
 formaldoc input.md -o output.docx
+```
+
+## Markdown 支持
+
+FormalDoc 支持 GitHub Flavored Markdown 和 LaTeX 数学公式。
+
+| Markdown | 输出 |
+| --- | --- |
+| `# Title` | 文档标题 |
+| `## Heading` | 一级标题 |
+| `### Heading` | 二级标题 |
+| `#### Heading` | 三级标题 |
+| `##### Heading` | 四级标题 |
+| Paragraphs | 正文段落 |
+| `**bold**` | 粗体 |
+| `*italic*` | 斜体 |
+| `~~strike~~` | 删除线 |
+| `[text](url)` | 超链接 |
+| `- item` / `1. item` | 列表 |
+| `> quote` | 引用块 |
+| `` `code` `` | 行内代码 |
+| Code fences | 代码块 |
+| GFM tables | Word 表格 |
+| `$...$` | 行内公式 |
+| `$$...$$` | 独立公式 |
+
+## CLI 用法
+
+```bash
+# 默认模板：cn-gov
+formaldoc document.md
+
+# 指定输出文件
+formaldoc document.md -o output.docx
+
+# 选择模板
+formaldoc document.md -t en-standard
+
+# 从 stdin 读取
+cat document.md | formaldoc --stdin -o output.docx
+
+# 查看帮助
+formaldoc --help
 ```
 
 ## Node.js API
@@ -177,28 +199,9 @@ const result = await convertMarkdownToDocxFile({
 console.log(result.outputPath);
 ```
 
-## CLI 用法
+## 在 Claude、Codex 或其他 AI 工具中使用
 
-```bash
-# 默认模板：cn-gov
-formaldoc document.md
-
-# 指定输出文件
-formaldoc document.md -o output.docx
-
-# 选择模板
-formaldoc document.md -t en-standard
-
-# 从 stdin 读取
-cat document.md | formaldoc --stdin -o output.docx
-
-# 查看帮助
-formaldoc --help
-```
-
-## 在 Claude 或其他 AI 工具中使用
-
-FormalDoc 非常适合 AI 辅助文档工作流。
+FormalDoc 很适合 AI 辅助文档工作流。
 
 典型流程如下：
 
@@ -210,32 +213,22 @@ FormalDoc 非常适合 AI 辅助文档工作流。
 
 这意味着 AI 不只是产出草稿文本，而是可以直接产出 Word 文档交付物。
 
-### 为什么 skill 很重要
+### 仓库内置 skill
 
-仓库内置的 skill 会指导 AI 工具：
+这个仓库已经包含可复用 skill：[`skills/formaldoc/SKILL.md`](./skills/formaldoc/SKILL.md)
+
+它会指导 AI 工具：
 
 - 选择合适模板
 - 当已有 Markdown 文件时优先使用文件型转换
 - 必要时再退回内存型转换
 - 把生成的 `.docx` 当作真正的输出文件返回
 
-如果你在用 Claude Projects、Claude Code 风格环境，或者其他支持可复用指令的 agent 系统，建议从这些文件开始：
+如果你在用 Claude Projects、Claude Code 风格环境、Codex，或者其他支持可复用指令的 agent 系统，建议从这些文件开始：
 
 - [`skills/formaldoc/SKILL.md`](./skills/formaldoc/SKILL.md)
 - [`docs/claude-file-creation.md`](./docs/claude-file-creation.md)
 - [`docs/claude-project-instructions.md`](./docs/claude-project-instructions.md)
-
-## 仓库内置 Skill
-
-这个仓库已经把 FormalDoc skill 直接纳入进来，用户和 AI agent 不需要再去外部查找片段。
-
-路径：
-
-```text
-skills/formaldoc/SKILL.md
-```
-
-你可以把这个文件直接复制到自己的 skill 系统、Claude Project 指令、agent prompt 库或其他 AI 自动化环境中。
 
 ### 用 `npx` 直接安装 skill
 
@@ -261,50 +254,6 @@ npx skills add https://github.com/shrektan/formaldoc --skill formaldoc -g -a cod
 - 如果你希望别人拿到最新 skill，必须先把仓库改动 push 到 GitHub
 - skill 名称是 `formaldoc`，与仓库内 frontmatter 保持一致
 
-## Markdown 支持
-
-FormalDoc 支持 GitHub Flavored Markdown 和 LaTeX 数学公式。
-
-| Markdown | 输出 |
-| --- | --- |
-| `# Title` | 文档标题 |
-| `## Heading` | 一级标题 |
-| `### Heading` | 二级标题 |
-| `#### Heading` | 三级标题 |
-| `##### Heading` | 四级标题 |
-| Paragraphs | 正文段落 |
-| `**bold**` | 粗体 |
-| `*italic*` | 斜体 |
-| `~~strike~~` | 删除线 |
-| `[text](url)` | 超链接 |
-| `- item` / `1. item` | 列表 |
-| `> quote` | 引用块 |
-| `` `code` `` | 行内代码 |
-| Code fences | 代码块 |
-| GFM tables | Word 表格 |
-| `$...$` | 行内公式 |
-| `$$...$$` | 独立公式 |
-
-## 模板说明
-
-### 中文模板
-
-| 模板 | 说明 | 常见字体 |
-| --- | --- | --- |
-| `cn-gov` | GB/T 9704 风格正式公文 | 仿宋 / 宋体 / 黑体组合 |
-| `cn-general` | 中文通用文档 | 宋体 |
-| `cn-academic` | 中文学术格式 | 宋体 |
-| `cn-report` | 中文报告 / 工作汇报 | 宋体 |
-
-### 英文模板
-
-| 模板 | 说明 | 常见字体 |
-| --- | --- | --- |
-| `en-standard` | 标准英文文档 | Times New Roman + Arial |
-| `en-business` | 商务格式 | Calibri + Arial |
-| `en-academic` | 学术格式 | Times New Roman |
-| `en-legal` | 法律格式 | Times New Roman |
-
 ## 开发
 
 ```bash
@@ -319,17 +268,6 @@ npm run lint
 - `cli/`：CLI 入口
 - `docs/`：补充文档
 - `skills/`：仓库内置 AI skill
-
-## 仓库定位
-
-理解 FormalDoc 时，应该同时把它看成：
-
-- 一个给真人直接使用的 Web 应用
-- 一个已经发布到 npm 的包
-- 一个 Markdown 到 DOCX 的 CLI 工具
-- 一个 AI-native 的文档生成能力模块
-
-关键点就在这里：真人可以直接打开网页使用，AI agent 也可以调用同一套能力直接生成 `.docx` 交付物。
 
 ## License
 
