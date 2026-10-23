@@ -1,0 +1,245 @@
+{
+  "source": "runs/zigui-full/docmodel.json last table; out.docx word/document.xml table2 rows1+2 column2 empty paragraph151+153",
+  "sourceRows": [
+    [
+      "p24-l13",
+      "p24-l14"
+    ],
+    [
+      "p24-l15",
+      "p24-l16"
+    ]
+  ],
+  "model": {
+    "version": 1,
+    "styles": [
+      {
+        "id": "Normal",
+        "name": "Normal",
+        "builtIn": true,
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 2,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 29
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "Date",
+        "name": "日期",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 14,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 28.5
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "Recipients",
+        "name": "主送",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 14,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 1,
+          "rightChars": 0.5
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 20
+        },
+        "spaceBeforePt": 3,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "Signature",
+        "name": "落款",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 14,
+        "bold": false,
+        "align": "left",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 28.5
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      }
+    ],
+    "numbering": [],
+    "numberingInstances": [],
+    "sections": [
+      {
+        "page": {
+          "widthPt": 595,
+          "heightPt": 842,
+          "orientation": "portrait",
+          "margins": {
+            "topPt": 106.5,
+            "bottomPt": 101.5,
+            "leftPt": 78.5,
+            "rightPt": 77,
+            "headerPt": 28,
+            "footerPt": 28
+          }
+        },
+        "blocks": [
+          {
+            "type": "table",
+            "columnsPt": [
+              418.32178217821786,
+              135.97029702970292
+            ],
+            "align": "left",
+            "borders": {
+              "top": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "bottom": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "insideH": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              }
+            },
+            "rows": [
+              {
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "Recipients",
+                        "runs": [
+                          {
+                            "text": "抄　　送：中央财办、中央编办，国务院办公厅、发展改革委、财政部、司法部。"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "Recipients",
+                        "runs": [
+                          {
+                            "text": "内部发送：办公厅、稳定局、条法司、货政司、市场司、调统司、征信局、反洗钱局、反洗钱中心、征信中心。"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "Signature",
+                        "runs": [
+                          {
+                            "text": "中国人民银行办公厅"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "Date",
+                        "runs": [
+                          {
+                            "text": "2018年4月28日印发"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

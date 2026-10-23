@@ -299,9 +299,13 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
               right: borderOptions(cellBorders.right),
             }
           : undefined;
+        const children = cell ? await blocks(cell.blocks, main) : [];
+        // An empty Word cell still requires a paragraph. Create it here with a
+        // style before docx's TableCell fallback injects an unstyled paragraph.
+        if (!children.length) children.push(new ModelParagraph('Normal', []));
         cells.push(
           new TableCell({
-            children: cell ? await blocks(cell.blocks, main) : [new ModelParagraph('Normal', [])],
+            children,
             width: {
               type: WidthType.DXA,
               size: twips(block.columnsPt.slice(column, column + span).reduce((a, b) => a + b, 0)),
