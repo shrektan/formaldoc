@@ -29,10 +29,12 @@ formatted Word documents. Use this guide to keep contributions consistent and ea
 
 ## Testing Guidelines
 
-- No automated test framework is configured and there is no coverage requirement.
-- Validate changes with `npm run build` and a quick manual check in `npm run dev`.
-- If you add tests in the future, keep them near features (e.g., `*.test.tsx`) and document how to run
-  them here.
+- Tests use Bun and live beside features (`*.test.ts` / `*.test.tsx`).
+- Run `npm run check` for formatting, lint, package/web builds, and the full test suite.
+- DocModel XML and schema tests: `bun test src/lib/docmodel/render.test.ts src/lib/docmodel/types.test.ts`.
+- DocModel numbering rendering: `bun src/lib/docmodel/numbering-check.ts`; requires LibreOffice
+  (`soffice`) and `pdftotext`. The corresponding test skips only when these tools are absent;
+  installed tools that fail conversion remain test failures. Set `TMPDIR` to a writable directory.
 
 ## Commit & Pull Request Guidelines
 

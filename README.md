@@ -177,6 +177,41 @@ const result = await convertMarkdownToDocxFile({
 console.log(result.outputPath);
 ```
 
+### Convert DocModel JSON
+
+The Node.js API also accepts DocModel v1 for recognized documents with explicit styles,
+numbering instances, sections, tables, images, and prefilled contents. This is an independent
+input path; Markdown templates and conversion behavior remain unchanged.
+
+```ts
+import { readFile, writeFile } from 'node:fs/promises';
+import { parseDocModel, renderDocModel } from 'formaldoc';
+
+const model = parseDocModel(await readFile('document.json', 'utf8'));
+await writeFile('document.docx', await renderDocModel(model));
+```
+
+Image paths must be absolute PNG/JPG paths. Validation errors identify the failing field.
+Chinese counting formats use native `chineseCountingThousand` for regulation wording at hundreds.
+Paragraph layout belongs to named styles; runs support bold, italic, underline, and color.
+Headings receive `_heading_N` bookmarks unless an explicit bookmark is supplied. The complete
+example factory is in `src/lib/docmodel/fixtures/full-example.ts`.
+
+```bash
+bun run cli/index.ts --docmodel document.json -o document.docx
+```
+
+`--docmodel` is mutually exclusive with Markdown input, `--stdin`, and Markdown formatting flags.
+To compare both Chinese numbering formats through LibreOffice and inspect DOCX/PDF/text evidence:
+
+```bash
+export TMPDIR=/path/to/writable/temporary/directory
+bun src/lib/docmodel/numbering-check.ts
+```
+
+The rendering test skips when `soffice` or `pdftotext` is absent; a conversion failure is a test
+failure. Prefilled TOC pages come from the model and are not recalculated by the generator.
+
 ## CLI Usage
 
 ```bash

@@ -3,6 +3,16 @@
 <!-- Format: Date | Decision | Context | Rationale -->
 <!-- Newest first. Max 200 lines. -->
 
+## 2026-10 | Independent DocModel v1 entry point
+
+DocModel generation is a Node-only path independent of Markdown templates. Paragraph layout
+lives in named styles; paragraph properties are limited to style, numbering, and section
+structure. The renderer uses docx for content/media/relationships, then patches only required
+XML parts for character indentation, exact styles, numbering instances, and structural cleanup.
+TOC results and page references are supplied by the recognizer; the generator does not infer them.
+The Node wrapper loads the Markdown generator and DOM polyfill only when converting Markdown,
+so DocModel-only use does not pay the existing Markdown engine memory cost.
+
 ## 2025-02 | Restore functional tool UI from January design
 
 Reverted to the January UI design for the web tool interface after exploring

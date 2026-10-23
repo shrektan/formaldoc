@@ -16,9 +16,15 @@
  *   --stdin                 Read markdown from stdin
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, basename, dirname, extname, join } from 'node:path';
-import { convertMarkdownToDocxFile, DEFAULT_TEMPLATE, isValidTemplateName } from '../src/node.js';
+import {
+  convertMarkdownToDocxFile,
+  DEFAULT_TEMPLATE,
+  isValidTemplateName,
+  parseDocModel,
+  renderDocModel,
+} from '../src/node.js';
 import { convertQuotes } from '../src/lib/text-processing.js';
 import type { StyleSettings } from '../src/types/styles.js';
 
@@ -26,6 +32,7 @@ const VERSION = '1.2.2';
 
 interface CliOptions {
   input?: string;
+  docmodel?: string;
   output?: string;
   template?: string;
   styles?: string;
@@ -43,12 +50,14 @@ Convert Markdown to formal Word documents
 
 USAGE:
   formaldoc <input.md> [options]
+  formaldoc --docmodel <input.json> -o output.docx
   cat file.md | formaldoc --stdin -o output.docx
 
 ARGUMENTS:
   <input.md>              Input markdown file
 
 OPTIONS:
+  --docmodel <file>       DocModel JSON input (exclusive with Markdown input)
   -o, --output <file>     Output file path (default: input with .docx extension)
   -t, --template <name>   Template to use (default: cn-gov)
   -s, --styles <file>     Custom styles JSON (applied on top of template)
@@ -103,6 +112,12 @@ function parseArgs(args: string[]): CliOptions {
       options.quotes = true;
     } else if (arg === '--stdin') {
       options.stdin = true;
+    } else if (arg === '--docmodel') {
+      i++;
+      if (!args[i] || args[i].startsWith('-') || options.docmodel) {
+        throw new Error('--docmodel requires exactly one JSON file');
+      }
+      options.docmodel = args[i];
     } else if (arg === '-o' || arg === '--output') {
       i++;
       options.output = args[i];
@@ -187,6 +202,24 @@ async function main(): Promise<void> {
   if (options.version) {
     console.log(`formaldoc v${VERSION}`);
     process.exit(0);
+  }
+
+  if (options.docmodel) {
+    if (options.input || options.stdin) {
+      throw new Error('--docmodel is mutually exclusive with Markdown input and --stdin');
+    }
+    if (options.template || options.styles || options.titleLevel !== undefined || options.quotes) {
+      throw new Error('--docmodel cannot be combined with Markdown formatting options');
+    }
+    const inputPath = resolve(options.docmodel);
+    const outputPath = options.output
+      ? resolve(options.output)
+      : join(dirname(inputPath), `${basename(inputPath, extname(inputPath))}.docx`);
+    const model = parseDocModel(readFileSync(inputPath, 'utf-8'));
+    const buffer = await renderDocModel(model);
+    writeFileSync(outputPath, buffer);
+    console.log(`Successfully created: ${outputPath}`);
+    return;
   }
 
   // Determine input source

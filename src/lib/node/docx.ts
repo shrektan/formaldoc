@@ -3,17 +3,13 @@ import { homedir } from 'node:os';
 import { dirname, extname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { extractTitle, sanitizeFilename } from '../filename.js';
-import { generateDocxBuffer } from '../docx/generator.js';
 import {
   DEFAULT_TEMPLATE,
   getTemplate,
   getTemplateNames,
   isValidTemplateName,
 } from '../styles/templates.js';
-import { initDomPolyfill } from './dom-polyfill.js';
 import type { StyleSettings, TemplateName } from '../../types/styles.js';
-
-initDomPolyfill();
 
 export interface ConvertMarkdownToDocxOptions {
   markdown?: string;
@@ -175,6 +171,12 @@ export async function convertMarkdownToDocx(
     ? { ...template.styles, ...options.styleOverrides }
     : template.styles;
 
+  // DocModel-only callers must not load the Markdown engine or its DOM emulator.
+  const [{ generateDocxBuffer }, { initDomPolyfill }] = await Promise.all([
+    import('../docx/generator.js'),
+    import('./dom-polyfill.js'),
+  ]);
+  initDomPolyfill();
   const buffer = await generateDocxBuffer(
     markdown,
     styles,
