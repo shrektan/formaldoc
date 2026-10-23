@@ -118,7 +118,7 @@ function numberingXml(model: DocModel): string {
         `<w:abstractNum w:abstractNumId="${index}">${tag('multiLevelType', 'multilevel')}${def.levels
           .map(
             (level) =>
-              `<w:lvl w:ilvl="${level.level}">${tag('start', level.start)}${tag('numFmt', level.format === 'chineseCounting' ? 'chineseCountingThousand' : level.format)}${level.styleId ? tag('pStyle', level.styleId) : ''}${tag('suff', level.suffix)}${tag('lvlText', level.text)}${tag('lvlJc', 'left')}<w:pPr>${indentXml(level.indent, level.styleId ? sizes.get(level.styleId)! : 0)}</w:pPr><w:rPr>${level.run?.font ? fonts(level.run.font) : ''}${level.run?.bold === undefined ? '' : tag('b', Number(level.run.bold))}</w:rPr></w:lvl>`
+              `<w:lvl w:ilvl="${level.level}">${tag('start', level.start)}${level.restartAfterLevel === undefined ? '' : tag('lvlRestart', level.restartAfterLevel + 1)}${tag('numFmt', level.format === 'chineseCounting' ? 'chineseCountingThousand' : level.format)}${level.styleId ? tag('pStyle', level.styleId) : ''}${tag('suff', level.suffix)}${tag('lvlText', level.text)}${tag('lvlJc', 'left')}<w:pPr>${indentXml(level.indent, level.styleId ? sizes.get(level.styleId)! : 0)}</w:pPr><w:rPr>${level.run?.font ? fonts(level.run.font) : ''}${level.run?.bold === undefined ? '' : tag('b', Number(level.run.bold))}</w:rPr></w:lvl>`
           )
           .join('')}</w:abstractNum>`
     )
@@ -128,7 +128,18 @@ function numberingXml(model: DocModel): string {
         `<w:num w:numId="${index + 1}">${tag(
           'abstractNumId',
           model.numbering.findIndex((def) => def.id === instance.numberingId)
-        )}${instance.restartAt === undefined ? '' : `<w:lvlOverride w:ilvl="${firstLevels.get(instance.numberingId)}">${tag('startOverride', instance.restartAt)}</w:lvlOverride>`}</w:num>`
+        )}${model.numbering
+          .find((definition) => definition.id === instance.numberingId)!
+          .levels.map((level) => {
+            const start =
+              instance.startOverrides?.find((override) => override.level === level.level)?.start ??
+              (level.level === firstLevels.get(instance.numberingId)
+                ? instance.restartAt
+                : undefined) ??
+              level.start;
+            return `<w:lvlOverride w:ilvl="${level.level}">${tag('startOverride', start)}</w:lvlOverride>`;
+          })
+          .join('')}</w:num>`
     )
     .join('')}</w:numbering>`;
 }

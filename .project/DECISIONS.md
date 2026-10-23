@@ -15,6 +15,9 @@ horizontal and vertical reference frames separately, allowing stamps to follow s
 Single-image paragraphs use a dedicated single-spaced style, while oversized text can use atLeast
 line spacing. Punctuation compression is an explicit optional document setting; omitting it preserves
 the writer default, and false explicitly writes doNotCompress.
+Numbering instances explicitly override every defined level start, preventing counter leakage
+when several parts share an abstract definition. Per-level restart triggers are explicit in the
+contract; the writer maps them to Word's one-based lvlRestart (0 means never restart).
 TOC results and page references are supplied by the recognizer; the generator does not infer them.
 The Node wrapper loads the Markdown generator and DOM polyfill only when converting Markdown,
 so DocModel-only use does not pay the existing Markdown engine memory cost.

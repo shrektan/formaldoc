@@ -1,0 +1,260 @@
+{
+  "source": "runs/guizhang-final2/docmodel.json Numbering17, NumberInstance21/22 starts, section headings 股东资质/股权取得; instances intentionally share one abstract definition for isolation regression",
+  "model": {
+    "version": 1,
+    "styles": [
+      {
+        "id": "Normal",
+        "name": "Normal",
+        "builtIn": true,
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 2,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 30
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "Heading1",
+        "name": "heading 1",
+        "builtIn": true,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "outlineLevel": 0,
+        "font": {
+          "eastAsia": "方正小标宋简体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "center",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 30
+        },
+        "spaceBeforePt": 30,
+        "spaceAfterPt": 0,
+        "keepNext": true,
+        "snapToGrid": false
+      },
+      {
+        "id": "ListItemL3",
+        "name": "编号项 3",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 2,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 30
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "Heading2Variant2",
+        "name": "heading 2 2",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "outlineLevel": 1,
+        "font": {
+          "eastAsia": "KaiTi",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "center",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 30
+        },
+        "spaceBeforePt": 30,
+        "spaceAfterPt": 0,
+        "keepNext": true,
+        "snapToGrid": false
+      },
+      {
+        "id": "ListItemL4",
+        "name": "编号项 4",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 2,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 30
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      }
+    ],
+    "numbering": [
+      {
+        "id": "Numbering17",
+        "levels": [
+          {
+            "level": 0,
+            "format": "chineseCounting",
+            "text": "第%1章　",
+            "start": 1,
+            "suffix": "nothing",
+            "styleId": "Heading1",
+            "indent": {
+              "firstLineChars": 0,
+              "leftChars": 0
+            }
+          },
+          {
+            "level": 1,
+            "format": "chineseCounting",
+            "text": "第%2节　",
+            "start": 1,
+            "suffix": "nothing",
+            "styleId": "Heading2Variant2",
+            "indent": {
+              "firstLineChars": 0,
+              "leftChars": 0
+            }
+          },
+          {
+            "level": 2,
+            "format": "chineseCountingThousand",
+            "text": "第%3条　",
+            "start": 1,
+            "suffix": "nothing",
+            "styleId": "ListItemL3",
+            "run": {
+              "bold": true,
+              "font": {
+                "eastAsia": "黑体",
+                "ascii": "Times New Roman"
+              }
+            },
+            "indent": {
+              "firstLineChars": 2,
+              "leftChars": 0
+            }
+          },
+          {
+            "level": 3,
+            "format": "chineseCounting",
+            "text": "（%4）",
+            "start": 1,
+            "suffix": "nothing",
+            "styleId": "ListItemL4",
+            "indent": {
+              "firstLineChars": 2,
+              "leftChars": 0
+            }
+          }
+        ]
+      }
+    ],
+    "numberingInstances": [
+      {
+        "id": "Part4",
+        "numberingId": "Numbering17",
+        "restartAt": 1
+      },
+      {
+        "id": "Part5",
+        "numberingId": "Numbering17",
+        "restartAt": 3
+      }
+    ],
+    "sections": [
+      {
+        "page": {
+          "widthPt": 595.2756,
+          "heightPt": 841.8898,
+          "orientation": "portrait",
+          "margins": {
+            "topPt": 102,
+            "bottomPt": 110,
+            "leftPt": 76.5,
+            "rightPt": 70.27560000000005,
+            "headerPt": 28,
+            "footerPt": 28
+          }
+        },
+        "blocks": [
+          {
+            "type": "p",
+            "styleId": "Heading2Variant2",
+            "runs": [
+              {
+                "text": "股东资质"
+              }
+            ],
+            "numbering": {
+              "instanceId": "Part4",
+              "level": 1
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Heading2Variant2",
+            "runs": [
+              {
+                "text": "股权取得"
+              }
+            ],
+            "numbering": {
+              "instanceId": "Part5",
+              "level": 1
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

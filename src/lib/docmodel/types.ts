@@ -65,6 +65,7 @@ export const numberingDefSchema = z
           ]),
           text,
           start: integer,
+          restartAfterLevel: number.int().min(-1).optional(),
           suffix: z.enum(['nothing', 'space', 'tab']),
           styleId: id.optional(),
           run: z
@@ -75,6 +76,12 @@ export const numberingDefSchema = z
         })
         .strict()
         .superRefine((level, ctx) => {
+          if (level.restartAfterLevel !== undefined && level.restartAfterLevel >= level.level)
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['restartAfterLevel'],
+              message: 'Restart trigger must precede this numbering level, or be -1 for never',
+            });
           if (level.indent && !level.styleId)
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
@@ -87,7 +94,14 @@ export const numberingDefSchema = z
   .strict();
 export type NumberingDef = z.infer<typeof numberingDefSchema>;
 export const numberingInstanceSchema = z
-  .object({ id, numberingId: id, restartAt: integer.optional() })
+  .object({
+    id,
+    numberingId: id,
+    restartAt: integer.optional(),
+    startOverrides: z
+      .array(z.object({ level: integer.max(8), start: positive.int() }).strict())
+      .optional(),
+  })
   .strict();
 export type NumberingInstance = z.infer<typeof numberingInstanceSchema>;
 
@@ -341,11 +355,31 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
     });
   });
   model.numberingInstances.forEach((instance, i) => {
-    if (!definitions.has(instance.numberingId))
+    const definition = definitions.get(instance.numberingId);
+    if (!definition)
       issue(
         ['numberingInstances', i, 'numberingId'],
         `Unknown numbering definition: ${instance.numberingId}`
       );
+    const firstLevel = Math.min(...(definition?.levels ?? []).map((level) => level.level));
+    const overridden = new Set<number>();
+    instance.startOverrides?.forEach((override, j) => {
+      const path: Path = ['numberingInstances', i, 'startOverrides', j];
+      if (overridden.has(override.level))
+        issue([...path, 'level'], 'Duplicate start override level');
+      overridden.add(override.level);
+      if (definition && !definition.levels.some((level) => level.level === override.level))
+        issue([...path, 'level'], 'Start override references an undefined numbering level');
+      if (
+        override.level === firstLevel &&
+        instance.restartAt !== undefined &&
+        override.start !== instance.restartAt
+      )
+        issue(
+          [...path, 'start'],
+          'Start override conflicts with restartAt for the first numbering level'
+        );
+    });
   });
   const bookmarks = new Set<string>();
   const links: { bookmark: string; path: Path }[] = [];
