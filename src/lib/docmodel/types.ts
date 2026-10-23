@@ -30,7 +30,7 @@ export const styleDefSchema = z
     sizePt: positive,
     bold: z.boolean().optional(),
     color: color.optional(),
-    align: z.enum(['left', 'center', 'right', 'justify']),
+    align: z.enum(['left', 'center', 'right', 'justify', 'distribute']),
     indent: indentSchema.optional(),
     lineSpacing: z.union([
       z.object({ rule: z.literal('exact'), pt: positive }).strict(),
@@ -73,6 +73,14 @@ export const numberingDefSchema = z
           indent: indentSchema.omit({ rightChars: true }).optional(),
         })
         .strict()
+        .superRefine((level, ctx) => {
+          if (level.indent && !level.styleId)
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['styleId'],
+              message: 'Numbering indentation requires a bound paragraph style',
+            });
+        })
     ),
   })
   .strict();
@@ -103,7 +111,8 @@ export const imageBlockSchema = z
       .object({
         xPt: number,
         yPt: number,
-        relativeTo: z.enum(['page', 'margin']),
+        xRelativeTo: z.enum(['page', 'margin', 'column']),
+        yRelativeTo: z.enum(['page', 'margin', 'paragraph']),
         wrap: z.literal('none'),
         inFront: z.boolean(),
       })

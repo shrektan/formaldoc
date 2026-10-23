@@ -48,11 +48,13 @@ const tag = (name: string, value: string | number) => `<w:${name} w:val="${xml(v
 const fonts = (font: { eastAsia: string; ascii: string }) =>
   `<w:rFonts w:ascii="${xml(font.ascii)}" w:hAnsi="${xml(font.ascii)}" w:eastAsia="${xml(font.eastAsia)}"/>`;
 
-function indentXml(indent?: StyleDef['indent']): string {
+function indentXml(indent: StyleDef['indent'], sizePt: number): string {
   if (!indent) return '';
-  const attrs = Object.entries(indent).map(
-    ([key, value]) => `w:${key}="${Math.round(value * 100)}"`
-  );
+  // Word prefers character units; LibreOffice needs the equivalent twip values.
+  const attrs = Object.entries(indent).flatMap(([key, value]) => [
+    `w:${key}="${Math.round(value * 100)}"`,
+    `w:${key.replace('Chars', '')}="${twips(value * sizePt)}"`,
+  ]);
   return `<w:ind ${attrs.join(' ')}/>`;
 }
 
@@ -92,7 +94,7 @@ function styleXml(style: StyleDef, id: string, name = style.name, extra = ''): s
     tag('snapToGrid', Number(style.snapToGrid ?? false)),
     extra,
     `<w:spacing w:before="${twips(style.spaceBeforePt ?? 0)}" w:after="${twips(style.spaceAfterPt ?? 0)}" w:line="${spacing.rule === 'exact' ? twips(spacing.pt) : Math.round(spacing.value * 240)}" w:lineRule="${spacing.rule === 'exact' ? 'exact' : 'auto'}"/>`,
-    indentXml(style.indent),
+    indentXml(style.indent, style.sizePt),
     tag('jc', style.align === 'justify' ? 'both' : style.align),
     style.outlineLevel === undefined ? '' : tag('outlineLvl', style.outlineLevel),
   ].join('');
@@ -100,6 +102,13 @@ function styleXml(style: StyleDef, id: string, name = style.name, extra = ''): s
 }
 
 function numberingXml(model: DocModel): string {
+  const sizes = new Map(model.styles.map((style) => [style.id, style.sizePt]));
+  const firstLevels = new Map(
+    model.numbering.map((def) => [
+      def.id,
+      def.levels.reduce((first, level) => Math.min(first, level.level), def.levels[0]?.level ?? 0),
+    ])
+  );
   // Word's chineseCounting uses digit symbols for hundreds (一○○), while
   // chineseCountingThousand preserves regulation wording (一百). Both inputs
   // therefore use the latter native format; no numbering text is materialized.
@@ -109,7 +118,7 @@ function numberingXml(model: DocModel): string {
         `<w:abstractNum w:abstractNumId="${index}">${tag('multiLevelType', 'multilevel')}${def.levels
           .map(
             (level) =>
-              `<w:lvl w:ilvl="${level.level}">${tag('start', level.start)}${tag('numFmt', level.format === 'chineseCounting' ? 'chineseCountingThousand' : level.format)}${level.styleId ? tag('pStyle', level.styleId) : ''}${tag('suff', level.suffix)}${tag('lvlText', level.text)}${tag('lvlJc', 'left')}<w:pPr>${indentXml(level.indent)}</w:pPr><w:rPr>${level.run?.font ? fonts(level.run.font) : ''}${level.run?.bold === undefined ? '' : tag('b', Number(level.run.bold))}</w:rPr></w:lvl>`
+              `<w:lvl w:ilvl="${level.level}">${tag('start', level.start)}${tag('numFmt', level.format === 'chineseCounting' ? 'chineseCountingThousand' : level.format)}${level.styleId ? tag('pStyle', level.styleId) : ''}${tag('suff', level.suffix)}${tag('lvlText', level.text)}${tag('lvlJc', 'left')}<w:pPr>${indentXml(level.indent, level.styleId ? sizes.get(level.styleId)! : 0)}</w:pPr><w:rPr>${level.run?.font ? fonts(level.run.font) : ''}${level.run?.bold === undefined ? '' : tag('b', Number(level.run.bold))}</w:rPr></w:lvl>`
           )
           .join('')}</w:abstractNum>`
     )
@@ -119,7 +128,7 @@ function numberingXml(model: DocModel): string {
         `<w:num w:numId="${index + 1}">${tag(
           'abstractNumId',
           model.numbering.findIndex((def) => def.id === instance.numberingId)
-        )}${instance.restartAt === undefined ? '' : `<w:lvlOverride w:ilvl="0">${tag('startOverride', instance.restartAt)}</w:lvlOverride>`}</w:num>`
+        )}${instance.restartAt === undefined ? '' : `<w:lvlOverride w:ilvl="${firstLevels.get(instance.numberingId)}">${tag('startOverride', instance.restartAt)}</w:lvlOverride>`}</w:num>`
     )
     .join('')}</w:numbering>`;
 }
@@ -218,11 +227,11 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
       floating: floating
         ? {
             horizontalPosition: {
-              relative: floating.relativeTo,
+              relative: floating.xRelativeTo,
               offset: Math.round(floating.xPt * 12700),
             },
             verticalPosition: {
-              relative: floating.relativeTo,
+              relative: floating.yRelativeTo,
               offset: Math.round(floating.yPt * 12700),
             },
             behindDocument: !floating.inFront,

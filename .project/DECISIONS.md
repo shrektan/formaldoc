@@ -9,6 +9,9 @@ DocModel generation is a Node-only path independent of Markdown templates. Parag
 lives in named styles; paragraph properties are limited to style, numbering, and section
 structure. The renderer uses docx for content/media/relationships, then patches only required
 XML parts for character indentation, exact styles, numbering instances, and structural cleanup.
+Character indentation also includes twip values computed from its owning paragraph style font size
+for LibreOffice. Numbering levels with indentation must bind that style. Floating images specify
+horizontal and vertical reference frames separately, allowing stamps to follow signing paragraphs.
 TOC results and page references are supplied by the recognizer; the generator does not infer them.
 The Node wrapper loads the Markdown generator and DOM polyfill only when converting Markdown,
 so DocModel-only use does not pay the existing Markdown engine memory cost.

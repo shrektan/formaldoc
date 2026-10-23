@@ -501,7 +501,14 @@ describe('DocModel rendering variants', () => {
         path: imagePath,
         widthPt: 20,
         heightPt: 20,
-        floating: { xPt: -3, yPt: 5, relativeTo: 'margin', wrap: 'none', inFront: false },
+        floating: {
+          xPt: -3,
+          yPt: 5,
+          xRelativeTo: 'margin',
+          yRelativeTo: 'margin',
+          wrap: 'none',
+          inFront: false,
+        },
       },
     ];
     const result = await JSZip.loadAsync(await renderDocModel(input));

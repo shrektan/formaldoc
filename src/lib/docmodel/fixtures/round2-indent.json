@@ -1,0 +1,41 @@
+{
+  "source": "runs/guizhang-p3/docmodel.json: Numbering3 level 1 and its ListItemL2Variant2 style",
+  "style": {
+    "id": "ListItemL2Variant2",
+    "name": "编号项 2 2",
+    "builtIn": false,
+    "basedOn": "Normal",
+    "next": "Normal",
+    "font": {
+      "eastAsia": "仿宋_GB2312",
+      "ascii": "Times New Roman"
+    },
+    "sizePt": 16,
+    "bold": false,
+    "align": "justify",
+    "indent": {
+      "firstLineChars": 2,
+      "leftChars": 0,
+      "rightChars": 0
+    },
+    "lineSpacing": {
+      "rule": "exact",
+      "pt": 30
+    },
+    "spaceBeforePt": 7,
+    "spaceAfterPt": 7,
+    "snapToGrid": false
+  },
+  "level": {
+    "level": 1,
+    "format": "chineseCounting",
+    "text": "（%2）",
+    "start": 1,
+    "suffix": "nothing",
+    "styleId": "ListItemL2Variant2",
+    "indent": {
+      "firstLineChars": 2,
+      "leftChars": 0
+    }
+  }
+}
