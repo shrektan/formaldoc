@@ -1,0 +1,534 @@
+{
+  "source": "runs/guizhang-8p-final3/docmodel.json Numbering2 / NumberInstance2, chapters1-2, articles1-12 and first two items of articles8+12; each real body shortened to24characters",
+  "model": {
+    "version": 1,
+    "styles": [
+      {
+        "id": "Normal",
+        "name": "Normal",
+        "builtIn": true,
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 2,
+          "leftChars": 0,
+          "rightChars": 1
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 30
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "Heading1",
+        "name": "heading 1",
+        "builtIn": true,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "outlineLevel": 0,
+        "font": {
+          "eastAsia": "方正小标宋简体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "left",
+        "indent": {
+          "firstLineChars": 5.5,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 30
+        },
+        "spaceBeforePt": 30,
+        "spaceAfterPt": 0,
+        "keepNext": true,
+        "snapToGrid": false
+      },
+      {
+        "id": "ListItemL3",
+        "name": "编号项 3",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "仿宋",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 16,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 2,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 30
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      }
+    ],
+    "numbering": [
+      {
+        "id": "Chapters",
+        "levels": [
+          {
+            "level": 0,
+            "format": "chineseCounting",
+            "text": "第%1章　",
+            "start": 1,
+            "suffix": "nothing",
+            "styleId": "Heading1",
+            "indent": {
+              "firstLineChars": 5.5,
+              "leftChars": 0
+            }
+          }
+        ]
+      },
+      {
+        "id": "Articles",
+        "levels": [
+          {
+            "level": 0,
+            "format": "chineseCounting",
+            "text": "第%1条　",
+            "start": 1,
+            "suffix": "nothing",
+            "styleId": "Normal",
+            "run": {
+              "bold": true,
+              "font": {
+                "eastAsia": "黑体",
+                "ascii": "Times New Roman"
+              }
+            },
+            "indent": {
+              "firstLineChars": 2,
+              "leftChars": 0
+            }
+          }
+        ]
+      },
+      {
+        "id": "Items",
+        "levels": [
+          {
+            "level": 0,
+            "format": "chineseCounting",
+            "text": "（%1）",
+            "start": 1,
+            "suffix": "nothing",
+            "styleId": "ListItemL3",
+            "indent": {
+              "firstLineChars": 2,
+              "leftChars": 0
+            }
+          }
+        ]
+      }
+    ],
+    "numberingInstances": [
+      {
+        "id": "ChaptersPart",
+        "numberingId": "Chapters",
+        "startOverrides": [
+          {
+            "level": 0,
+            "start": 1
+          }
+        ]
+      },
+      {
+        "id": "ArticlesPart",
+        "numberingId": "Articles",
+        "startOverrides": [
+          {
+            "level": 0,
+            "start": 1
+          }
+        ]
+      },
+      {
+        "id": "ItemsArticle8",
+        "numberingId": "Items",
+        "startOverrides": [
+          {
+            "level": 0,
+            "start": 1
+          }
+        ]
+      },
+      {
+        "id": "ItemsArticle12",
+        "numberingId": "Items",
+        "startOverrides": [
+          {
+            "level": 0,
+            "start": 1
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "page": {
+          "widthPt": 595.2756,
+          "heightPt": 841.8898,
+          "orientation": "portrait",
+          "margins": {
+            "topPt": 102,
+            "bottomPt": 110,
+            "leftPt": 88.5,
+            "rightPt": 58.275600000000054,
+            "headerPt": 28,
+            "footerPt": 28
+          }
+        },
+        "blocks": [
+          {
+            "type": "p",
+            "styleId": "Heading1",
+            "runs": [
+              {
+                "text": "总　则"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ChaptersPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "为加强对信托公司的监督管理，规范信托公司的经营行"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "本办法所称信托公司，是指依照《中华人民共和国公司"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "信托财产不属于信托公司的固有财产，也不属于信托公"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "信托公司从事信托活动，应当遵守法律法规的规定和信"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "国家金融监督管理总局对信托公司及其业务活动实施监"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Heading1",
+            "runs": [
+              {
+                "text": "机构的设立、变更与终止"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ChaptersPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "设立信托公司，应当采取有限责任公司或者股份有限公"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "设立信托公司，应当经国家金融监督管理总局批准，并"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "设立信托公司，应当具备下列条件："
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "ListItemL3",
+            "runs": [
+              {
+                "text": "有符合《中华人民共和国公司法》和国家金融监督管理"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ItemsArticle8",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "ListItemL3",
+            "runs": [
+              {
+                "text": "有具备国家金融监督管理总局规定的入股资格的股东；"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ItemsArticle8",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "国家金融监督管理总局依照法律法规和审慎监管原则对"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "信托公司注册资本最低限额为3亿元人民币或等值的可"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "未经国家金融监督管理总局批准，信托公司不得设立或"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "Normal",
+            "runs": [
+              {
+                "text": "信托公司有下列情形之一的，应当经国家金融监督管理"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ArticlesPart",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "ListItemL3",
+            "runs": [
+              {
+                "text": "变更名称；"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ItemsArticle12",
+              "level": 0
+            }
+          },
+          {
+            "type": "p",
+            "styleId": "ListItemL3",
+            "runs": [
+              {
+                "text": "变更注册资本；"
+              }
+            ],
+            "numbering": {
+              "instanceId": "ItemsArticle12",
+              "level": 0
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "expected": [
+    {
+      "label": "第一章",
+      "body": "总　则",
+      "kind": "chapter"
+    },
+    {
+      "label": "第一条",
+      "body": "为加强对信托公司的监督管理，规范信托公司的经营行",
+      "kind": "article"
+    },
+    {
+      "label": "第二条",
+      "body": "本办法所称信托公司，是指依照《中华人民共和国公司",
+      "kind": "article"
+    },
+    {
+      "label": "第三条",
+      "body": "信托财产不属于信托公司的固有财产，也不属于信托公",
+      "kind": "article"
+    },
+    {
+      "label": "第四条",
+      "body": "信托公司从事信托活动，应当遵守法律法规的规定和信",
+      "kind": "article"
+    },
+    {
+      "label": "第五条",
+      "body": "国家金融监督管理总局对信托公司及其业务活动实施监",
+      "kind": "article"
+    },
+    {
+      "label": "第二章",
+      "body": "机构的设立、变更与终止",
+      "kind": "chapter"
+    },
+    {
+      "label": "第六条",
+      "body": "设立信托公司，应当采取有限责任公司或者股份有限公",
+      "kind": "article"
+    },
+    {
+      "label": "第七条",
+      "body": "设立信托公司，应当经国家金融监督管理总局批准，并",
+      "kind": "article"
+    },
+    {
+      "label": "第八条",
+      "body": "设立信托公司，应当具备下列条件：",
+      "kind": "article"
+    },
+    {
+      "label": "（一）",
+      "body": "有符合《中华人民共和国公司法》和国家金融监督管理",
+      "kind": "item"
+    },
+    {
+      "label": "（二）",
+      "body": "有具备国家金融监督管理总局规定的入股资格的股东；",
+      "kind": "item"
+    },
+    {
+      "label": "第九条",
+      "body": "国家金融监督管理总局依照法律法规和审慎监管原则对",
+      "kind": "article"
+    },
+    {
+      "label": "第十条",
+      "body": "信托公司注册资本最低限额为3亿元人民币或等值的可",
+      "kind": "article"
+    },
+    {
+      "label": "第十一条",
+      "body": "未经国家金融监督管理总局批准，信托公司不得设立或",
+      "kind": "article"
+    },
+    {
+      "label": "第十二条",
+      "body": "信托公司有下列情形之一的，应当经国家金融监督管理",
+      "kind": "article"
+    },
+    {
+      "label": "（一）",
+      "body": "变更名称；",
+      "kind": "item"
+    },
+    {
+      "label": "（二）",
+      "body": "变更注册资本；",
+      "kind": "item"
+    }
+  ]
+}
