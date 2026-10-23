@@ -12,6 +12,9 @@ XML parts for character indentation, exact styles, numbering instances, and stru
 Character indentation also includes twip values computed from its owning paragraph style font size
 for LibreOffice. Numbering levels with indentation must bind that style. Floating images specify
 horizontal and vertical reference frames separately, allowing stamps to follow signing paragraphs.
+Single-image paragraphs use a dedicated single-spaced style, while oversized text can use atLeast
+line spacing. Punctuation compression is an explicit optional document setting; omitting it preserves
+the writer default, and false explicitly writes doNotCompress.
 TOC results and page references are supplied by the recognizer; the generator does not infer them.
 The Node wrapper loads the Markdown generator and DOM polyfill only when converting Markdown,
 so DocModel-only use does not pay the existing Markdown engine memory cost.

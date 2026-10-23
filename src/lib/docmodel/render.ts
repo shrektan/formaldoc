@@ -93,7 +93,7 @@ function styleXml(style: StyleDef, id: string, name = style.name, extra = ''): s
       : tag('pageBreakBefore', Number(style.pageBreakBefore)),
     tag('snapToGrid', Number(style.snapToGrid ?? false)),
     extra,
-    `<w:spacing w:before="${twips(style.spaceBeforePt ?? 0)}" w:after="${twips(style.spaceAfterPt ?? 0)}" w:line="${spacing.rule === 'exact' ? twips(spacing.pt) : Math.round(spacing.value * 240)}" w:lineRule="${spacing.rule === 'exact' ? 'exact' : 'auto'}"/>`,
+    `<w:spacing w:before="${twips(style.spaceBeforePt ?? 0)}" w:after="${twips(style.spaceAfterPt ?? 0)}" w:line="${spacing.rule === 'multiple' ? Math.round(spacing.value * 240) : twips(spacing.pt)}" w:lineRule="${spacing.rule === 'multiple' ? 'auto' : spacing.rule}"/>`,
     indentXml(style.indent, style.sizePt),
     tag('jc', style.align === 'justify' ? 'both' : style.align),
     style.outlineLevel === undefined ? '' : tag('outlineLvl', style.outlineLevel),
@@ -205,12 +205,12 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
   const tocStyles = new Map<string, string>();
   let headingIndex = 0;
   let generatedIndex = 0;
-  const generatedStyle = (purpose: string, style: StyleDef, extra = '') => {
+  const generatedStyle = (purpose: string, style: StyleDef, extra = '', name?: string) => {
     let id: string;
     do {
       id = `DocModel${purpose}${++generatedIndex}`;
     } while (styles.has(id));
-    extraStyles.push(styleXml(style, id, id, extra));
+    extraStyles.push(styleXml(style, id, name ?? id, extra));
     return id;
   };
   const imageRun = async (image: ImageBlock) => {
@@ -402,6 +402,33 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
     });
     return result;
   };
+  const pictureStyles = new Map<NonNullable<ImageBlock['align']>, string>();
+  const getPictureStyle = (align: NonNullable<ImageBlock['align']> = 'left') => {
+    let styleId = pictureStyles.get(align);
+    if (!styleId) {
+      styleId = generatedStyle(
+        'Picture',
+        {
+          ...base,
+          builtIn: false,
+          basedOn: undefined,
+          outlineLevel: undefined,
+          align,
+          indent: { firstLineChars: 0, hangingChars: 0, leftChars: 0, rightChars: 0 },
+          lineSpacing: { rule: 'multiple', value: 1 },
+          spaceBeforePt: 0,
+          spaceAfterPt: 0,
+          keepNext: false,
+          pageBreakBefore: false,
+          snapToGrid: false,
+        },
+        '',
+        align === 'left' ? '图片' : align === 'center' ? '图片居中' : '图片右对齐'
+      );
+      pictureStyles.set(align, styleId);
+    }
+    return styleId;
+  };
   const blocks = async (
     items: Block[],
     main = false,
@@ -411,7 +438,7 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
     for (const block of items) {
       if (block.type === 'p') result.push(await paragraph(block, main));
       else if (block.type === 'image')
-        result.push(new ModelParagraph('Normal', [await imageRun(block)]));
+        result.push(new ModelParagraph(getPictureStyle(block.align), [await imageRun(block)]));
       else if (block.type === 'table') result.push(await table(block, main));
       else if (block.type === 'pageBreak')
         result.push(new ModelParagraph('Normal', [new PageBreak()]));
@@ -544,6 +571,18 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="${W}"><w:docDefaults><w:rPrDefault><w:rPr><w:lang w:val="${language}" w:eastAsia="${language}"/></w:rPr></w:rPrDefault></w:docDefaults>${definitions}</w:styles>`
   );
   zip.file('word/numbering.xml', numberingXml(model));
+  if (model.settings?.compressPunctuation !== undefined) {
+    const settings = await zip.file('word/settings.xml')!.async('string');
+    zip.file(
+      'word/settings.xml',
+      settings
+        .replace(/<w:characterSpacingControl\b[^>]*\/>/g, '')
+        .replace(
+          '</w:settings>',
+          `${tag('characterSpacingControl', model.settings.compressPunctuation ? 'compressPunctuation' : 'doNotCompress')}</w:settings>`
+        )
+    );
+  }
   // docx emits unused footnote separators with direct formatting by default.
   zip.file(
     'word/footnotes.xml',

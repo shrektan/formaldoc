@@ -34,6 +34,7 @@ export const styleDefSchema = z
     indent: indentSchema.optional(),
     lineSpacing: z.union([
       z.object({ rule: z.literal('exact'), pt: positive }).strict(),
+      z.object({ rule: z.literal('atLeast'), pt: positive }).strict(),
       z.object({ rule: z.literal('multiple'), value: positive }).strict(),
     ]),
     spaceBeforePt: number.optional(),
@@ -107,6 +108,7 @@ export const imageBlockSchema = z
     path: text.refine(isAbsolute, 'Image path must be absolute'),
     widthPt: positive,
     heightPt: positive,
+    align: z.enum(['left', 'center', 'right']).optional(),
     floating: z
       .object({
         xPt: number,
@@ -249,7 +251,10 @@ const modelShape = z
     numberingInstances: z.array(numberingInstanceSchema),
     sections: z.array(sectionDefSchema).min(1),
     settings: z
-      .object({ language: z.enum(['zh-CN', 'en-US']).optional() })
+      .object({
+        language: z.enum(['zh-CN', 'en-US']).optional(),
+        compressPunctuation: z.boolean().optional(),
+      })
       .strict()
       .optional(),
   })

@@ -1,0 +1,59 @@
+{
+  "source": "runs/guizhang-r2/docmodel.json TitleVariant2 and runs/zigui-r2/docmodel.json Normal + first standalone stamp (path supplied by test)",
+  "title": {
+    "id": "TitleVariant2",
+    "name": "Title 2",
+    "builtIn": false,
+    "basedOn": "Normal",
+    "next": "Normal",
+    "font": {
+      "eastAsia": "方正小标宋简体",
+      "ascii": "Times New Roman"
+    },
+    "sizePt": 48,
+    "bold": false,
+    "align": "justify",
+    "indent": {
+      "firstLineChars": 0.5,
+      "leftChars": 0,
+      "rightChars": 0
+    },
+    "lineSpacing": {
+      "rule": "exact",
+      "pt": 30
+    },
+    "spaceBeforePt": 0,
+    "spaceAfterPt": 0,
+    "snapToGrid": false
+  },
+  "body": {
+    "id": "Normal",
+    "name": "Normal",
+    "builtIn": true,
+    "next": "Normal",
+    "font": {
+      "eastAsia": "仿宋_GB2312",
+      "ascii": "Times New Roman"
+    },
+    "sizePt": 16,
+    "bold": false,
+    "align": "justify",
+    "indent": {
+      "firstLineChars": 2,
+      "leftChars": 0,
+      "rightChars": 0
+    },
+    "lineSpacing": {
+      "rule": "exact",
+      "pt": 28.5
+    },
+    "spaceBeforePt": 0,
+    "spaceAfterPt": 0,
+    "snapToGrid": false
+  },
+  "image": {
+    "type": "image",
+    "widthPt": 142.8,
+    "heightPt": 143.14
+  }
+}
