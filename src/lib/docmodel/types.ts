@@ -8,6 +8,7 @@ const positive = number.positive();
 const nonnegative = number.nonnegative();
 const integer = number.int().nonnegative();
 const color = text.regex(/^[\da-fA-F]{6}$/, 'Expected RRGGBB color');
+// Chinese font and Latin/digit font; ascii also supplies Word hAnsi. Both may be identical.
 const fontSchema = z.object({ eastAsia: text, ascii: text }).strict();
 const indentSchema = z
   .object({

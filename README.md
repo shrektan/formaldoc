@@ -194,6 +194,13 @@ await writeFile('document.docx', await renderDocModel(model));
 Image paths must be absolute PNG/JPG paths. Validation errors identify the failing field.
 Chinese counting formats use native `chineseCountingThousand` for regulation wording at hundreds.
 Paragraph layout belongs to named styles; runs support bold, italic, underline, and color.
+Every font declaration is `{ eastAsia, ascii }`: `eastAsia` selects the Chinese font,
+while `ascii` is written to both Word `ascii` and `hAnsi` attributes for Latin text and digits.
+Use the same Chinese font in both fields when the source uses that font for its digits or
+Latin text. These declarations apply to named styles, numbering-level `run.font`, and
+section `pageNumber.font`; ordinary runs inherit their style font. The renderer preserves
+the declared pair and does not choose fonts from content. DocModel v1 requires no separate
+`hAnsi` or `cs` field for this behavior.
 Headings receive `_heading_N` bookmarks unless an explicit bookmark is supplied. The complete
 example factory is in `src/lib/docmodel/fixtures/full-example.ts`.
 
