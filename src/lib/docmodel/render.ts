@@ -464,7 +464,19 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         const children = cell ? await blocks(cell.blocks, main) : [];
         // An empty Word cell still requires a paragraph. Create it here with a
         // style before docx's TableCell fallback injects an unstyled paragraph.
-        if (!children.length) children.push(new ModelParagraph('Normal', []));
+        if (!children.length) {
+          const usedStyles = block.rows.flatMap((row) =>
+            row.cells.flatMap((cell) =>
+              cell.blocks.flatMap((block) => (block.type === 'p' ? [block.styleId] : []))
+            )
+          );
+          const emptyCellStyle =
+            usedStyles.find((id) => /^TableTextP\d+T\d+$/.test(id)) ??
+            usedStyles.find((id) => id.startsWith('TableText')) ??
+            model.styles.find((style) => style.id.startsWith('TableText'))?.id ??
+            'Normal';
+          children.push(new ModelParagraph(emptyCellStyle, []));
+        }
         cells.push(
           new TableCell({
             children,

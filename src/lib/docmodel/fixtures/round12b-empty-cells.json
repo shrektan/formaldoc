@@ -1,0 +1,254 @@
+{
+  "source": "runs7/report-tables-01/docmodel.json section2 table1 row3 (global table2); unmodified row/styles/page, only unrelated content removed",
+  "originalNormalBeforePt": 271,
+  "emptyColumns": [
+    1,
+    4
+  ],
+  "expectedStyleId": "TableTextP8T1",
+  "model": {
+    "version": 1,
+    "styles": [
+      {
+        "id": "Normal",
+        "name": "Normal",
+        "builtIn": true,
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 10.5,
+        "bold": false,
+        "align": "left",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 15.5
+        },
+        "spaceBeforePt": 271,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "TableText",
+        "name": "表格文字 1",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 9,
+        "bold": false,
+        "align": "left",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "atLeast",
+          "pt": 11
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "TableTextVariant2",
+        "name": "表格文字 1 2",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 9,
+        "bold": false,
+        "align": "center",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "atLeast",
+          "pt": 11
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "TableTextP8T1",
+        "name": "表格文字 2",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 10.5,
+        "bold": false,
+        "align": "left",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "atLeast",
+          "pt": 12.5
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      }
+    ],
+    "numbering": [],
+    "numberingInstances": [],
+    "sections": [
+      {
+        "page": {
+          "widthPt": 841.8897637795276,
+          "heightPt": 595.2755905511812,
+          "orientation": "landscape",
+          "margins": {
+            "topPt": 53.5,
+            "bottomPt": 110.5,
+            "leftPt": 52,
+            "rightPt": 56.5,
+            "headerPt": 28,
+            "footerPt": 28
+          }
+        },
+        "blocks": [
+          {
+            "type": "table",
+            "columnsPt": [
+              257.86126273119305,
+              34.07695775077099,
+              98.03318641307715,
+              177.94622464673273,
+              34.197448761759006,
+              103.79225676814588
+            ],
+            "align": "left",
+            "borders": {
+              "top": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "bottom": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "left": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "right": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "insideH": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "insideV": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              }
+            },
+            "rows": [
+              {
+                "heightPt": 16.198791518727973,
+                "header": true,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP8T1",
+                        "runs": [
+                          {
+                            "text": "栏次"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP8T1",
+                        "runs": [
+                          {
+                            "text": "1"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP8T1",
+                        "runs": [
+                          {
+                            "text": "栏次"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP8T1",
+                        "runs": [
+                          {
+                            "text": "2"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
