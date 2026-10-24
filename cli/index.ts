@@ -23,7 +23,7 @@ import {
   DEFAULT_TEMPLATE,
   isValidTemplateName,
   parseDocModel,
-  renderDocModel,
+  renderDocModelWithReport,
 } from '../src/node.js';
 import { convertQuotes } from '../src/lib/text-processing.js';
 import type { StyleSettings } from '../src/types/styles.js';
@@ -33,6 +33,7 @@ const VERSION = '1.2.2';
 interface CliOptions {
   input?: string;
   docmodel?: string;
+  docmodelReport?: string;
   output?: string;
   template?: string;
   styles?: string;
@@ -58,6 +59,7 @@ ARGUMENTS:
 
 OPTIONS:
   --docmodel <file>       DocModel JSON input (exclusive with Markdown input)
+  --docmodel-report <file> Write this render XML filtering report as JSON
   -o, --output <file>     Output file path (default: input with .docx extension)
   -t, --template <name>   Template to use (default: cn-gov)
   -s, --styles <file>     Custom styles JSON (applied on top of template)
@@ -118,6 +120,12 @@ function parseArgs(args: string[]): CliOptions {
         throw new Error('--docmodel requires exactly one JSON file');
       }
       options.docmodel = args[i];
+    } else if (arg === '--docmodel-report') {
+      i++;
+      if (!args[i] || args[i].startsWith('-') || options.docmodelReport) {
+        throw new Error('--docmodel-report requires exactly one report path');
+      }
+      options.docmodelReport = args[i];
     } else if (arg === '-o' || arg === '--output') {
       i++;
       options.output = args[i];
@@ -204,6 +212,9 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  if (options.docmodelReport && !options.docmodel)
+    throw new Error('--docmodel-report requires --docmodel');
+
   if (options.docmodel) {
     if (options.input || options.stdin) {
       throw new Error('--docmodel is mutually exclusive with Markdown input and --stdin');
@@ -215,9 +226,15 @@ async function main(): Promise<void> {
     const outputPath = options.output
       ? resolve(options.output)
       : join(dirname(inputPath), `${basename(inputPath, extname(inputPath))}.docx`);
+    const reportPath = options.docmodelReport ? resolve(options.docmodelReport) : undefined;
+    if (reportPath === inputPath || reportPath === outputPath)
+      throw new Error('--docmodel-report must differ from the input JSON and output DOCX paths');
     const model = parseDocModel(readFileSync(inputPath, 'utf-8'));
-    const buffer = await renderDocModel(model);
+    const { buffer, report } = await renderDocModelWithReport(model);
     writeFileSync(outputPath, buffer);
+    if (reportPath) writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+    else if (report.xmlCharactersFiltered)
+      console.warn(`Filtered ${report.xmlCharactersFiltered} XML 1.0 illegal characters.`);
     console.log(`Successfully created: ${outputPath}`);
     return;
   }
