@@ -112,8 +112,26 @@ export const mathImageFallbackSchema = z
     heightPt: positive,
   })
   .strict();
+export const mathTextFallbackRunSchema = z
+  .object({
+    text,
+    bold: z.boolean().optional(),
+    italic: z.boolean().optional(),
+    underline: z.boolean().optional(),
+    color: color.optional(),
+    vertAlign: z.enum(['superscript', 'subscript']).optional(),
+  })
+  .strict();
 export const mathContentSchema = z
-  .object({ latex: text, fallback: mathImageFallbackSchema.optional() })
+  .object({
+    latex: text,
+    fallback: mathImageFallbackSchema.optional(),
+    fallbackText: z
+      .array(mathTextFallbackRunSchema)
+      .min(1)
+      .refine((runs) => runs.some((run) => run.text.length > 0), 'Expected source text')
+      .optional(),
+  })
   .strict();
 export const mathBlockSchema = mathContentSchema
   .extend({ type: z.literal('math'), numberText: text.optional() })

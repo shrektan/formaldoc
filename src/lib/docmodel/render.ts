@@ -26,6 +26,7 @@ import {
 } from 'docx';
 import type { IBorderOptions, ISectionOptions, ParagraphChild } from 'docx';
 import { parseDocModel } from './types.js';
+import { separateAdjacentTables } from './table-separators.js';
 import { latexToOmml } from '../math/latex-to-docx.js';
 import { filterModelXmlCharacters, filterXmlCharacters } from './xml-characters.js';
 import type {
@@ -35,6 +36,7 @@ import type {
   ImageBlock,
   MathBlock,
   ParagraphBlock,
+  Run,
   StyleDef,
   TableBlock,
   TocBlock,
@@ -221,7 +223,9 @@ export interface DocModelRenderReport {
   /** Final writer safety changes, with section/table/row and measured page limits. */
   layoutWarnings?: string[];
   /** Declared display/inline totals; failed is the subset rendered from fallback images. */
-  mathConversions?: { display: number; inline: number; failed: number };
+  mathConversions?: { display: number; inline: number; failed: number; retainedText?: number };
+  /** Source crop paths whose failed math conversions retained declared source text. */
+  mathTextFallbacks?: string[];
 }
 
 /** Compatible Buffer-only API; use renderDocModelWithReport for filtering evidence. */
@@ -322,29 +326,47 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         : undefined,
     });
   };
+  const textRun = (
+    run: Pick<Run, 'text' | 'bold' | 'italic' | 'underline' | 'color' | 'vertAlign'>
+  ) =>
+    new TextRun({
+      text: run.text,
+      bold: run.bold,
+      italics: run.italic,
+      underline:
+        run.underline === undefined ? undefined : { type: run.underline ? 'single' : 'none' },
+      color: run.color,
+      superScript: run.vertAlign === 'superscript' ? true : undefined,
+      subScript: run.vertAlign === 'subscript' ? true : undefined,
+    });
   const mathChild = async (
-    content: { latex: string; fallback?: { path: string; widthPt: number; heightPt: number } },
+    content: NonNullable<Run['math']>,
     display: boolean
-  ): Promise<ParagraphChild> => {
+  ): Promise<ParagraphChild[]> => {
     report.mathConversions ??= { display: 0, inline: 0, failed: 0 };
     report.mathConversions[display ? 'display' : 'inline']++;
     try {
       if (!content.latex.trim()) throw new Error('Empty formula');
       const omml = latexToOmml(content.latex, display);
       if (!omml.includes('<m:oMath')) throw new Error('Formula conversion produced no native math');
-      return ImportedXmlComponent.fromXmlString(omml) as unknown as ParagraphChild;
+      return [ImportedXmlComponent.fromXmlString(omml) as unknown as ParagraphChild];
     } catch (error) {
+      if (content.fallbackText) {
+        report.mathConversions.retainedText = (report.mathConversions.retainedText ?? 0) + 1;
+        if (content.fallback) (report.mathTextFallbacks ??= []).push(content.fallback.path);
+        return content.fallbackText.map(textRun);
+      }
       report.mathConversions.failed++;
       if (!content.fallback)
         throw new Error(`Formula conversion failed without fallback image: ${String(error)}`);
-      return imageRun({ type: 'image', ...content.fallback });
+      return [await imageRun({ type: 'image', ...content.fallback })];
     }
   };
   const paragraph = async (block: ParagraphBlock, main: boolean) => {
     const children: ParagraphChild[] = [];
     for (const run of block.runs) {
       if (run.math) {
-        children.push(await mathChild(run.math, false));
+        children.push(...(await mathChild(run.math, false)));
         continue;
       }
       if (run.footnote) {
@@ -366,18 +388,7 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         children.push(reference);
         continue;
       }
-      children.push(
-        new TextRun({
-          text: run.text,
-          bold: run.bold,
-          italics: run.italic,
-          underline:
-            run.underline === undefined ? undefined : { type: run.underline ? 'single' : 'none' },
-          color: run.color,
-          superScript: run.vertAlign === 'superscript' ? true : undefined,
-          subScript: run.vertAlign === 'subscript' ? true : undefined,
-        })
-      );
+      children.push(textRun(run));
     }
     const heading = main && styles.get(block.styleId)?.outlineLevel !== undefined;
     if (heading) headingIndex++;
@@ -648,11 +659,11 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
       numbered
         ? [
             new TextRun({ children: [new Tab()] }),
-            math,
+            ...math,
             new TextRun({ children: [new Tab()] }),
             new TextRun(block.numberText!),
           ]
-        : [math]
+        : math
     );
   };
   const blocks = async (
@@ -908,8 +919,10 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
   // Inspect XML parts one at a time; embedded media stays compressed and untouched.
   for (const name of Object.keys(zip.files).filter((name) => /\.(?:xml|rels)$/i.test(name))) {
     let content = await zip.file(name)!.async('string');
-    if (/^word\/(document|header\d+|footer\d+|footnotes)\.xml$/.test(name))
+    if (/^word\/(document|header\d+|footer\d+|footnotes)\.xml$/.test(name)) {
       content = content.replace(/<w:(?:bCs|iCs)(?:\s[^>]*)?\/>/g, '');
+      content = separateAdjacentTables(content);
+    }
     if (name === 'word/document.xml') {
       let sectionIndex = 0;
       content = content.replace(/<w:pgSz\b[^>]*\/>/g, () => {

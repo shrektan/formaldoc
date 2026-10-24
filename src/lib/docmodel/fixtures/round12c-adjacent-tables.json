@@ -1,0 +1,2203 @@
+{
+  "source": "runs8/scan-table-01/docmodel.json sections[2].blocks[15:18]",
+  "model": {
+    "version": 1,
+    "styles": [
+      {
+        "id": "Normal",
+        "name": "Normal",
+        "builtIn": true,
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 12,
+        "bold": false,
+        "align": "left",
+        "indent": {
+          "firstLineChars": 5.5,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "exact",
+          "pt": 27
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "TableText",
+        "name": "表格文字 1",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 12,
+        "bold": false,
+        "align": "left",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "atLeast",
+          "pt": 20
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "TableTextP52T1",
+        "name": "表格文字 2",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 12,
+        "bold": false,
+        "align": "center",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "atLeast",
+          "pt": 20
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "TableTextP52T1Variant2",
+        "name": "表格文字 2 2",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 12,
+        "bold": false,
+        "align": "left",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "atLeast",
+          "pt": 20
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      },
+      {
+        "id": "TableTextP52T2",
+        "name": "表格文字 3",
+        "builtIn": false,
+        "basedOn": "Normal",
+        "next": "Normal",
+        "font": {
+          "eastAsia": "宋体",
+          "ascii": "Times New Roman"
+        },
+        "sizePt": 12,
+        "bold": false,
+        "align": "justify",
+        "indent": {
+          "firstLineChars": 0,
+          "leftChars": 0,
+          "rightChars": 0
+        },
+        "lineSpacing": {
+          "rule": "atLeast",
+          "pt": 14.5
+        },
+        "spaceBeforePt": 0,
+        "spaceAfterPt": 0,
+        "snapToGrid": false
+      }
+    ],
+    "numbering": [],
+    "numberingInstances": [],
+    "sections": [
+      {
+        "page": {
+          "widthPt": 595.2755905511812,
+          "heightPt": 841.8897637795276,
+          "orientation": "portrait",
+          "margins": {
+            "topPt": 84,
+            "bottomPt": 52,
+            "leftPt": 20,
+            "rightPt": 23.5,
+            "headerPt": 28,
+            "footerPt": 28
+          }
+        },
+        "columns": {
+          "count": 1,
+          "spacePt": 0
+        },
+        "blocks": [
+          {
+            "type": "table",
+            "columnsPt": [
+              147.97692367661963,
+              29.46908864114758,
+              95.14305761284791,
+              95.14305761284788,
+              149.2398846183831
+            ],
+            "align": "left",
+            "borders": {
+              "top": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "bottom": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "left": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "right": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "insideH": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "insideV": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              }
+            },
+            "rows": [
+              {
+                "heightPt": 53.880944881889775,
+                "header": true,
+                "cantSplit": true,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "单"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "位"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "　| 19 9 0年第四次"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "　　人口普查"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "　1982年第三次"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人口普查"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "1990年与1 9 82年"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "比　较"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 25.04622047244095,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "一、总人口①"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "　　1 13368 25 01"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "100817 5288"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增长　12. 45 %"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 24.94098425196853,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "二、自然变动②"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 19.468700787401588,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "出生率"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "%a"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "20. 98"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "20. 9 1"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增加0. 07个千分点"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 19.679173228346485,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "死亡率"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "%°"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "6. 28"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "6. 36"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "减少0. 08个千分点"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 27.361417322834598,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "自然增长率"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "%00"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "14. 7 0"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "14. 55"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增加0- 1 5个千分点"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 26.83523622047244,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "三、平均每个家庭"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 16.943031496062986,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人数"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "3. 9 6"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "4. 4 1"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "减少　0. 45人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 15.574960629921236,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 23.257204724409462,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "四､性别比（女= 1 00)"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "%"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "1 06. 6"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "106. 3"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增加0. 3个百分点"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 24.94098425196853,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "五、民族"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 19.67917322834637,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "汉　族"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "　　　10 4 2 4 8 2 1 87"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "9 408 8 0 1 2 1"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增长　10. 80 %"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 27.150944881889814,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "各少数民族"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "9 1 2 0 03 1 4"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "67 29 5 1 6 7"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增长35. 52%"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 27.04570866141728,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "六、每十万人拥有各"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 19.679173228346485,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "种文化程度人数"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 19.784409448818906,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "大　学"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "142 2"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "6 1 5"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增长13 1. 22%"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 15.048779527559077,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "高　中"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "80 39"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "6779"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增长18. 59 %"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 10.207913385826714,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 15.04877952755919,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "初　中"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "2 33 4 4"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "1 789 2"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增长30. 47 %"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 27.466653543307075,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "小　学"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "37 057"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "352 37"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "增长5. 17 %"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 27.25618110236212,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "七、文盲、半文盲③"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 19.784409448818906,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人　数"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "　　1"
+                          },
+                          {
+                            "text": "80030060",
+                            "vertAlign": "superscript"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "2 29 9 644 74"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "减少21. 7 1%"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 26.414291338582643,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "占总人口比重"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "　　%"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "15. 88"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "22 . 8 1"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableText",
+                        "runs": [
+                          {
+                            "text": "减少6. 9 3个百分点"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "columnsPt": [
+              147.97692367661963,
+              29.46908864114758,
+              94.72207063226011,
+              95.14305761284788,
+              147.134949715444
+            ],
+            "align": "left",
+            "borders": {
+              "top": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "bottom": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "left": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "right": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "insideH": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              },
+              "insideV": {
+                "sizePt": 0.5,
+                "color": "000000",
+                "style": "single"
+              }
+            },
+            "rows": [
+              {
+                "heightPt": 53.880944881889775,
+                "header": true,
+                "cantSplit": true,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "单位"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "单|"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "1 99 0年第四次"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "人口普查"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "　1 9 82年第三次"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "人口普查"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1Variant2",
+                        "runs": [
+                          {
+                            "text": "1 990年与1 982年"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "比　较"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 57.248503937007854,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1Variant2",
+                        "runs": [
+                          {
+                            "text": "八、市、镇人口④"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "人　数"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1Variant2",
+                        "runs": [
+                          {
+                            "text": "占总人口比重"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "人"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "%"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "296512111",
+                            "vertAlign": "superscript"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1Variant2",
+                        "runs": [
+                          {
+                            "text": "26. 23"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": [
+                          {
+                            "text": "206588582"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1Variant2",
+                        "runs": [
+                          {
+                            "text": "20. 60"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T1",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "columnsPt": [
+              25.792505614469405,
+              110.52560462175109
+            ],
+            "align": "left",
+            "borders": {},
+            "rows": [
+              {
+                "heightPt": 16.41685039370077,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T2",
+                        "runs": [
+                          {
+                            "text": "国家"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T2",
+                        "runs": [
+                          {
+                            "text": "统计　局"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              },
+              {
+                "heightPt": 15.574960629921236,
+                "cantSplit": false,
+                "cells": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T2",
+                        "runs": []
+                      }
+                    ],
+                    "vAlign": "center"
+                  },
+                  {
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "styleId": "TableTextP52T2",
+                        "runs": [
+                          {
+                            "text": "1990年　1 0月3 0日"
+                          }
+                        ]
+                      }
+                    ],
+                    "vAlign": "center"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
