@@ -26,6 +26,7 @@ import {
 } from 'docx';
 import type { IBorderOptions, ISectionOptions, ParagraphChild } from 'docx';
 import { parseDocModel } from './types.js';
+import { filterModelXmlCharacters, filterXmlCharacters } from './xml-characters.js';
 import type {
   Block,
   Border,
@@ -198,9 +199,33 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
   return model;
 }
 
-/** Generate independently of the Markdown pipeline; image bytes are cached per path. */
+export interface DocModelRenderReport {
+  /** Source removals plus any additional removals in serialized XML parts, without double counting. */
+  xmlCharactersFiltered: number;
+  /** Count each illegal character occurrence in each XML-bound source string field once. */
+  sourceXmlCharactersFiltered: number;
+  /** Additional final-safety removals by XML/.rels part, after source filtering. */
+  xmlPartsCharactersFiltered: Record<string, number>;
+}
+
+/** Compatible Buffer-only API; use renderDocModelWithReport for filtering evidence. */
 export async function renderDocModel(input: DocModel): Promise<Buffer> {
-  const model = normalizeBuiltInStyles(parseDocModel(input));
+  return (await renderDocModelWithReport(input)).buffer;
+}
+
+/** Generate independently of Markdown; image bytes are cached per path and never copied for XML filtering. */
+export async function renderDocModelWithReport(input: DocModel): Promise<{
+  buffer: Buffer;
+  report: DocModelRenderReport;
+}> {
+  const parsed = parseDocModel(input);
+  const sourceXmlCharactersFiltered = filterModelXmlCharacters(parsed);
+  const report: DocModelRenderReport = {
+    xmlCharactersFiltered: sourceXmlCharactersFiltered,
+    sourceXmlCharactersFiltered,
+    xmlPartsCharactersFiltered: {},
+  };
+  const model = normalizeBuiltInStyles(parsed);
   const images = new Map<string, Promise<Buffer>>();
   const extraStyles: string[] = [];
   const styles = new Map(model.styles.map((style) => [style.id, style]));
@@ -603,12 +628,11 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
     'word/footnotes.xml',
     `<?xml version="1.0" encoding="UTF-8"?><w:footnotes xmlns:w="${W}"/>`
   );
-  // Only decompress XML parts that need normalization; media stays compressed and untouched.
-  for (const name of Object.keys(zip.files).filter((name) =>
-    /^word\/(document|header\d+|footer\d+)\.xml$/.test(name)
-  )) {
+  // Inspect XML parts one at a time; embedded media stays compressed and untouched.
+  for (const name of Object.keys(zip.files).filter((name) => /\.(?:xml|rels)$/i.test(name))) {
     let content = await zip.file(name)!.async('string');
-    content = content.replace(/<w:(?:bCs|iCs)(?:\s[^>]*)?\/>/g, '');
+    if (/^word\/(document|header\d+|footer\d+)\.xml$/.test(name))
+      content = content.replace(/<w:(?:bCs|iCs)(?:\s[^>]*)?\/>/g, '');
     if (name === 'word/document.xml') {
       let sectionIndex = 0;
       content = content.replace(/<w:pgSz\b[^>]*\/>/g, () => {
@@ -617,9 +641,17 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
       });
       content = normalizeSectionBreaks(content);
     }
-    zip.file(name, content);
+    const filtered = filterXmlCharacters(content);
+    if (filtered.removed) {
+      report.xmlPartsCharactersFiltered[name] = filtered.removed;
+      report.xmlCharactersFiltered += filtered.removed;
+    }
+    zip.file(name, filtered.text);
   }
-  return zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+  return {
+    buffer: await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }),
+    report,
+  };
 }
 
 /** Library section delimiters may attach to real paragraphs; tables require a separate delimiter. */
