@@ -159,6 +159,8 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
     const name = style.name.toLowerCase();
     if (name === 'normal') return 'Normal';
     if (name === 'title') return 'Title';
+    if (name === 'header' || name === '页眉') return 'Header';
+    if (name === 'caption' || name === '题注') return 'Caption';
     const heading = /^heading ([1-4])$/.exec(name);
     if (heading) return `Heading${heading[1]}`;
     const toc = /^toc ([1-3])$/.exec(name);
@@ -194,6 +196,7 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
   for (const section of model.sections) {
     visit(section.blocks);
     visit(section.header ?? []);
+    visit(section.headerEven ?? []);
     visit(section.footer ?? []);
   }
   return model;
@@ -206,6 +209,8 @@ export interface DocModelRenderReport {
   sourceXmlCharactersFiltered: number;
   /** Additional final-safety removals by XML/.rels part, after source filtering. */
   xmlPartsCharactersFiltered: Record<string, number>;
+  /** Final writer safety changes, with section/table/row and measured page limits. */
+  layoutWarnings?: string[];
 }
 
 /** Compatible Buffer-only API; use renderDocModelWithReport for filtering evidence. */
@@ -307,7 +312,41 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
       : undefined;
     return new ModelParagraph(block.styleId, textChildren, numbering);
   };
+  let sectionLayout = { sectionIndex: 0, tableIndex: 0, bodyHeightPt: Infinity };
+  const warning = (message: string) => (report.layoutWarnings ??= []).push(message);
+  const rowMinimumHeight = (row: TableBlock['rows'][number]): number =>
+    Math.max(
+      row.heightPt ?? 0,
+      ...row.cells.map(
+        (cell) =>
+          cell.blocks.reduce((sum, block) => {
+            if (block.type === 'image') return sum + block.heightPt;
+            const style = styles.get(block.styleId) ?? base;
+            const spacing = style.lineSpacing;
+            const lineHeight =
+              spacing.rule === 'multiple'
+                ? style.sizePt * spacing.value
+                : spacing.rule === 'exact'
+                  ? spacing.pt
+                  : Math.max(spacing.pt, style.sizePt);
+            return sum + lineHeight + (style.spaceBeforePt ?? 0) + (style.spaceAfterPt ?? 0);
+          }, 0) / (cell.rowSpan ?? 1)
+      )
+    );
   const table = async (block: TableBlock, main: boolean) => {
+    const tableIndex = ++sectionLayout.tableIndex;
+    const location = `第${sectionLayout.sectionIndex + 1}节第${tableIndex}个表格`;
+    const bodyHeightPt = sectionLayout.bodyHeightPt;
+    const heights = block.rows.map(rowMinimumHeight);
+    const headerHeight = block.rows.reduce(
+      (sum, row, index) => sum + (row.header ? heights[index] : 0),
+      0
+    );
+    const unsafeHeader = headerHeight > bodyHeightPt / 3;
+    if (unsafeHeader)
+      warning(
+        `${location}重复表头高${headerHeight.toFixed(2)}pt，超过正文区${bodyHeightPt.toFixed(2)}pt的1/3，已关闭重复表头。`
+      );
     // Resolve skipped cells under vertical merges before handing the grid to docx.
     const active = new Map<
       number,
@@ -318,7 +357,7 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
       }
     >();
     const rows: TableRow[] = [];
-    for (const row of block.rows) {
+    for (const [rowIndex, row] of block.rows.entries()) {
       let column = 0;
       let cellIndex = 0;
       const cells: TableCell[] = [];
@@ -364,10 +403,16 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         }
         column += span;
       }
+      if (heights[rowIndex] > bodyHeightPt)
+        warning(
+          `${location}第${rowIndex + 1}行高至少${heights[rowIndex].toFixed(2)}pt，超过正文区${bodyHeightPt.toFixed(2)}pt，已允许跨页并保留atLeast行高。`
+        );
       rows.push(
         new TableRow({
           children: cells,
-          tableHeader: row.header,
+          tableHeader: row.header && !unsafeHeader ? true : undefined,
+          cantSplit:
+            heights[rowIndex] > bodyHeightPt ? undefined : (row.cantSplit ?? true) || undefined,
           height:
             row.heightPt === undefined
               ? undefined
@@ -486,14 +531,27 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     }
     return result;
   };
-  const mirrored = model.sections.some((section) =>
-    ['outside', 'inside'].includes(section.pageNumber?.placement ?? '')
-  );
+  const mirrored =
+    model.settings?.evenAndOddHeaders === true ||
+    model.sections.some(
+      (section) =>
+        section.headerEven !== undefined ||
+        ['outside', 'inside'].includes(section.pageNumber?.placement ?? '')
+    );
   const sections: ISectionOptions[] = [];
-  for (const section of model.sections) {
+  for (const [sectionIndex, section] of model.sections.entries()) {
     const { page, pageNumber } = section;
+    sectionLayout = {
+      sectionIndex,
+      tableIndex: 0,
+      bodyHeightPt: page.heightPt - page.margins.topPt - page.margins.bottomPt,
+    };
     const contentWidth = page.widthPt - page.margins.leftPt - page.margins.rightPt;
     const headerContent = await blocks(section.header ?? [], false, contentWidth);
+    const evenHeaderContent =
+      section.headerEven === undefined
+        ? headerContent
+        : await blocks(section.headerEven, false, contentWidth);
     const footerContent = await blocks(section.footer ?? [], false, contentWidth);
     const makeFooter = (even: boolean, first = false) => {
       const content = [...footerContent];
@@ -542,6 +600,7 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     sections.push({
       properties: {
         type: section.startType ?? 'nextPage',
+        column: { count: section.columns?.count ?? 1, space: twips(section.columns?.spacePt ?? 0) },
         titlePage: pageNumber?.hideOnFirstPage ?? false,
         page: {
           size: {
@@ -563,7 +622,7 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
       },
       headers: {
         default: new Header({ children: headerContent }),
-        ...(mirrored ? { even: new Header({ children: headerContent }) } : {}),
+        ...(mirrored ? { even: new Header({ children: evenHeaderContent }) } : {}),
         ...(pageNumber?.hideOnFirstPage ? { first: new Header({ children: headerContent }) } : {}),
       },
       footers: {
@@ -571,7 +630,12 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         ...(mirrored ? { even: makeFooter(true) } : {}),
         ...(pageNumber?.hideOnFirstPage ? { first: makeFooter(false, true) } : {}),
       },
-      children: await blocks(section.blocks, true, contentWidth),
+      children: await blocks(
+        section.blocks,
+        true,
+        (contentWidth - ((section.columns?.count ?? 1) - 1) * (section.columns?.spacePt ?? 0)) /
+          (section.columns?.count ?? 1)
+      ),
     });
     // Section page sizes are explicit; docx swaps landscape dimensions. Restore after packing.
   }
@@ -598,11 +662,15 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
             ? 'Normal'
             : style.id === 'Title'
               ? 'Title'
-              : /^Heading[1-4]$/.test(style.id)
-                ? `heading ${style.id.slice(-1)}`
-                : level
-                  ? `toc ${level}`
-                  : style.name;
+              : style.id === 'Header'
+                ? 'header'
+                : style.id === 'Caption'
+                  ? 'caption'
+                  : /^Heading[1-4]$/.test(style.id)
+                    ? `heading ${style.id.slice(-1)}`
+                    : level
+                      ? `toc ${level}`
+                      : style.name;
         return styleXml(style, style.id, name, tabs);
       })
       .join('') + extraStyles.join('');

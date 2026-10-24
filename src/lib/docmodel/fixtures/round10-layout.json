@@ -1,0 +1,71 @@
+{
+  "sources": [
+    "runs4/paper-cn-01/docmodel.json + page-3-lines.json",
+    "runs4/report-header-01/page-12-lines.json",
+    "runs4/report-tables-01/docmodel.json"
+  ],
+  "page": {
+    "widthPt": 595.3,
+    "heightPt": 841.9,
+    "orientation": "portrait",
+    "margins": {
+      "topPt": 66,
+      "bottomPt": 83.5,
+      "leftPt": 56.5,
+      "rightPt": 56.5,
+      "headerPt": 28,
+      "footerPt": 28
+    }
+  },
+  "caption": "图1 USi　晶体结构及缺陷位置　(a）单空位及四种间隙位置； (b) 4种间隙多面体； (c）单空位， (c1）单空位缺陷形成能， (c2)",
+  "header": "云计算蓝皮书（2025年）",
+  "tablePage": {
+    "widthPt": 841.92,
+    "heightPt": 595.32,
+    "orientation": "landscape",
+    "margins": {
+      "topPt": 56,
+      "bottomPt": 146,
+      "leftPt": 62,
+      "rightPt": 62.5,
+      "headerPt": 28,
+      "footerPt": 28
+    }
+  },
+  "rowHeightPt": 23.04000000000002,
+  "largeParagraph": {
+    "type": "p",
+    "styleId": "TableTextP17T1Variant2",
+    "runs": [
+      {
+        "text": "无"
+      }
+    ]
+  },
+  "largeStyle": {
+    "id": "TableTextP17T1Variant2",
+    "name": "表格文字 4 2",
+    "builtIn": false,
+    "basedOn": "Normal",
+    "next": "Normal",
+    "font": {
+      "eastAsia": "DengXian",
+      "ascii": "Times New Roman"
+    },
+    "sizePt": 72,
+    "bold": false,
+    "align": "justify",
+    "indent": {
+      "firstLineChars": 0,
+      "leftChars": 0,
+      "rightChars": 0
+    },
+    "lineSpacing": {
+      "rule": "atLeast",
+      "pt": 86.5
+    },
+    "spaceBeforePt": 0,
+    "spaceAfterPt": 0,
+    "snapToGrid": false
+  }
+}

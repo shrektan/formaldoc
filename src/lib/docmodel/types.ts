@@ -178,6 +178,7 @@ export const tableBlockSchema = z
         .object({
           heightPt: positive.optional(),
           header: z.boolean().optional(),
+          cantSplit: z.boolean().optional(),
           cells: z.array(
             z
               .object({
@@ -238,6 +239,7 @@ export const sectionDefSchema = z
       })
       .strict(),
     startType: z.enum(['nextPage', 'continuous', 'oddPage']).optional(),
+    columns: z.object({ count: positive.int(), spacePt: nonnegative }).strict().optional(),
     pageNumber: z
       .object({
         format: text,
@@ -251,6 +253,7 @@ export const sectionDefSchema = z
       .strict()
       .optional(),
     header: z.array(blockSchema).optional(),
+    headerEven: z.array(blockSchema).optional(),
     footer: z.array(blockSchema).optional(),
     blocks: z.array(blockSchema),
   })
@@ -268,6 +271,7 @@ const modelShape = z
       .object({
         language: z.enum(['zh-CN', 'en-US']).optional(),
         compressPunctuation: z.boolean().optional(),
+        evenAndOddHeaders: z.boolean().optional(),
       })
       .strict()
       .optional(),
@@ -450,8 +454,15 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
       }
     });
   model.sections.forEach((section, i) => {
+    if (
+      section.columns &&
+      (section.columns.count - 1) * section.columns.spacePt >=
+        section.page.widthPt - section.page.margins.leftPt - section.page.margins.rightPt
+    )
+      issue(['sections', i, 'columns'], 'Column spacing consumes the content width');
     visit(section.blocks, ['sections', i, 'blocks'], true);
     if (section.header) visit(section.header, ['sections', i, 'header'], false);
+    if (section.headerEven) visit(section.headerEven, ['sections', i, 'headerEven'], false);
     if (section.footer) visit(section.footer, ['sections', i, 'footer'], false);
   });
   links.forEach((link) => {
