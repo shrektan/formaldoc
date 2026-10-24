@@ -197,6 +197,7 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
   const visit = (blocks: Block[]) => {
     for (const block of blocks) {
       if (block.type === 'p') block.styleId = resolve(block.styleId);
+      else if (block.type === 'math' && block.styleId) block.styleId = resolve(block.styleId);
       else if (block.type === 'toc' && block.title)
         block.title.styleId = resolve(block.title.styleId);
       else if (block.type === 'table')
@@ -627,7 +628,8 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
   const mathStyles = new Map<string, string>();
   const mathParagraph = async (block: MathBlock, contentWidth: number) => {
     const numbered = block.numberText !== undefined && block.numberText !== '';
-    const key = `${contentWidth}:${numbered}`;
+    const sourceStyle = block.styleId ? styles.get(block.styleId)! : undefined;
+    const key = `${contentWidth}:${numbered}:${block.styleId ?? ''}`;
     let styleId = mathStyles.get(key);
     if (!styleId) {
       const tabs = numbered
@@ -636,12 +638,12 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
       styleId = generatedStyle(
         'Equation',
         {
-          ...base,
+          ...(sourceStyle ?? base),
           builtIn: false,
           basedOn: undefined,
           outlineLevel: undefined,
           align: numbered ? 'left' : 'center',
-          lineSpacing: { rule: 'atLeast', pt: base.sizePt * 1.2 },
+          lineSpacing: sourceStyle?.lineSpacing ?? { rule: 'atLeast', pt: base.sizePt * 1.2 },
           indent: { firstLineChars: 0, leftChars: 0, rightChars: 0 },
           spaceBeforePt: 0,
           spaceAfterPt: 0,

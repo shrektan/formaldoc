@@ -135,7 +135,7 @@ export const mathContentSchema = z
   })
   .strict();
 export const mathBlockSchema = mathContentSchema
-  .extend({ type: z.literal('math'), numberText: text.optional() })
+  .extend({ type: z.literal('math'), numberText: text.optional(), styleId: id.optional() })
   .strict();
 export type MathBlock = z.infer<typeof mathBlockSchema>;
 
@@ -481,6 +481,7 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
     blocks.forEach((block, i) => {
       const p = [...path, i];
       if (block.type === 'p') paragraph(block, p, main);
+      else if (block.type === 'math' && block.styleId) styleRef(block.styleId, [...p, 'styleId']);
       else if (block.type === 'toc') {
         if (block.title) styleRef(block.title.styleId, [...p, 'title', 'styleId']);
         if (block.levels[0] > block.levels[1])
@@ -510,6 +511,8 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
             column += width;
             cell.blocks.forEach((b, j) => {
               if (b.type === 'p') paragraph(b, [...cp, 'blocks', j], main);
+              else if (b.type === 'math' && b.styleId)
+                styleRef(b.styleId, [...cp, 'blocks', j, 'styleId']);
             });
           });
           if (occupancy[r].some((value) => !value))
