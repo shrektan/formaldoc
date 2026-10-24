@@ -26,12 +26,14 @@ import {
 } from 'docx';
 import type { IBorderOptions, ISectionOptions, ParagraphChild } from 'docx';
 import { parseDocModel } from './types.js';
+import { latexToOmml } from '../math/latex-to-docx.js';
 import { filterModelXmlCharacters, filterXmlCharacters } from './xml-characters.js';
 import type {
   Block,
   Border,
   DocModel,
   ImageBlock,
+  MathBlock,
   ParagraphBlock,
   StyleDef,
   TableBlock,
@@ -99,6 +101,8 @@ function styleXml(style: StyleDef, id: string, name = style.name, extra = ''): s
     tag('jc', style.align === 'justify' ? 'both' : style.align),
     style.outlineLevel === undefined ? '' : tag('outlineLvl', style.outlineLevel),
   ].join('');
+  if (id === 'FootnoteReference')
+    return `<w:style w:type="character" w:styleId="FootnoteReference" w:customStyle="0">${tag('name', 'footnote reference')}<w:rPr>${fonts(style.font)}${tag('vertAlign', 'superscript')}</w:rPr></w:style>`;
   return `<w:style w:type="paragraph" w:styleId="${xml(id)}"${id === 'Normal' ? ' w:default="1"' : ''}${style.builtIn ? ' w:customStyle="0"' : ''}>${tag('name', name)}${style.basedOn ? tag('basedOn', style.basedOn) : ''}${style.next ? tag('next', style.next) : ''}<w:pPr>${pPr}</w:pPr><w:rPr>${fonts(style.font)}${style.bold === undefined ? '' : tag('b', Number(style.bold))}${style.color ? tag('color', style.color) : ''}${tag('sz', Math.round(style.sizePt * 2))}${tag('szCs', Math.round(style.sizePt * 2))}</w:rPr></w:style>`;
 }
 
@@ -161,6 +165,10 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
     if (name === 'title') return 'Title';
     if (name === 'header' || name === '页眉') return 'Header';
     if (name === 'caption' || name === '题注') return 'Caption';
+    if (['footnote text', 'footnotetext', '脚注文本', '脚注文字'].includes(name))
+      return 'FootnoteText';
+    if (['footnote reference', 'footnotereference', '脚注引用'].includes(name))
+      return 'FootnoteReference';
     const heading = /^heading ([1-4])$/.exec(name);
     if (heading) return `Heading${heading[1]}`;
     const toc = /^toc ([1-3])$/.exec(name);
@@ -199,6 +207,7 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
     visit(section.headerEven ?? []);
     visit(section.footer ?? []);
   }
+  for (const note of model.footnotes ?? []) visit(note.blocks);
   return model;
 }
 
@@ -211,6 +220,8 @@ export interface DocModelRenderReport {
   xmlPartsCharactersFiltered: Record<string, number>;
   /** Final writer safety changes, with section/table/row and measured page limits. */
   layoutWarnings?: string[];
+  /** Declared display/inline totals; failed is the subset rendered from fallback images. */
+  mathConversions?: { display: number; inline: number; failed: number };
 }
 
 /** Compatible Buffer-only API; use renderDocModelWithReport for filtering evidence. */
@@ -242,6 +253,35 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     align: 'left',
     lineSpacing: { rule: 'multiple', value: 1 },
   };
+  const footnoteNumbers = new Map(
+    (model.footnotes ?? []).map((note, index) => [note.id, index + 1])
+  );
+  const footnoteMarkers = new Map<number, string>();
+  if (footnoteNumbers.size) {
+    for (const [id, name] of [
+      ['FootnoteText', 'footnote text'],
+      ['FootnoteReference', 'footnote reference'],
+    ]) {
+      if (styles.has(id)) continue;
+      const style: StyleDef = {
+        ...base,
+        id,
+        name,
+        builtIn: true,
+        basedOn: 'Normal',
+        next: 'FootnoteText',
+        sizePt: 10.5,
+        lineSpacing: { rule: 'atLeast', pt: 12.6 },
+        indent: { firstLineChars: 0, leftChars: 0, rightChars: 0 },
+        spaceBeforePt: 0,
+        spaceAfterPt: 0,
+        keepNext: false,
+        outlineLevel: undefined,
+      };
+      model.styles.push(style);
+      styles.set(id, style);
+    }
+  }
   const tocWidths = new Map<number, number>();
   const tocStyles = new Map<string, string>();
   let headingIndex = 0;
@@ -282,9 +322,51 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         : undefined,
     });
   };
+  const mathChild = async (
+    content: { latex: string; fallback?: { path: string; widthPt: number; heightPt: number } },
+    display: boolean
+  ): Promise<ParagraphChild> => {
+    report.mathConversions ??= { display: 0, inline: 0, failed: 0 };
+    report.mathConversions[display ? 'display' : 'inline']++;
+    try {
+      if (!content.latex.trim()) throw new Error('Empty formula');
+      const omml = latexToOmml(content.latex, display);
+      if (!omml.includes('<m:oMath')) throw new Error('Formula conversion produced no native math');
+      return ImportedXmlComponent.fromXmlString(omml) as unknown as ParagraphChild;
+    } catch (error) {
+      report.mathConversions.failed++;
+      if (!content.fallback)
+        throw new Error(`Formula conversion failed without fallback image: ${String(error)}`);
+      return imageRun({ type: 'image', ...content.fallback });
+    }
+  };
   const paragraph = async (block: ParagraphBlock, main: boolean) => {
-    const children: ParagraphChild[] = block.runs.map(
-      (run) =>
+    const children: ParagraphChild[] = [];
+    for (const run of block.runs) {
+      if (run.math) {
+        children.push(await mathChild(run.math, false));
+        continue;
+      }
+      if (run.footnote) {
+        const number = footnoteNumbers.get(run.footnote.id)!;
+        if (footnoteMarkers.has(number) && footnoteMarkers.get(number) !== run.text)
+          throw new Error(`Conflicting markers for footnote ${run.footnote.id}`);
+        footnoteMarkers.set(number, run.text);
+        const reference = new TextRun({ style: 'FootnoteReference' });
+        const component = new ImportedXmlComponent('w:footnoteReference', {
+          'w:id': number,
+          ...(run.text ? { 'w:customMarkFollows': '1' } : {}),
+        });
+        reference.addChildElement(component);
+        if (run.text) {
+          const text = new ImportedXmlComponent('w:t', { 'xml:space': 'preserve' });
+          text.push(run.text);
+          reference.addChildElement(text);
+        }
+        children.push(reference);
+        continue;
+      }
+      children.push(
         new TextRun({
           text: run.text,
           bold: run.bold,
@@ -292,8 +374,11 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
           underline:
             run.underline === undefined ? undefined : { type: run.underline ? 'single' : 'none' },
           color: run.color,
+          superScript: run.vertAlign === 'superscript' ? true : undefined,
+          subScript: run.vertAlign === 'subscript' ? true : undefined,
         })
-    );
+      );
+    }
     const heading = main && styles.get(block.styleId)?.outlineLevel !== undefined;
     if (heading) headingIndex++;
     const bookmark = block.bookmark ?? (heading ? `_heading_${headingIndex}` : undefined);
@@ -321,6 +406,8 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         (cell) =>
           cell.blocks.reduce((sum, block) => {
             if (block.type === 'image') return sum + block.heightPt;
+            if (block.type === 'math')
+              return sum + Math.max(base.sizePt * 1.2, block.fallback?.heightPt ?? 0);
             const style = styles.get(block.styleId) ?? base;
             const spacing = style.lineSpacing;
             const lineHeight =
@@ -514,6 +601,48 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     }
     return styleId;
   };
+  const mathStyles = new Map<string, string>();
+  const mathParagraph = async (block: MathBlock, contentWidth: number) => {
+    const numbered = block.numberText !== undefined && block.numberText !== '';
+    const key = `${contentWidth}:${numbered}`;
+    let styleId = mathStyles.get(key);
+    if (!styleId) {
+      const tabs = numbered
+        ? `<w:tabs><w:tab w:val="center" w:pos="${twips(contentWidth / 2)}"/><w:tab w:val="right" w:pos="${twips(contentWidth)}"/></w:tabs>`
+        : '';
+      styleId = generatedStyle(
+        'Equation',
+        {
+          ...base,
+          builtIn: false,
+          basedOn: undefined,
+          outlineLevel: undefined,
+          align: numbered ? 'left' : 'center',
+          lineSpacing: { rule: 'atLeast', pt: base.sizePt * 1.2 },
+          indent: { firstLineChars: 0, leftChars: 0, rightChars: 0 },
+          spaceBeforePt: 0,
+          spaceAfterPt: 0,
+          keepNext: false,
+          pageBreakBefore: false,
+        },
+        tabs,
+        '公式'
+      );
+      mathStyles.set(key, styleId);
+    }
+    const math = await mathChild(block, true);
+    return new ModelParagraph(
+      styleId,
+      numbered
+        ? [
+            new TextRun({ children: [new Tab()] }),
+            math,
+            new TextRun({ children: [new Tab()] }),
+            new TextRun(block.numberText!),
+          ]
+        : [math]
+    );
+  };
   const blocks = async (
     items: Block[],
     main = false,
@@ -525,6 +654,7 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
       else if (block.type === 'image')
         result.push(new ModelParagraph(getPictureStyle(block.align), [await imageRun(block)]));
       else if (block.type === 'table') result.push(await table(block, main));
+      else if (block.type === 'math') result.push(await mathParagraph(block, contentWidth));
       else if (block.type === 'pageBreak')
         result.push(new ModelParagraph('Normal', [new PageBreak()]));
       else result.push(...toc(block, contentWidth));
@@ -640,7 +770,27 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     // Section page sizes are explicit; docx swaps landscape dimensions. Restore after packing.
   }
   const language = model.settings?.language ?? 'zh-CN';
-  const document = new Document({ sections, evenAndOddHeaderAndFooters: mirrored });
+  const nativeFootnotes: Record<string, { children: Paragraph[] }> = {};
+  for (const note of model.footnotes ?? []) {
+    const children: Paragraph[] = [];
+    for (const block of note.blocks) {
+      let styleId = block.styleId;
+      const visited = new Set<string>();
+      let ancestor = styles.get(styleId);
+      while (ancestor && ancestor.id !== 'FootnoteText' && !visited.has(ancestor.id)) {
+        visited.add(ancestor.id);
+        ancestor = ancestor.basedOn ? styles.get(ancestor.basedOn) : undefined;
+      }
+      if (ancestor?.id !== 'FootnoteText') styleId = 'FootnoteText';
+      children.push(await paragraph({ ...block, styleId }, false));
+    }
+    nativeFootnotes[String(footnoteNumbers.get(note.id))] = { children };
+  }
+  const document = new Document({
+    sections,
+    evenAndOddHeaderAndFooters: mirrored,
+    footnotes: nativeFootnotes,
+  });
   const zip = await JSZip.loadAsync(await Packer.toBuffer(document));
   const styleDefinitions = [...model.styles];
   if (!styles.has('Normal')) styleDefinitions.unshift(base);
@@ -666,11 +816,13 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
                 ? 'header'
                 : style.id === 'Caption'
                   ? 'caption'
-                  : /^Heading[1-4]$/.test(style.id)
-                    ? `heading ${style.id.slice(-1)}`
-                    : level
-                      ? `toc ${level}`
-                      : style.name;
+                  : style.id === 'FootnoteText'
+                    ? 'footnote text'
+                    : /^Heading[1-4]$/.test(style.id)
+                      ? `heading ${style.id.slice(-1)}`
+                      : level
+                        ? `toc ${level}`
+                        : style.name;
         return styleXml(style, style.id, name, tabs);
       })
       .join('') + extraStyles.join('');
@@ -692,14 +844,59 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     );
   }
   // docx emits unused footnote separators with direct formatting by default.
-  zip.file(
-    'word/footnotes.xml',
-    `<?xml version="1.0" encoding="UTF-8"?><w:footnotes xmlns:w="${W}"/>`
-  );
+  if (!footnoteNumbers.size)
+    zip.file(
+      'word/footnotes.xml',
+      `<?xml version="1.0" encoding="UTF-8"?><w:footnotes xmlns:w="${W}"/>`
+    );
+  else {
+    let footnotesXml = await zip.file('word/footnotes.xml')!.async('string');
+    // docx resolves image placeholders in document/header/footer parts, but not footnotes.
+    const footnoteImageFiles = new Set(
+      [...footnotesXml.matchAll(/r:embed="rId\{([^{}"]+)\}"/g)].map((match) => match[1])
+    );
+    if (footnoteImageFiles.size) {
+      const relationshipsPath = 'word/_rels/footnotes.xml.rels';
+      let relationships = await zip.file(relationshipsPath)!.async('string');
+      const additions: string[] = [];
+      let nextImageId = 1;
+      for (const fileName of footnoteImageFiles) {
+        if (!zip.file(`word/media/${fileName}`))
+          throw new Error(`Footnote image media is missing: ${fileName}`);
+        let id: string;
+        do id = `rIdDocModelFootnoteImage${nextImageId++}`;
+        while (relationships.includes(`Id="${id}"`));
+        additions.push(
+          `<Relationship Id="${id}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${xml(fileName)}"/>`
+        );
+        footnotesXml = footnotesXml.split(`r:embed="rId{${fileName}}"`).join(`r:embed="${id}"`);
+      }
+      relationships = relationships.includes('</Relationships>')
+        ? relationships.replace('</Relationships>', `${additions.join('')}</Relationships>`)
+        : relationships.replace(/\/>\s*$/, `>${additions.join('')}</Relationships>`);
+      zip.file(relationshipsPath, relationships);
+    }
+    zip.file(
+      'word/footnotes.xml',
+      footnotesXml.replace(
+        /<w:footnote\b([^>]*)>([\s\S]*?)<\/w:footnote>/g,
+        (whole, attrs: string, body: string) => {
+          const separator = /w:type="(separator|continuationSeparator)"/.exec(attrs)?.[1];
+          if (separator)
+            return `<w:footnote${attrs}><w:p><w:pPr>${tag('pStyle', 'FootnoteText')}</w:pPr><w:r><w:${separator}/></w:r></w:p></w:footnote>`;
+          const number = Number(/w:id="(\d+)"/.exec(attrs)?.[1]);
+          const marker = footnoteMarkers.get(number);
+          return marker
+            ? `<w:footnote${attrs}>${body.replace(/<w:footnoteRef\s*\/>/, `<w:t xml:space="preserve">${xml(marker)}</w:t>`)}</w:footnote>`
+            : whole;
+        }
+      )
+    );
+  }
   // Inspect XML parts one at a time; embedded media stays compressed and untouched.
   for (const name of Object.keys(zip.files).filter((name) => /\.(?:xml|rels)$/i.test(name))) {
     let content = await zip.file(name)!.async('string');
-    if (/^word\/(document|header\d+|footer\d+)\.xml$/.test(name))
+    if (/^word\/(document|header\d+|footer\d+|footnotes)\.xml$/.test(name))
       content = content.replace(/<w:(?:bCs|iCs)(?:\s[^>]*)?\/>/g, '');
     if (name === 'word/document.xml') {
       let sectionIndex = 0;

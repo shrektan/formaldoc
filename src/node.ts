@@ -32,4 +32,5 @@ export type {
   ImageBlock,
   TocBlock,
   PageBreakBlock,
+  MathBlock,
 } from './lib/docmodel/types.js';

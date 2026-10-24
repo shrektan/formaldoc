@@ -105,6 +105,21 @@ export const numberingInstanceSchema = z
   .strict();
 export type NumberingInstance = z.infer<typeof numberingInstanceSchema>;
 
+export const mathImageFallbackSchema = z
+  .object({
+    path: text.refine(isAbsolute, 'Formula fallback path must be absolute'),
+    widthPt: positive,
+    heightPt: positive,
+  })
+  .strict();
+export const mathContentSchema = z
+  .object({ latex: text, fallback: mathImageFallbackSchema.optional() })
+  .strict();
+export const mathBlockSchema = mathContentSchema
+  .extend({ type: z.literal('math'), numberText: text.optional() })
+  .strict();
+export type MathBlock = z.infer<typeof mathBlockSchema>;
+
 export const runSchema = z
   .object({
     text,
@@ -112,8 +127,18 @@ export const runSchema = z
     italic: z.boolean().optional(),
     underline: z.boolean().optional(),
     color: color.optional(),
+    vertAlign: z.enum(['superscript', 'subscript']).optional(),
+    math: mathContentSchema.optional(),
+    footnote: z.object({ id }).strict().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((run, ctx) => {
+    if (run.math && (run.footnote || run.text !== ''))
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Math runs require empty text and cannot also reference a footnote',
+      });
+  });
 export type Run = z.infer<typeof runSchema>;
 
 export const imageBlockSchema = z
@@ -183,7 +208,11 @@ export const tableBlockSchema = z
             z
               .object({
                 blocks: z.array(
-                  z.discriminatedUnion('type', [paragraphBlockSchema, imageBlockSchema])
+                  z.discriminatedUnion('type', [
+                    paragraphBlockSchema,
+                    imageBlockSchema,
+                    mathBlockSchema,
+                  ])
                 ),
                 colSpan: integer.min(1).optional(),
                 rowSpan: integer.min(1).optional(),
@@ -217,6 +246,7 @@ export const blockSchema = z.discriminatedUnion('type', [
   imageBlockSchema,
   tocBlockSchema,
   pageBreakBlockSchema,
+  mathBlockSchema,
 ]);
 export type Block = z.infer<typeof blockSchema>;
 export const sectionDefSchema = z
@@ -266,6 +296,9 @@ const modelShape = z
     styles: z.array(styleDefSchema),
     numbering: z.array(numberingDefSchema),
     numberingInstances: z.array(numberingInstanceSchema),
+    footnotes: z
+      .array(z.object({ id, blocks: z.array(paragraphBlockSchema).min(1) }).strict())
+      .optional(),
     sections: z.array(sectionDefSchema).min(1),
     settings: z
       .object({
@@ -295,6 +328,8 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
   unique(model.styles, 'styles');
   unique(model.numbering, 'numbering');
   unique(model.numberingInstances, 'numberingInstances');
+  unique(model.footnotes ?? [], 'footnotes');
+  const footnoteIds = new Set((model.footnotes ?? []).map((note) => note.id));
   const styles = new Map(model.styles.map((s) => [s.id, s]));
   const definitions = new Map(model.numbering.map((n) => [n.id, n]));
   const instances = new Map(model.numberingInstances.map((n) => [n.id, n]));
@@ -394,6 +429,16 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
   };
   const paragraph = (block: ParagraphBlock, path: Path, main: boolean) => {
     styleRef(block.styleId, [...path, 'styleId']);
+    block.runs.forEach((run, index) => {
+      if (!run.footnote) return;
+      if (!footnoteIds.has(run.footnote.id))
+        issue([...path, 'runs', index, 'footnote'], `Unknown footnote: ${run.footnote.id}`);
+      if (!main)
+        issue(
+          [...path, 'runs', index, 'footnote'],
+          'Footnote references are only allowed in document body paragraphs'
+        );
+    });
     const isHeading = styles.get(block.styleId)?.outlineLevel !== undefined;
     if (main && isHeading) heading++;
     if (block.bookmark) addBookmark(block.bookmark, [...path, 'bookmark']);
@@ -465,6 +510,9 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
     if (section.headerEven) visit(section.headerEven, ['sections', i, 'headerEven'], false);
     if (section.footer) visit(section.footer, ['sections', i, 'footer'], false);
   });
+  model.footnotes?.forEach((note, index) =>
+    visit(note.blocks, ['footnotes', index, 'blocks'], false)
+  );
   links.forEach((link) => {
     if (!bookmarks.has(link.bookmark)) issue(link.path, `Unknown bookmark: ${link.bookmark}`);
   });
