@@ -97,9 +97,11 @@ describe('DocModel DOCX XML', () => {
         paragraphCount++;
         const pPr = Array.from(p.children).find((child) => child.localName === 'pPr');
         for (const child of Array.from(pPr?.children ?? [])) {
-          expect(['pStyle', 'numPr', 'sectPr'], `${path}: pPr/${child.localName}`).toContain(
-            child.localName
-          );
+          // pageBreakBefore is where a declared page break lands, not formatting.
+          expect(
+            ['pStyle', 'pageBreakBefore', 'numPr', 'sectPr'],
+            `${path}: pPr/${child.localName}`
+          ).toContain(child.localName);
         }
         for (const run of nodes(p, 'r')) {
           for (const child of Array.from(first(run, 'rPr')?.children ?? [])) {
@@ -316,7 +318,10 @@ describe('DocModel DOCX XML', () => {
         p.outerHTML
       ).toBe(true);
     }
-    expect(nodes(document, 'br').some((el) => attr(el, 'type') === 'page')).toBe(true);
+    expect(
+      nodes(document, 'br').some((el) => attr(el, 'type') === 'page') ||
+        nodes(document, 'p').some((p) => first(p, 'pageBreakBefore'))
+    ).toBe(true);
   });
 });
 
@@ -550,5 +555,44 @@ describe('DocModel rendering variants', () => {
     expect(paragraphs).toHaveLength(2);
     expect(paragraphs.map((p) => p.textContent)).toEqual(['第一节内容', '第二节内容']);
     expect(nodes(doc, 'sectPr')).toHaveLength(2);
+  });
+});
+
+describe('declared page breaks', () => {
+  it('break on the following paragraph so a page-filling table cannot leave a blank page', async () => {
+    const input = createFullExample(imagePath);
+    const numbered = input.sections[0].blocks.find(
+      (block) => block.type === 'p' && block.numbering
+    )!;
+    const table = input.sections[0].blocks.find((block) => block.type === 'table')!;
+    input.sections = [
+      {
+        ...input.sections[0],
+        blocks: [
+          table,
+          { type: 'pageBreak' },
+          { type: 'p', styleId: 'Normal', runs: [{ text: '下一页标题' }] },
+          { type: 'pageBreak' },
+          numbered,
+          { type: 'pageBreak' },
+          table,
+        ],
+      },
+    ];
+    const doc = await xml(await JSZip.loadAsync(await renderDocModel(input)), 'word/document.xml');
+    const body = Array.from(first(doc, 'body')!.children);
+    const breakBefore = body.filter((el) => first(el, 'pageBreakBefore'));
+    expect(breakBefore.map((p) => p.textContent)).toEqual([
+      '下一页标题',
+      (numbered as { runs: { text: string }[] }).runs.map((run) => run.text).join(''),
+    ]);
+    const pPr = Array.from(breakBefore[1].children).find((el) => el.localName === 'pPr')!;
+    expect(Array.from(pPr.children).map((el) => el.localName)).toEqual([
+      'pStyle',
+      'pageBreakBefore',
+      'numPr',
+    ]);
+    // Only the break before a table still needs its own paragraph.
+    expect(nodes(doc, 'br').filter((br) => attr(br, 'type') === 'page')).toHaveLength(1);
   });
 });

@@ -81,6 +81,18 @@ class ModelParagraph extends Paragraph {
   }
 }
 
+/** Schema order puts pageBreakBefore right after pStyle, ahead of numPr. */
+function breakBeforeParagraph(paragraph: Paragraph): void {
+  const properties = paragraph['root'].find(
+    (child) => child instanceof ParagraphProperties
+  ) as ParagraphProperties;
+  const children = properties['root'] as unknown[];
+  const style = children.findIndex(
+    (child) => (child as { rootKey?: string }).rootKey === 'w:pStyle'
+  );
+  children.splice(style + 1, 0, new ImportedXmlComponent('w:pageBreakBefore'));
+}
+
 function fieldRun(name: string, attributes: Record<string, string>, text?: string): TextRun {
   const run = new TextRun({});
   const component = new ImportedXmlComponent(name, attributes);
@@ -674,7 +686,13 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     contentWidth = 450
   ): Promise<(Paragraph | Table)[]> => {
     const result: (Paragraph | Table)[] = [];
-    for (const block of items) {
+    for (const [index, block] of items.entries()) {
+      // A break paragraph after a page-filling table lands alone on the next page
+      // and breaks again. Before a paragraph, break on that paragraph instead.
+      if (block.type === 'pageBreak' && ['p', 'image'].includes(items[index + 1]?.type ?? ''))
+        continue;
+      const breakBefore = items[index - 1]?.type === 'pageBreak';
+      const start = result.length;
       if (block.type === 'p') result.push(await paragraph(block, main));
       else if (block.type === 'image')
         result.push(new ModelParagraph(getPictureStyle(block.align), [await imageRun(block)]));
@@ -683,6 +701,8 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
       else if (block.type === 'pageBreak')
         result.push(new ModelParagraph('Normal', [new PageBreak()]));
       else result.push(...toc(block, contentWidth));
+      if (breakBefore && (block.type === 'p' || block.type === 'image'))
+        breakBeforeParagraph(result[start] as Paragraph);
     }
     return result;
   };
