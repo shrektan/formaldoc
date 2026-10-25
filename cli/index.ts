@@ -22,8 +22,7 @@ import {
   convertMarkdownToDocxFile,
   DEFAULT_TEMPLATE,
   isValidTemplateName,
-  parseDocModel,
-  renderDocModelWithReport,
+  renderDocModelToFile,
 } from '../src/node.js';
 import { convertQuotes } from '../src/lib/text-processing.js';
 import type { StyleSettings } from '../src/types/styles.js';
@@ -229,9 +228,7 @@ async function main(): Promise<void> {
     const reportPath = options.docmodelReport ? resolve(options.docmodelReport) : undefined;
     if (reportPath === inputPath || reportPath === outputPath)
       throw new Error('--docmodel-report must differ from the input JSON and output DOCX paths');
-    const model = parseDocModel(readFileSync(inputPath, 'utf-8'));
-    const { buffer, report } = await renderDocModelWithReport(model);
-    writeFileSync(outputPath, buffer);
+    const report = await renderDocModelToFile(readFileSync(inputPath, 'utf-8'), outputPath);
     if (reportPath) writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
     else if (report.xmlCharactersFiltered)
       console.warn(`Filtered ${report.xmlCharactersFiltered} XML 1.0 illegal characters.`);

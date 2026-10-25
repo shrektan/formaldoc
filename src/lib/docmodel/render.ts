@@ -1,10 +1,12 @@
-import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { open, readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 import JSZip from 'jszip';
 import {
   Bookmark,
   BorderStyle,
   Document,
+  Drawing,
   Footer,
   Header,
   HeightRule,
@@ -12,6 +14,7 @@ import {
   ImportedXmlComponent,
   InternalHyperlink,
   Packer,
+  Run as DocxRun,
   PageBreak,
   Paragraph,
   ParagraphProperties,
@@ -24,9 +27,17 @@ import {
   TextRun,
   WidthType,
 } from 'docx';
-import type { IBorderOptions, ISectionOptions, ParagraphChild } from 'docx';
+import type {
+  IBorderOptions,
+  IContext,
+  IDrawingOptions,
+  IMediaData,
+  ISectionOptions,
+  ParagraphChild,
+} from 'docx';
 import { parseDocModel } from './types.js';
 import { separateAdjacentTables } from './table-separators.js';
+import { writeDocModelZip } from './zip-file.js';
 import { latexToOmml } from '../math/latex-to-docx.js';
 import { filterModelXmlCharacters, filterXmlCharacters } from './xml-characters.js';
 import type {
@@ -78,6 +89,53 @@ class ModelParagraph extends Paragraph {
       numPr.push(new ImportedXmlComponent('w:numId', { 'w:val': numbering.id }));
       properties!.push(numPr);
     }
+  }
+}
+
+/** The public Drawing/Media API accepts content identity independently of placeholder bytes. */
+class FileImageRun extends DocxRun {
+  constructor(
+    private readonly media: IMediaData,
+    floating: IDrawingOptions['floating']
+  ) {
+    super({});
+    this.root.push(new Drawing(media, { floating }));
+  }
+
+  override prepForXml(context: IContext) {
+    context.file.Media.addImage(this.media.fileName, this.media);
+    return super.prepForXml(context);
+  }
+}
+
+/** Narrow adapter for docx's non-exported compiler, verified against public Packer output. */
+function compileFileDocument(document: Document): JSZip {
+  type ReplaceImages = (
+    content: string,
+    media: readonly { fileName: string }[],
+    offset: number
+  ) => string;
+  const compiler = (
+    Packer as unknown as {
+      compiler: { compile(file: Document): JSZip; imageReplacer: { replace: ReplaceImages } };
+    }
+  ).compiler;
+  const replace = compiler.imageReplacer.replace;
+  compiler.imageReplacer.replace = (content, media, offset) => {
+    if (!media.length) return content;
+    const ids = new Map(media.map((image, index) => [image.fileName, String(offset + index)]));
+    // Our media names are SHA1 + png/jpg. Preserve ImageReplacer's historical
+    // unescaped-dot matching, including accidental literal matches in user text.
+    return content.replace(
+      /\{([a-f0-9]{40}).(png|jpg)\}/g,
+      (match, hash: string, type: string) => ids.get(`${hash}.${type}`) ?? match
+    );
+  };
+  try {
+    // compile is synchronous; restore before any other renderer can execute.
+    return compiler.compile(document);
+  } finally {
+    compiler.imageReplacer.replace = replace;
   }
 }
 
@@ -265,12 +323,32 @@ export async function renderDocModel(input: DocModel): Promise<Buffer> {
   return (await renderDocModelWithReport(input)).buffer;
 }
 
-/** Generate independently of Markdown; image bytes are cached per path and never copied for XML filtering. */
+/** Generate independently of Markdown; preserve the existing Buffer API and compression. */
 export async function renderDocModelWithReport(input: DocModel): Promise<{
   buffer: Buffer;
   report: DocModelRenderReport;
 }> {
-  const parsed = parseDocModel(input);
+  const { zip, report } = await prepareDocModel(parseDocModel(input), false);
+  return {
+    buffer: await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }),
+    report,
+  };
+}
+
+/** Write media directly from disk; no complete image or output archive is held in memory. */
+export async function renderDocModelToFile(
+  input: DocModel | string,
+  outputPath: string
+): Promise<DocModelRenderReport> {
+  const preparing = prepareDocModel(parseDocModel(input), true);
+  // The renderer owns the validated clone; do not retain raw JSON or the caller's graph.
+  input = '';
+  const { zip, report, mediaSources } = await preparing;
+  await writeDocModelZip(zip, mediaSources, outputPath);
+  return report;
+}
+
+async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
   const sourceXmlCharactersFiltered = filterModelXmlCharacters(parsed);
   const report: DocModelRenderReport = {
     xmlCharactersFiltered: sourceXmlCharactersFiltered,
@@ -279,6 +357,7 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
   };
   const model = normalizeBuiltInStyles(parsed);
   const images = new Map<string, Promise<Buffer>>();
+  const mediaSources = new Map<string, string>();
   const extraStyles: string[] = [];
   const styles = new Map(model.styles.map((style) => [style.id, style]));
   const base: StyleDef = styles.get('Normal') ?? {
@@ -333,13 +412,31 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
   const imageRun = async (image: ImageBlock) => {
     let data = images.get(image.path);
     if (!data) {
-      data = readFile(image.path);
+      data = streamImages
+        ? (async () => {
+            const hash = createHash('sha1');
+            const file = await open(image.path, 'r');
+            const scratch = Buffer.allocUnsafe(64 * 1024);
+            try {
+              let length: number;
+              while ((length = (await file.read(scratch, 0, scratch.length, null)).bytesRead))
+                hash.update(scratch.subarray(0, length));
+            } finally {
+              await file.close();
+            }
+            // ImageRun hashes data to choose its media name. Retain that content identity
+            // without retaining the original image in Packer's Document or ZIP buffers.
+            return Buffer.from(hash.digest('hex'));
+          })()
+        : readFile(image.path);
       images.set(image.path, data);
     }
+    const bytes = await data;
+    const type: 'png' | 'jpg' = extname(image.path).toLowerCase() === '.png' ? 'png' : 'jpg';
     const floating = image.floating;
-    return new ImageRun({
-      type: extname(image.path).toLowerCase() === '.png' ? 'png' : 'jpg',
-      data: await data,
+    const options = {
+      type,
+      data: bytes,
       transformation: { width: (image.widthPt * 96) / 72, height: (image.heightPt * 96) / 72 },
       floating: floating
         ? {
@@ -356,7 +453,24 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
             layoutInCell: false,
           }
         : undefined,
-    });
+    };
+    if (!streamImages) return new ImageRun(options);
+    const fileName = `${bytes.toString()}.${type}`;
+    mediaSources.set(`word/media/${fileName}`, image.path);
+    const { width, height } = options.transformation;
+    // Match ImageRun's pixel/EMU rounding; dimensions remain the declared DocModel geometry.
+    return new FileImageRun(
+      {
+        type,
+        data: Buffer.alloc(0),
+        fileName,
+        transformation: {
+          pixels: { x: Math.round(width), y: Math.round(height) },
+          emus: { x: Math.round(width * 9525), y: Math.round(height * 9525) },
+        },
+      },
+      options.floating
+    );
   };
   const textRun = (
     run: Pick<Run, 'text' | 'bold' | 'italic' | 'underline' | 'color' | 'vertAlign'>
@@ -865,7 +979,12 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     evenAndOddHeaderAndFooters: mirrored,
     footnotes: nativeFootnotes,
   });
-  const zip = await JSZip.loadAsync(await Packer.toBuffer(document));
+  // Packer's compiler produces the same XML before its redundant intermediate ZIP
+  // compression. Keep this version-sensitive boundary in one place, covered by
+  // all-part equivalence tests; the existing Buffer path still uses public Packer.
+  const zip = streamImages
+    ? compileFileDocument(document)
+    : await JSZip.loadAsync(await Packer.toBuffer(document));
   const styleDefinitions = [...model.styles];
   if (!styles.has('Normal')) styleDefinitions.unshift(base);
   for (const level of new Set([1, 2, 3, ...tocWidths.keys()])) {
@@ -989,10 +1108,7 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     }
     zip.file(name, filtered.text);
   }
-  return {
-    buffer: await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }),
-    report,
-  };
+  return { zip, report, mediaSources };
 }
 
 /** Library section delimiters may attach to real paragraphs; tables require a separate delimiter. */

@@ -15,7 +15,11 @@ export type {
 export { DEFAULT_TEMPLATE, getTemplateNames, isValidTemplateName } from './lib/styles/templates.js';
 export type { TemplateName } from './types/styles.js';
 
-export { renderDocModel, renderDocModelWithReport } from './lib/docmodel/render.js';
+export {
+  renderDocModel,
+  renderDocModelWithReport,
+  renderDocModelToFile,
+} from './lib/docmodel/render.js';
 export type { DocModelRenderReport } from './lib/docmodel/render.js';
 export { parseDocModel, docModelSchema } from './lib/docmodel/types.js';
 export type {
