@@ -101,6 +101,17 @@ function fieldRun(name: string, attributes: Record<string, string>, text?: strin
   return run;
 }
 
+function tabsXml(style: StyleDef, extra: string): string {
+  const tabs = (style.tabs ?? [])
+    .map(
+      (tab) =>
+        `<w:tab w:val="${tab.type}"${tab.leader ? ` w:leader="${tab.leader}"` : ''} w:pos="${twips(tab.posPt)}"/>`
+    )
+    .join('');
+  if (!tabs) return extra;
+  return extra ? extra.replace('</w:tabs>', `${tabs}</w:tabs>`) : `<w:tabs>${tabs}</w:tabs>`;
+}
+
 function styleXml(style: StyleDef, id: string, name = style.name, extra = ''): string {
   const spacing = style.lineSpacing;
   const pPr = [
@@ -109,7 +120,7 @@ function styleXml(style: StyleDef, id: string, name = style.name, extra = ''): s
       ? ''
       : tag('pageBreakBefore', Number(style.pageBreakBefore)),
     tag('snapToGrid', Number(style.snapToGrid ?? false)),
-    extra,
+    tabsXml(style, extra),
     `<w:spacing w:before="${twips(style.spaceBeforePt ?? 0)}" w:after="${twips(style.spaceAfterPt ?? 0)}" w:line="${spacing.rule === 'multiple' ? Math.round(spacing.value * 240) : twips(spacing.pt)}" w:lineRule="${spacing.rule === 'multiple' ? 'auto' : spacing.rule}"/>`,
     indentXml(style.indent, style.sizePt),
     tag('jc', style.align === 'justify' ? 'both' : style.align),
@@ -209,7 +220,10 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
   const visit = (blocks: Block[]) => {
     for (const block of blocks) {
       if (block.type === 'p') block.styleId = resolve(block.styleId);
-      else if (block.type === 'math' && block.styleId) block.styleId = resolve(block.styleId);
+      else if (block.type === 'math') {
+        if (block.styleId) block.styleId = resolve(block.styleId);
+        if (block.paragraphStyleId) block.paragraphStyleId = resolve(block.paragraphStyleId);
+      } else if (block.type === 'image' && block.styleId) block.styleId = resolve(block.styleId);
       else if (block.type === 'toc' && block.title)
         block.title.styleId = resolve(block.title.styleId);
       else if (block.type === 'table')
@@ -217,6 +231,11 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
     }
   };
   for (const section of model.sections) {
+    const pageNumberStyles = section.pageNumber?.styleIds;
+    if (pageNumberStyles) {
+      pageNumberStyles.default = resolve(pageNumberStyles.default);
+      if (pageNumberStyles.even) pageNumberStyles.even = resolve(pageNumberStyles.even);
+    }
     visit(section.blocks);
     visit(section.header ?? []);
     visit(section.headerEven ?? []);
@@ -444,16 +463,19 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
           }, 0) / (cell.rowSpan ?? 1)
       )
     );
+  // A caller that settled row breaks itself declares them final; otherwise the
+  // writer protects repeated headers and over-tall rows from the written heights.
+  const rowsFinal = model.settings?.tableRowsFinal === true;
   const table = async (block: TableBlock, main: boolean) => {
     const tableIndex = ++sectionLayout.tableIndex;
     const location = `第${sectionLayout.sectionIndex + 1}节第${tableIndex}个表格`;
     const bodyHeightPt = sectionLayout.bodyHeightPt;
-    const heights = block.rows.map(rowMinimumHeight);
+    const heights = rowsFinal ? [] : block.rows.map(rowMinimumHeight);
     const headerHeight = block.rows.reduce(
-      (sum, row, index) => sum + (row.header ? heights[index] : 0),
+      (sum, row, index) => sum + (row.header && !rowsFinal ? heights[index] : 0),
       0
     );
-    const unsafeHeader = headerHeight > bodyHeightPt / 3;
+    const unsafeHeader = !rowsFinal && headerHeight > bodyHeightPt / 3;
     if (unsafeHeader)
       warning(
         `${location}重复表头高${headerHeight.toFixed(2)}pt，超过正文区${bodyHeightPt.toFixed(2)}pt的1/3，已关闭重复表头。`
@@ -526,7 +548,8 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         }
         column += span;
       }
-      if (heights[rowIndex] > bodyHeightPt)
+      const tooTall = !rowsFinal && heights[rowIndex] > bodyHeightPt;
+      if (tooTall)
         warning(
           `${location}第${rowIndex + 1}行高至少${heights[rowIndex].toFixed(2)}pt，超过正文区${bodyHeightPt.toFixed(2)}pt，已允许跨页并保留atLeast行高。`
         );
@@ -534,8 +557,11 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
         new TableRow({
           children: cells,
           tableHeader: row.header && !unsafeHeader ? true : undefined,
-          cantSplit:
-            heights[rowIndex] > bodyHeightPt ? undefined : (row.cantSplit ?? true) || undefined,
+          cantSplit: rowsFinal
+            ? row.cantSplit || undefined
+            : tooTall
+              ? undefined
+              : (row.cantSplit ?? true) || undefined,
           height:
             row.heightPt === undefined
               ? undefined
@@ -642,7 +668,7 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
     const numbered = block.numberText !== undefined && block.numberText !== '';
     const sourceStyle = block.styleId ? styles.get(block.styleId)! : undefined;
     const key = `${contentWidth}:${numbered}:${block.styleId ?? ''}`;
-    let styleId = mathStyles.get(key);
+    let styleId = block.paragraphStyleId ?? mathStyles.get(key);
     if (!styleId) {
       const tabs = numbered
         ? `<w:tabs><w:tab w:val="center" w:pos="${twips(contentWidth / 2)}"/><w:tab w:val="right" w:pos="${twips(contentWidth)}"/></w:tabs>`
@@ -695,7 +721,9 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
       const start = result.length;
       if (block.type === 'p') result.push(await paragraph(block, main));
       else if (block.type === 'image')
-        result.push(new ModelParagraph(getPictureStyle(block.align), [await imageRun(block)]));
+        result.push(
+          new ModelParagraph(block.styleId ?? getPictureStyle(block.align), [await imageRun(block)])
+        );
       else if (block.type === 'table') result.push(await table(block, main));
       else if (block.type === 'math') result.push(await mathParagraph(block, contentWidth));
       else if (block.type === 'pageBreak')
@@ -762,7 +790,8 @@ export async function renderDocModelWithReport(input: DocModel): Promise<{
                 ? { leftChars: pageNumber.outsideIndentChars ?? 0 }
                 : undefined,
         };
-        const styleId = generatedStyle('PageNumber', style);
+        const styleId =
+          pageNumber.styleIds?.[even ? 'even' : 'default'] ?? generatedStyle('PageNumber', style);
         const children: ParagraphChild[] = [];
         pageNumber.format.split('%PAGE%').forEach((part, i) => {
           if (i) children.push(new SimpleField('PAGE', String(pageNumber.restart ?? 1)));

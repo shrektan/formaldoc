@@ -43,6 +43,18 @@ export const styleDefSchema = z
     keepNext: z.boolean().optional(),
     pageBreakBefore: z.boolean().optional(),
     snapToGrid: z.boolean().optional(),
+    /** Paragraph tab stops, e.g. the centre/right stops of a numbered equation. */
+    tabs: z
+      .array(
+        z
+          .object({
+            type: z.enum(['left', 'center', 'right', 'clear']),
+            posPt: nonnegative,
+            leader: z.literal('dot').optional(),
+          })
+          .strict()
+      )
+      .optional(),
   })
   .strict();
 export type StyleDef = z.infer<typeof styleDefSchema>;
@@ -135,7 +147,14 @@ export const mathContentSchema = z
   })
   .strict();
 export const mathBlockSchema = mathContentSchema
-  .extend({ type: z.literal('math'), numberText: text.optional(), styleId: id.optional() })
+  .extend({
+    type: z.literal('math'),
+    numberText: text.optional(),
+    /** Source typography the generated equation paragraph style copies. */
+    styleId: id.optional(),
+    /** A declared equation paragraph style, written as is (no generated style). */
+    paragraphStyleId: id.optional(),
+  })
   .strict();
 export type MathBlock = z.infer<typeof mathBlockSchema>;
 
@@ -167,6 +186,8 @@ export const imageBlockSchema = z
     widthPt: positive,
     heightPt: positive,
     align: z.enum(['left', 'center', 'right']).optional(),
+    /** A declared paragraph style for a block-level picture (no generated style). */
+    styleId: id.optional(),
     floating: z
       .object({
         xPt: number,
@@ -298,6 +319,8 @@ export const sectionDefSchema = z
         outsideIndentChars: number.optional(),
         restart: integer.optional(),
         hideOnFirstPage: z.boolean().optional(),
+        /** Declared page-number paragraph styles per footer variant (no generated styles). */
+        styleIds: z.object({ default: id, even: id.optional() }).strict().optional(),
       })
       .strict()
       .optional(),
@@ -324,6 +347,8 @@ const modelShape = z
         language: z.enum(['zh-CN', 'en-US']).optional(),
         compressPunctuation: z.boolean().optional(),
         evenAndOddHeaders: z.boolean().optional(),
+        /** Row header/cantSplit flags are final: written as declared, not recomputed. */
+        tableRowsFinal: z.boolean().optional(),
       })
       .strict()
       .optional(),
@@ -477,12 +502,18 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
         issue([...path, 'numbering', 'level'], 'Numbering level is not defined by this instance');
     }
   };
+  const mathRefs = (block: MathBlock, path: Path) => {
+    if (block.styleId) styleRef(block.styleId, [...path, 'styleId']);
+    if (block.paragraphStyleId) styleRef(block.paragraphStyleId, [...path, 'paragraphStyleId']);
+  };
   const visit = (blocks: Block[], path: Path, main: boolean) =>
     blocks.forEach((block, i) => {
       const p = [...path, i];
       if (block.type === 'p') paragraph(block, p, main);
-      else if (block.type === 'math' && block.styleId) styleRef(block.styleId, [...p, 'styleId']);
-      else if (block.type === 'toc') {
+      else if (block.type === 'math') mathRefs(block, p);
+      else if (block.type === 'image') {
+        if (block.styleId) styleRef(block.styleId, [...p, 'styleId']);
+      } else if (block.type === 'toc') {
         if (block.title) styleRef(block.title.styleId, [...p, 'title', 'styleId']);
         if (block.levels[0] > block.levels[1])
           issue([...p, 'levels'], 'TOC level range must be ascending');
@@ -511,8 +542,8 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
             column += width;
             cell.blocks.forEach((b, j) => {
               if (b.type === 'p') paragraph(b, [...cp, 'blocks', j], main);
-              else if (b.type === 'math' && b.styleId)
-                styleRef(b.styleId, [...cp, 'blocks', j, 'styleId']);
+              else if (b.type === 'math') mathRefs(b, [...cp, 'blocks', j]);
+              else if (b.styleId) styleRef(b.styleId, [...cp, 'blocks', j, 'styleId']);
             });
           });
           if (occupancy[r].some((value) => !value))
@@ -527,6 +558,8 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
         section.page.widthPt - section.page.margins.leftPt - section.page.margins.rightPt
     )
       issue(['sections', i, 'columns'], 'Column spacing consumes the content width');
+    for (const [variant, styleId] of Object.entries(section.pageNumber?.styleIds ?? {}))
+      styleRef(styleId, ['sections', i, 'pageNumber', 'styleIds', variant]);
     visit(section.blocks, ['sections', i, 'blocks'], true);
     if (section.header) visit(section.header, ['sections', i, 'header'], false);
     if (section.headerEven) visit(section.headerEven, ['sections', i, 'headerEven'], false);
