@@ -81,6 +81,8 @@ export const numberingDefSchema = z
           restartAfterLevel: number.int().min(-1).optional(),
           suffix: z.enum(['nothing', 'space', 'tab']),
           styleId: id.optional(),
+          /** Unit size of character indents when no paragraph style is linked. */
+          indentSizePt: z.number().positive().optional(),
           run: z
             .object({ bold: z.boolean().optional(), font: fontSchema.optional() })
             .strict()
@@ -95,7 +97,7 @@ export const numberingDefSchema = z
               path: ['restartAfterLevel'],
               message: 'Restart trigger must precede this numbering level, or be -1 for never',
             });
-          if (level.indent && !level.styleId)
+          if (level.indent && !level.styleId && !level.indentSizePt)
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               path: ['styleId'],
