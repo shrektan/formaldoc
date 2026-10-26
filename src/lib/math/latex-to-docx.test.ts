@@ -332,4 +332,18 @@ describe('OMML structure verification', () => {
       expect(omml).toContain('<m:den>');
     });
   });
+
+  describe('run properties Word accepts', () => {
+    it('writes upright runs with a valid style, math properties first, never nor with sty', () => {
+      const omml = latexToOmml('5\\% + \\mathrm{d}y + \\mathbf{x} + \\text{ab}', false);
+      expect(omml).not.toContain('undefined');
+      expect(omml).not.toMatch(/<m:r><w:rPr/);
+      expect(omml).not.toMatch(/<m:nor\/><m:sty|<m:sty[^>]*\/><m:nor/);
+      expect(omml).toContain(
+        '<m:r><m:rPr><m:sty m:val="p"/></m:rPr><w:rPr/><m:t xml:space="preserve">%</m:t>'
+      );
+      expect(omml).toContain('<m:rPr><m:sty m:val="b"/></m:rPr><w:rPr><w:b/></w:rPr>');
+      expect(omml).toContain('<m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve">ab</m:t>');
+    });
+  });
 });

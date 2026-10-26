@@ -495,7 +495,10 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
       if (!content.latex.trim()) throw new Error('Empty formula');
       const omml = latexToOmml(content.latex, display);
       if (!omml.includes('<m:oMath')) throw new Error('Formula conversion produced no native math');
-      return [ImportedXmlComponent.fromXmlString(omml) as unknown as ParagraphChild];
+      // fromXmlString returns the parsed document node, which serializes as <undefined>
+      // around the formula; Word refuses the whole file, so insert its element only.
+      const parsed = ImportedXmlComponent.fromXmlString(omml) as unknown as { root: unknown[] };
+      return [parsed.root[0] as ParagraphChild];
     } catch (error) {
       if (content.fallbackText) {
         report.mathConversions.retainedText = (report.mathConversions.retainedText ?? 0) + 1;

@@ -103,6 +103,29 @@ function fixOmmlEscaping(omml: string): string {
 }
 
 /**
+ * Fixes mathml2omml run properties that Word refuses to open (LibreOffice tolerates them):
+ * w:rPr is written before m:rPr, m:nor is paired with m:sty although the schema makes them
+ * a choice, and mathvariant="normal" (e.g. KaTeX's `\%`, `\mathrm`) yields m:sty="undefined".
+ */
+function fixOmmlRunProperties(omml: string): string {
+  return omml.replace(
+    /<m:r>(<w:rPr\/>|<w:rPr>(?:(?!<\/w:rPr>).)*<\/w:rPr>)?(<m:rPr>(?:(?!<\/m:rPr>).)*<\/m:rPr>)?/gs,
+    (_whole, word = '', math = '') => {
+      if (math.includes('<m:sty'))
+        math = math
+          .replace('<m:nor/>', '')
+          .replace(/(<m:sty m:val=")(?!(?:p|b|i|bi)")[^"]*"/, '$1p"');
+      return `<m:r>${math}${word}`;
+    }
+  );
+}
+
+/** mathml2omml output made valid for Word. */
+function toOmml(mathml: string): string {
+  return fixOmmlRunProperties(fixOmmlEscaping(mml2omml(mathml)));
+}
+
+/**
  * Tries to render LaTeX with KaTeX. Throws if parsing fails.
  */
 function tryRenderLatex(latex: string, displayMode: boolean): string {
@@ -123,7 +146,7 @@ export function latexToOmml(latex: string, displayMode = true): string {
     displayMode,
     throwOnError: true,
   });
-  return fixOmmlEscaping(mml2omml(mathml));
+  return toOmml(mathml);
 }
 
 /**
@@ -145,9 +168,7 @@ export function latexToDocxMath(latex: string, displayMode = true): DocxMath {
 
   // Convert MathML → OMML → docx Math objects
   try {
-    const rawOmml = mml2omml(mathml);
-    // Fix unescaped < and > in text content (mathml2omml bug)
-    const omml = fixOmmlEscaping(rawOmml);
+    const omml = toOmml(mathml);
     const children = parseOmml(omml);
     return new DocxMath({ children });
   } catch (error) {

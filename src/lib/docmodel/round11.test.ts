@@ -86,6 +86,11 @@ test('round11 controlled readers on real CN/arxiv regions create editable OMML a
   ];
   const { document, styles, report } = await packed(m);
   expect(nodes(document, 'oMath', M)).toHaveLength(3);
+  expect(
+    nodes(document, 'oMath', M).every((node) =>
+      ['p', 'oMathPara'].includes((node.parentNode as Element).localName)
+    )
+  ).toBe(true);
   expect(nodes(document, 'nary', M).length).toBeGreaterThan(0);
   expect(report.mathConversions).toEqual({ display: 2, inline: 1, failed: 0 });
   expect(nodes(document, 't').map((node) => node.textContent)).toContain('(22)');
