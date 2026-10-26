@@ -10,6 +10,10 @@ const integer = number.int().nonnegative();
 const color = text.regex(/^[\da-fA-F]{6}$/, 'Expected RRGGBB color');
 // Chinese font and Latin/digit font; ascii also supplies Word hAnsi. Both may be identical.
 const fontSchema = z.object({ eastAsia: text, ascii: text }).strict();
+const runFontSchema = z
+  .object({ eastAsia: text.min(1).optional(), ascii: text.min(1).optional() })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0);
 const indentSchema = z
   .object({
     firstLineChars: number.optional(),
@@ -130,6 +134,7 @@ export const mathImageFallbackSchema = z
 export const mathTextFallbackRunSchema = z
   .object({
     text,
+    font: runFontSchema.optional(),
     bold: z.boolean().optional(),
     italic: z.boolean().optional(),
     underline: z.boolean().optional(),
@@ -163,6 +168,7 @@ export type MathBlock = z.infer<typeof mathBlockSchema>;
 export const runSchema = z
   .object({
     text,
+    font: runFontSchema.optional(),
     bold: z.boolean().optional(),
     italic: z.boolean().optional(),
     underline: z.boolean().optional(),
@@ -275,7 +281,14 @@ export const tocBlockSchema = z
     title: z.object({ text, styleId: id }).strict().optional(),
     levels: z.tuple([integer.min(1), integer.min(1)]),
     entries: z.array(
-      z.object({ text, level: integer.min(1), page: integer.min(1), bookmark: id }).strict()
+      z
+        .object({
+          text,
+          level: integer.min(1),
+          page: integer.min(1).optional(),
+          bookmark: id.optional(),
+        })
+        .strict()
     ),
   })
   .strict();
@@ -519,9 +532,10 @@ export const docModelSchema = modelShape.superRefine((model, ctx) => {
         if (block.title) styleRef(block.title.styleId, [...p, 'title', 'styleId']);
         if (block.levels[0] > block.levels[1])
           issue([...p, 'levels'], 'TOC level range must be ascending');
-        block.entries.forEach((entry, j) =>
-          links.push({ bookmark: entry.bookmark, path: [...p, 'entries', j, 'bookmark'] })
-        );
+        block.entries.forEach((entry, j) => {
+          if (entry.bookmark)
+            links.push({ bookmark: entry.bookmark, path: [...p, 'entries', j, 'bookmark'] });
+        });
       } else if (block.type === 'table') {
         const occupancy = block.rows.map(() => Array<boolean>(block.columnsPt.length).fill(false));
         block.rows.forEach((row, r) => {

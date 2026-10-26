@@ -50,6 +50,19 @@ function paragraph(value: DocModel): ParagraphBlock {
 }
 
 describe('DocModel parsing', () => {
+  it('accepts independent inline script fonts and rejects empty or unknown font properties', () => {
+    const value = model();
+    paragraph(value).runs = [
+      { text: '第一条', font: { eastAsia: '黑体' } },
+      { text: 'A1', font: { ascii: 'Arial' } },
+    ];
+    expect(parseDocModel(value)).toEqual(value);
+    for (const font of [{}, { eastAsia: '' }, { hAnsi: 'Arial' }, { ascii: 42 }]) {
+      Object.assign(paragraph(value).runs[0], { font });
+      expect(() => parseDocModel(value)).toThrow('sections[0].blocks[0].runs[0].font');
+    }
+  });
+
   it('accepts both decoded values and JSON strings without mutating input', () => {
     const value = model();
     expect(parseDocModel(value)).toEqual(value);

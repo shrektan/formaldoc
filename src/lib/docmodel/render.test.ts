@@ -50,6 +50,42 @@ afterAll(async () => {
 
 const findStyle = (id: string) => nodes(styles, 'style').find((el) => attr(el, 'styleId') === id)!;
 
+describe('DocModel inline script fonts', () => {
+  it('writes only declared rFonts slots and keeps regular family changes free of bold', async () => {
+    const value = createFullExample(imagePath);
+    value.sections[0].blocks = [
+      {
+        type: 'p',
+        styleId: 'Normal',
+        runs: [
+          { text: '第一条', font: { eastAsia: '黑体' } },
+          { text: '正文' },
+          { text: 'A1', font: { ascii: 'Arial' }, bold: true },
+          { text: '汉A', font: { eastAsia: '楷体', ascii: '楷体' } },
+        ],
+      },
+    ];
+    const part = await xml(await JSZip.loadAsync(await renderDocModel(value)), 'word/document.xml');
+    const findRun = (text: string) =>
+      nodes(part, 'r').find((run) => first(run, 't')?.textContent === text)!;
+    const article = findRun('第一条');
+    expect(attr(first(article, 'rFonts'), 'eastAsia')).toBe('黑体');
+    expect(attr(first(article, 'rFonts'), 'ascii')).toBe('');
+    expect(attr(first(article, 'rFonts'), 'hAnsi')).toBe('');
+    expect(nodes(article, 'b')).toHaveLength(0);
+    expect(nodes(findRun('正文'), 'rFonts')).toHaveLength(0);
+    const latin = findRun('A1');
+    expect(attr(first(latin, 'rFonts'), 'ascii')).toBe('Arial');
+    expect(attr(first(latin, 'rFonts'), 'hAnsi')).toBe('Arial');
+    expect(attr(first(latin, 'rFonts'), 'eastAsia')).toBe('');
+    expect(nodes(latin, 'b')).toHaveLength(1);
+    const shared = first(findRun('汉A'), 'rFonts');
+    expect(attr(shared, 'eastAsia')).toBe('楷体');
+    expect(attr(shared, 'ascii')).toBe('楷体');
+    expect(attr(shared, 'hAnsi')).toBe('楷体');
+  });
+});
+
 describe('DocModel OOXML conformance', () => {
   const validator =
     process.env.OOXML_VALIDATOR_PATH ?? resolve('../tools/ooxml-validate/validate.py');

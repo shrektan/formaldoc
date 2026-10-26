@@ -246,13 +246,15 @@ function normalizeBuiltInStyles(model: DocModel): DocModel {
     const name = style.name.toLowerCase();
     if (name === 'normal') return 'Normal';
     if (name === 'title') return 'Title';
+    if (name === 'subtitle' || name === '副标题') return 'Subtitle';
     if (name === 'header' || name === '页眉') return 'Header';
+    if (name === 'footer' || name === '页脚') return 'Footer';
     if (name === 'caption' || name === '题注') return 'Caption';
     if (['footnote text', 'footnotetext', '脚注文本', '脚注文字'].includes(name))
       return 'FootnoteText';
     if (['footnote reference', 'footnotereference', '脚注引用'].includes(name))
       return 'FootnoteReference';
-    const heading = /^heading ([1-4])$/.exec(name);
+    const heading = /^heading ([1-9])$/.exec(name);
     if (heading) return `Heading${heading[1]}`;
     const toc = /^toc ([1-3])$/.exec(name);
     return toc ? `TOC${toc[1]}` : style.id;
@@ -473,10 +475,16 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
     );
   };
   const textRun = (
-    run: Pick<Run, 'text' | 'bold' | 'italic' | 'underline' | 'color' | 'vertAlign'>
+    run: Pick<Run, 'text' | 'font' | 'bold' | 'italic' | 'underline' | 'color' | 'vertAlign'>
   ) =>
     new TextRun({
       text: run.text,
+      font: run.font
+        ? {
+            ...(run.font.eastAsia ? { eastAsia: run.font.eastAsia } : {}),
+            ...(run.font.ascii ? { ascii: run.font.ascii, hAnsi: run.font.ascii } : {}),
+          }
+        : undefined,
       bold: run.bold,
       italics: run.italic,
       underline:
@@ -736,17 +744,16 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
         }
         tocStyles.set(key, styleId);
       }
-      if (entry)
-        children.push(
-          new InternalHyperlink({
-            anchor: entry.bookmark,
-            children: [
-              new TextRun(entry.text),
-              new TextRun({ children: [new Tab()] }),
-              new TextRun(String(entry.page)),
-            ],
-          })
-        );
+      if (entry) {
+        const content = [
+          new TextRun(entry.text),
+          new TextRun({ children: [new Tab()] }),
+          new TextRun(entry.page === undefined ? '' : String(entry.page)),
+        ];
+        if (entry.bookmark)
+          children.push(new InternalHyperlink({ anchor: entry.bookmark, children: content }));
+        else children.push(...content);
+      }
       if (index === entries.length - 1)
         children.push(fieldRun('w:fldChar', { 'w:fldCharType': 'end' }));
       result.push(new ModelParagraph(styleId, children));
@@ -1008,17 +1015,21 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
             ? 'Normal'
             : style.id === 'Title'
               ? 'Title'
-              : style.id === 'Header'
-                ? 'header'
-                : style.id === 'Caption'
-                  ? 'caption'
-                  : style.id === 'FootnoteText'
-                    ? 'footnote text'
-                    : /^Heading[1-4]$/.test(style.id)
-                      ? `heading ${style.id.slice(-1)}`
-                      : level
-                        ? `toc ${level}`
-                        : style.name;
+              : style.id === 'Subtitle'
+                ? 'Subtitle'
+                : style.id === 'Header'
+                  ? 'header'
+                  : style.id === 'Footer'
+                    ? 'footer'
+                    : style.id === 'Caption'
+                      ? 'caption'
+                      : style.id === 'FootnoteText'
+                        ? 'footnote text'
+                        : /^Heading[1-9]$/.test(style.id)
+                          ? `heading ${style.id.slice(-1)}`
+                          : level
+                            ? `toc ${level}`
+                            : style.name;
         return styleXml(style, style.id, name, tabs);
       })
       .join('') + extraStyles.join('');
