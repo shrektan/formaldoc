@@ -120,9 +120,43 @@ function fixOmmlRunProperties(omml: string): string {
   );
 }
 
+/** Normalize CT_OMathArg: one leading argPr, then math elements (never bare text). */
+function fixOmmlArguments(omml: string): string {
+  const argumentsNames = new Set(['e', 'num', 'den', 'fName', 'deg', 'lim', 'sub', 'sup']);
+  const stack: { name: string; open: string; children: string[]; argumentProperty?: string }[] = [
+    { name: '', open: '', children: [] },
+  ];
+  for (const match of omml.matchAll(/<[^>]*>|[^<]+/g)) {
+    const token = match[0];
+    const parent = stack.at(-1)!;
+    if (token.startsWith('</')) {
+      const frame = stack.pop()!;
+      const content = `${frame.open}${frame.argumentProperty ?? ''}${frame.children.join('')}${token}`;
+      const target = stack.at(-1)!;
+      if (frame.name === 'm:argPr' && argumentsNames.has(target.name.slice(2))) {
+        // The converter prepends the same inherited script level once per child.
+        target.argumentProperty ??= content;
+      } else target.children.push(content);
+    } else if (token.startsWith('<') && !token.endsWith('/>')) {
+      stack.push({ name: /^<([^\s>]+)/.exec(token)![1], open: token, children: [] });
+    } else if (!token.startsWith('<') && token.trim() && argumentsNames.has(parent.name.slice(2))) {
+      parent.children.push(`<m:r><m:t xml:space="preserve">${token}</m:t></m:r>`);
+    } else {
+      // MathML scriptlevel 0/1/2 means normal/script/scriptscript; OMML uses 0/-1/-2.
+      parent.children.push(
+        token.replace(
+          /<m:scrLvl m:val="([012])"\/>/,
+          (_tag, level: string) => `<m:argSz m:val="${-Number(level)}"/>`
+        )
+      );
+    }
+  }
+  return stack[0].children.join('');
+}
+
 /** mathml2omml output made valid for Word. */
 function toOmml(mathml: string): string {
-  return fixOmmlRunProperties(fixOmmlEscaping(mml2omml(mathml)));
+  return fixOmmlArguments(fixOmmlRunProperties(fixOmmlEscaping(mml2omml(mathml))));
 }
 
 /**

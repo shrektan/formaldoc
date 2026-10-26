@@ -177,8 +177,8 @@ function styleXml(style: StyleDef, id: string, name = style.name, extra = ''): s
     style.pageBreakBefore === undefined
       ? ''
       : tag('pageBreakBefore', Number(style.pageBreakBefore)),
-    tag('snapToGrid', Number(style.snapToGrid ?? false)),
     tabsXml(style, extra),
+    tag('snapToGrid', Number(style.snapToGrid ?? false)),
     `<w:spacing w:before="${twips(style.spaceBeforePt ?? 0)}" w:after="${twips(style.spaceAfterPt ?? 0)}" w:line="${spacing.rule === 'multiple' ? Math.round(spacing.value * 240) : twips(spacing.pt)}" w:lineRule="${spacing.rule === 'multiple' ? 'auto' : spacing.rule}"/>`,
     indentXml(style.indent, style.sizePt),
     tag('jc', style.align === 'justify' ? 'both' : style.align),
@@ -1034,8 +1034,11 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
       settings
         .replace(/<w:characterSpacingControl\b[^>]*\/>/g, '')
         .replace(
-          '</w:settings>',
-          `${tag('characterSpacingControl', model.settings.compressPunctuation ? 'compressPunctuation' : 'doNotCompress')}</w:settings>`
+          /(?=<w:compat\b|<\/w:settings>)/,
+          tag(
+            'characterSpacingControl',
+            model.settings.compressPunctuation ? 'compressPunctuation' : 'doNotCompress'
+          )
         )
     );
   }
@@ -1089,10 +1092,26 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
       )
     );
   }
+  // IDs must be unique across story parts, regardless of docx's per-component defaults.
+  let nextBookmarkId = 0;
+  let nextDrawingId = 1;
   // Inspect XML parts one at a time; embedded media stays compressed and untouched.
   for (const name of Object.keys(zip.files).filter((name) => /\.(?:xml|rels)$/i.test(name))) {
     let content = await zip.file(name)!.async('string');
     if (/^word\/(document|header\d+|footer\d+|footnotes)\.xml$/.test(name)) {
+      const bookmarkPairs = new Map<string, number[]>();
+      content = content.replace(/<w:bookmark(Start|End)\b[^>]*\/>/g, (element, kind: string) => {
+        const oldId = /\bw:id="([^"]+)"/.exec(element)![1];
+        const paired = bookmarkPairs.get(oldId) ?? [];
+        const id = kind === 'Start' ? nextBookmarkId++ : paired.pop();
+        if (id === undefined) throw new Error(`Unmatched bookmark end in ${name}: ${oldId}`);
+        if (kind === 'Start') paired.push(id);
+        bookmarkPairs.set(oldId, paired);
+        return element.replace(/\bw:id="[^"]+"/, `w:id="${id}"`);
+      });
+      content = content.replace(/<wp:docPr\b[^>]*>/g, (element) =>
+        element.replace(/\bid="[^"]+"/, `id="${nextDrawingId++}"`)
+      );
       content = content.replace(/<w:(?:bCs|iCs)(?:\s[^>]*)?\/>/g, '');
       content = separateAdjacentTables(content);
     }

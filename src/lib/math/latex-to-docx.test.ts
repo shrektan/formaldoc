@@ -333,6 +333,20 @@ describe('OMML structure verification', () => {
     });
   });
 
+  describe('argument structure Word accepts', () => {
+    it('wraps bare function arguments in math text runs', () => {
+      const omml = latexToOmml(String.raw`\int_0^1 f(x)`, false);
+      expect(omml).toContain('<m:t xml:space="preserve">(x)</m:t>');
+      expect(omml).not.toContain('</m:r>(x)</m:e>');
+    });
+    it('uses one leading argPr with argSz for repeated script-level declarations', () => {
+      const omml = latexToOmml(String.raw`\textstyle x_{\textstyle\text{ab}}`, true);
+      expect(omml).not.toContain('m:scrLvl');
+      expect(omml).not.toMatch(/<\/m:argPr><m:argPr>/);
+      expect(omml).toContain('<m:argSz m:val="0"/>');
+    });
+  });
+
   describe('run properties Word accepts', () => {
     it('writes upright runs with a valid style, math properties first, never nor with sty', () => {
       const omml = latexToOmml('5\\% + \\mathrm{d}y + \\mathbf{x} + \\text{ab}', false);

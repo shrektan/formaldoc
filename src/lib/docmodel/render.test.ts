@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { inflateSync } from 'node:zlib';
 import JSZip from 'jszip';
 import { JSDOM } from 'jsdom';
@@ -47,6 +49,88 @@ afterAll(async () => {
 });
 
 const findStyle = (id: string) => nodes(styles, 'style').find((el) => attr(el, 'styleId') === id)!;
+
+describe('DocModel OOXML conformance', () => {
+  const validator =
+    process.env.OOXML_VALIDATOR_PATH ?? resolve('../tools/ooxml-validate/validate.py');
+  const uv = Bun.which('uv');
+  if (!uv || !existsSync(validator))
+    console.warn(
+      `Skipping DocModel OOXML XSD validation: ${!uv ? 'uv is unavailable' : `validator is unavailable: ${validator}`}`
+    );
+
+  it.skipIf(!uv || !existsSync(validator))(
+    'validates one document with formulas, images, footnotes, headers, footers, table and TOC',
+    async () => {
+      const mixed = createFullExample(imagePath);
+      mixed.settings = { compressPunctuation: false };
+      mixed.styles[0].tabs = [{ type: 'right', posPt: 120 }];
+      mixed.footnotes = [
+        { id: 'note', blocks: [{ type: 'p', styleId: 'Normal', runs: [{ text: '脚注内容' }] }] },
+      ];
+      mixed.sections[0].blocks.push(
+        {
+          type: 'p',
+          styleId: 'Normal',
+          runs: [
+            {
+              text: '',
+              math: { latex: String.raw`\exp(\lambda)+\dfrac{x}{y}+\textstyle\sum_{i=1}^{n}x_i` },
+            },
+            { text: '', footnote: { id: 'note' } },
+          ],
+        },
+        {
+          type: 'math',
+          styleId: 'Normal',
+          latex: String.raw`\dfrac{\dfrac{a}{b}}{c}+\int_0^1 f(x)\,\mathrm{d}x`,
+        }
+      );
+      const output = join(dir, 'mixed-ooxml.docx');
+      await writeFile(output, await renderDocModel(mixed));
+      const checked = spawnSync(
+        uv!,
+        [
+          'run',
+          '--offline',
+          '-q',
+          '--python',
+          '3.12',
+          '--with',
+          'defusedxml',
+          '--with',
+          'lxml',
+          'python',
+          validator,
+          output,
+        ],
+        { encoding: 'utf8' }
+      );
+      expect(`${checked.stdout}\n${checked.stderr}`).toContain('All validations PASSED!');
+      expect(checked.status).toBe(0);
+    },
+    30000
+  );
+
+  it('uses unique paired bookmark IDs and unique drawing IDs across all story parts', async () => {
+    const stories = createFullExample(imagePath);
+    stories.sections[0].header!.push({ type: 'image', path: imagePath, widthPt: 24, heightPt: 18 });
+    stories.sections[0].footer!.push({ type: 'image', path: imagePath, widthPt: 24, heightPt: 18 });
+    const storyZip = await JSZip.loadAsync(await renderDocModel(stories));
+    const bookmarkIds: string[] = [];
+    const drawingIds: string[] = [];
+    for (const name of Object.keys(storyZip.files).filter((name) => /^word\/.*\.xml$/.test(name))) {
+      const part = await xml(storyZip, name);
+      const starts = nodes(part, 'bookmarkStart').map((element) => attr(element, 'id'));
+      const ends = nodes(part, 'bookmarkEnd').map((element) => attr(element, 'id'));
+      expect([...starts].sort()).toEqual([...ends].sort());
+      bookmarkIds.push(...starts);
+      drawingIds.push(...nodes(part, 'docPr', WP).map((element) => element.getAttribute('id')!));
+    }
+    expect(new Set(bookmarkIds).size).toBe(bookmarkIds.length);
+    expect(new Set(drawingIds).size).toBe(drawingIds.length);
+  });
+});
 
 describe('DocModel DOCX XML', () => {
   it('writes every declared style and overrides built-in styles without duplicate definitions', () => {
