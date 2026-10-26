@@ -64,22 +64,31 @@ const tag = (name: string, value: string | number) => `<w:${name} w:val="${xml(v
 const fonts = (font: { eastAsia: string; ascii: string }) =>
   `<w:rFonts w:ascii="${xml(font.ascii)}" w:hAnsi="${xml(font.ascii)}" w:eastAsia="${xml(font.eastAsia)}"/>`;
 
-function indentXml(indent: StyleDef['indent'], sizePt: number): string {
-  if (!indent) return '';
+function indentAttributes(indent: NonNullable<StyleDef['indent']>, sizePt: number) {
   // Word prefers character units; LibreOffice needs the equivalent twip values.
-  const attrs = Object.entries(indent).flatMap(([key, value]) => [
-    `w:${key}="${Math.round(value * 100)}"`,
-    `w:${key.replace('Chars', '')}="${twips(value * sizePt)}"`,
-  ]);
-  return `<w:ind ${attrs.join(' ')}/>`;
+  return Object.fromEntries(
+    Object.entries(indent).flatMap(([key, value]) => [
+      [`w:${key}`, Math.round(value * 100)],
+      [`w:${key.replace('Chars', '')}`, twips(value * sizePt)],
+    ])
+  );
 }
 
-/** Extend the library's paragraph properties without adding direct formatting. */
+function indentXml(indent: StyleDef['indent'], sizePt: number): string {
+  return indent
+    ? `<w:ind ${Object.entries(indentAttributes(indent, sizePt))
+        .map(([key, value]) => `${key}="${value}"`)
+        .join(' ')}/>`
+    : '';
+}
+
+/** Add declared numbering and source cell insets to paragraph properties. */
 class ModelParagraph extends Paragraph {
   constructor(
     style: string,
     children: ParagraphChild[],
-    numbering?: { id: number; level: number }
+    numbering?: { id: number; level: number },
+    inset?: { indent: NonNullable<ParagraphBlock['indent']>; sizePt: number }
   ) {
     super({ style, children });
     if (numbering) {
@@ -88,6 +97,12 @@ class ModelParagraph extends Paragraph {
       numPr.push(new ImportedXmlComponent('w:ilvl', { 'w:val': numbering.level }));
       numPr.push(new ImportedXmlComponent('w:numId', { 'w:val': numbering.id }));
       properties!.push(numPr);
+    }
+    if (inset) {
+      const properties = this.root.find((child) => child instanceof ParagraphProperties);
+      properties!.push(
+        new ImportedXmlComponent('w:ind', indentAttributes(inset.indent, inset.sizePt))
+      );
     }
   }
 }
@@ -563,7 +578,12 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
           level: block.numbering.level,
         }
       : undefined;
-    return new ModelParagraph(block.styleId, textChildren, numbering);
+    return new ModelParagraph(
+      block.styleId,
+      textChildren,
+      numbering,
+      block.indent ? { indent: block.indent, sizePt: styles.get(block.styleId)!.sizePt } : undefined
+    );
   };
   let sectionLayout = { sectionIndex: 0, tableIndex: 0, bodyHeightPt: Infinity };
   const warning = (message: string) => (report.layoutWarnings ??= []).push(message);

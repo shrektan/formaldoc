@@ -216,6 +216,11 @@ export const paragraphBlockSchema = z
     type: z.literal('p'),
     styleId: id,
     runs: z.array(runSchema),
+    /** Source cell inset, independent of its shared paragraph style. */
+    indent: z
+      .object({ leftChars: nonnegative.optional(), rightChars: nonnegative.optional() })
+      .strict()
+      .optional(),
     numbering: z.object({ instanceId: id, level: integer }).strict().optional(),
     bookmark: id.optional(),
     anchors: z.array(imageBlockSchema).optional(),
