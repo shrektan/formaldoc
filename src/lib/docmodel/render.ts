@@ -700,6 +700,17 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
       layout: TableLayoutType.FIXED,
       width: { type: WidthType.DXA, size: twips(block.columnsPt.reduce((a, b) => a + b, 0)) },
       alignment: block.align,
+      margins: block.cellMargins
+        ? {
+            marginUnitType: WidthType.DXA,
+            left:
+              block.cellMargins.leftPt === undefined ? undefined : twips(block.cellMargins.leftPt),
+            right:
+              block.cellMargins.rightPt === undefined
+                ? undefined
+                : twips(block.cellMargins.rightPt),
+          }
+        : undefined,
       borders: {
         top: borderOptions(block.borders.top),
         bottom: borderOptions(block.borders.bottom),

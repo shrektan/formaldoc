@@ -243,6 +243,10 @@ export const tableBlockSchema = z
     type: z.literal('table'),
     columnsPt: z.array(positive).min(1),
     align: z.enum(['left', 'center']).optional(),
+    cellMargins: z
+      .object({ leftPt: nonnegative.optional(), rightPt: nonnegative.optional() })
+      .strict()
+      .optional(),
     borders: cellBorders
       .extend({ insideH: borderSchema.optional(), insideV: borderSchema.optional() })
       .strict(),
