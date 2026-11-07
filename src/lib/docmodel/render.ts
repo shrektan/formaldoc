@@ -201,7 +201,7 @@ function styleXml(style: StyleDef, id: string, name = style.name, extra = ''): s
   ].join('');
   if (id === 'FootnoteReference')
     return `<w:style w:type="character" w:styleId="FootnoteReference" w:customStyle="0">${tag('name', 'footnote reference')}<w:rPr>${fonts(style.font)}${tag('vertAlign', 'superscript')}</w:rPr></w:style>`;
-  return `<w:style w:type="paragraph" w:styleId="${xml(id)}"${id === 'Normal' ? ' w:default="1"' : ''}${style.builtIn ? ' w:customStyle="0"' : ''}>${tag('name', name)}${style.basedOn ? tag('basedOn', style.basedOn) : ''}${style.next ? tag('next', style.next) : ''}<w:pPr>${pPr}</w:pPr><w:rPr>${fonts(style.font)}${style.bold === undefined ? '' : tag('b', Number(style.bold))}${style.color ? tag('color', style.color) : ''}${tag('sz', Math.round(style.sizePt * 2))}${tag('szCs', Math.round(style.sizePt * 2))}</w:rPr></w:style>`;
+  return `<w:style w:type="paragraph" w:styleId="${xml(id)}"${id === 'Normal' ? ' w:default="1"' : ''}${style.builtIn ? ' w:customStyle="0"' : ''}>${tag('name', name)}${style.basedOn ? tag('basedOn', style.basedOn) : ''}${style.next ? tag('next', style.next) : ''}<w:pPr>${pPr}</w:pPr><w:rPr>${fonts(style.font)}${style.bold === undefined ? '' : tag('b', Number(style.bold))}${style.color ? tag('color', style.color) : ''}${style.characterSpacingPt === undefined ? '' : tag('spacing', Math.round(style.characterSpacingPt * 20))}${tag('sz', Math.round(style.sizePt * 2))}${tag('szCs', Math.round(style.sizePt * 2))}</w:rPr></w:style>`;
 }
 
 function numberingXml(model: DocModel): string {

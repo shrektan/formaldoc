@@ -35,6 +35,8 @@ export const styleDefSchema = z
     sizePt: positive,
     bold: z.boolean().optional(),
     color: color.optional(),
+    /** Extra space between characters (Word w:spacing), e.g. a letter-spaced title. */
+    characterSpacingPt: number.optional(),
     align: z.enum(['left', 'center', 'right', 'justify', 'distribute']),
     indent: indentSchema.optional(),
     lineSpacing: z.union([
