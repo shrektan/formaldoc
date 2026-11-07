@@ -275,6 +275,8 @@ export const tableBlockSchema = z
                 rowSpan: integer.min(1).optional(),
                 vAlign: z.enum(['top', 'center', 'bottom']).optional(),
                 borders: cellBorders.optional(),
+                /** Optional cell fill as six-digit RGB, without a leading '#'. */
+                backgroundColor: color.optional(),
               })
               .strict()
           ),

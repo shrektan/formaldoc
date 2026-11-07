@@ -632,6 +632,7 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
         remaining: number;
         span: number;
         borders?: TableBlock['rows'][number]['cells'][number]['borders'];
+        backgroundColor?: string;
       }
     >();
     const rows: TableRow[] = [];
@@ -644,6 +645,7 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
         const cell = continuation ? undefined : row.cells[cellIndex++];
         const span = continuation?.span ?? cell!.colSpan ?? 1;
         const cellBorders = continuation?.borders ?? cell?.borders;
+        const backgroundColor = continuation?.backgroundColor ?? cell?.backgroundColor;
         const borders = cellBorders
           ? {
               top: borderOptions(cellBorders.top),
@@ -683,13 +685,21 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
                 : undefined,
             verticalAlign: cell?.vAlign,
             borders,
+            shading: backgroundColor
+              ? { type: 'clear', color: 'auto', fill: backgroundColor }
+              : undefined,
           })
         );
         if (continuation) {
           continuation.remaining--;
           if (!continuation.remaining) active.delete(column);
         } else if ((cell!.rowSpan ?? 1) > 1) {
-          active.set(column, { remaining: cell!.rowSpan! - 1, span, borders: cellBorders });
+          active.set(column, {
+            remaining: cell!.rowSpan! - 1,
+            span,
+            borders: cellBorders,
+            backgroundColor,
+          });
         }
         column += span;
       }
