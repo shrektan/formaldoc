@@ -493,7 +493,7 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
     run: Pick<Run, 'text' | 'font' | 'bold' | 'italic' | 'underline' | 'color' | 'vertAlign'>
   ) =>
     new TextRun({
-      text: run.text,
+      children: run.text.split('\t').flatMap((text, index) => (index ? [new Tab(), text] : [text])),
       font: run.font
         ? {
             ...(run.font.eastAsia ? { eastAsia: run.font.eastAsia } : {}),

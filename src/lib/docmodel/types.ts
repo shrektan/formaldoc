@@ -56,7 +56,7 @@ export const styleDefSchema = z
           .object({
             type: z.enum(['left', 'center', 'right', 'clear']),
             posPt: nonnegative,
-            leader: z.literal('dot').optional(),
+            leader: z.enum(['dot', 'underscore']).optional(),
           })
           .strict()
       )
