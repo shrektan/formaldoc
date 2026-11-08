@@ -346,6 +346,8 @@ export const sectionDefSchema = z
         placement: z.enum(['center', 'outside', 'inside', 'left', 'right']),
         outsideIndentChars: number.optional(),
         restart: integer.optional(),
+        /** Source document page count cached until Word recalculates NUMPAGES. */
+        sourcePageCount: integer.optional(),
         hideOnFirstPage: z.boolean().optional(),
         /** Declared page-number paragraph styles per footer variant (no generated styles). */
         styleIds: z.object({ default: id, even: id.optional() }).strict().optional(),

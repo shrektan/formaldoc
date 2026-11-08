@@ -961,7 +961,8 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
         for (const part of pageNumber.format.split(/(%PAGE%|%NUMPAGES%)/)) {
           if (part === '%PAGE%')
             children.push(new SimpleField('PAGE', String(pageNumber.restart ?? 1)));
-          else if (part === '%NUMPAGES%') children.push(new SimpleField('NUMPAGES', '1'));
+          else if (part === '%NUMPAGES%')
+            children.push(new SimpleField('NUMPAGES', String(pageNumber.sourcePageCount ?? 1)));
           else if (part) children.push(new TextRun(part));
         }
         content.push(new ModelParagraph(styleId, children));

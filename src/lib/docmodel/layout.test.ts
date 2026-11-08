@@ -21,6 +21,7 @@ test('page and total page placeholders are independent updateable fields', async
   model.sections = model.sections.slice(0, 1);
   model.sections[0]!.blocks = [{ type: 'p', styleId: 'Normal', runs: [{ text: '正文' }] }];
   model.sections[0]!.pageNumber!.format = '第 %PAGE% 页 共 %NUMPAGES% 页';
+  model.sections[0]!.pageNumber!.sourcePageCount = 24;
   const zip = await JSZip.loadAsync(await renderDocModel(parseDocModel(model)));
   const footers = await Promise.all(
     Object.keys(zip.files)
@@ -31,4 +32,5 @@ test('page and total page placeholders are independent updateable fields', async
     footers.some((text) => /w:instr="PAGE"/.test(text) && /w:instr="NUMPAGES"/.test(text))
   ).toBe(true);
   expect(footers.join('')).not.toContain('%NUMPAGES%');
+  expect(footers.join('')).toMatch(/w:instr="NUMPAGES"[^>]*>.*?<w:t[^>]*>24<\/w:t>/s);
 });
