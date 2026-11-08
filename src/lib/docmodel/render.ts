@@ -958,10 +958,12 @@ async function prepareDocModel(parsed: DocModel, streamImages: boolean) {
         const styleId =
           pageNumber.styleIds?.[even ? 'even' : 'default'] ?? generatedStyle('PageNumber', style);
         const children: ParagraphChild[] = [];
-        pageNumber.format.split('%PAGE%').forEach((part, i) => {
-          if (i) children.push(new SimpleField('PAGE', String(pageNumber.restart ?? 1)));
-          if (part) children.push(new TextRun(part));
-        });
+        for (const part of pageNumber.format.split(/(%PAGE%|%NUMPAGES%)/)) {
+          if (part === '%PAGE%')
+            children.push(new SimpleField('PAGE', String(pageNumber.restart ?? 1)));
+          else if (part === '%NUMPAGES%') children.push(new SimpleField('NUMPAGES', '1'));
+          else if (part) children.push(new TextRun(part));
+        }
         content.push(new ModelParagraph(styleId, children));
       }
       return new Footer({ children: content });
